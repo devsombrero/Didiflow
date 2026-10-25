@@ -116,6 +116,11 @@
           <app-task-time-panel [task]="task" />
         </section>
 
+        <section class="card">
+          <h2>Lembretes</h2>
+          <app-task-reminders-panel [taskId]="task.id" />
+        </section>
+
         <section class="card detail-grid__wide">
           <h2>Descrição</h2>
           <p class="prose">{{ task.description || 'Sem descrição.' }}</p>

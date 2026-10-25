@@ -91,9 +91,14 @@
             }
           </div>
           <span class="field-hint">
-            As notificações nativas serão ativadas em uma próxima versão; as preferências já ficam
-            salvas.
+            As notificações aparecem apenas enquanto o DidiFlow estiver aberto (inclusive
+            minimizado). Com o aplicativo fechado, nenhum aviso é exibido.
           </span>
+          <div>
+            <button type="button" class="btn btn--sm" (click)="testNotification()">
+              Testar notificação
+            </button>
+          </div>
         </fieldset>
 
         <div class="actions">

@@ -1,5 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { ProfileService } from '../../core/profile/profile.service';
 import type { ThemePreference } from '../../core/theme/theme.service';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -24,6 +25,7 @@ export const THEMES: readonly { value: ThemePreference; label: string }[] = [
 export class SettingsPage {
   private readonly profileService = inject(ProfileService);
   private readonly toast = inject(ToastService);
+  private readonly bridge = inject(DesktopBridge);
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly dateFormats = DATE_FORMATS;
@@ -61,6 +63,16 @@ export class SettingsPage {
       this.preferencesForm.reset(preferences);
       this.loaded.set(true);
     });
+  }
+
+  protected async testNotification(): Promise<void> {
+    const shown = await this.bridge.notify({
+      title: 'DidiFlow',
+      body: 'As notificações estão funcionando.',
+    });
+    if (!shown) {
+      this.toast.error('Notificações nativas não estão disponíveis neste ambiente.');
+    }
   }
 
   async saveProfile(): Promise<void> {
