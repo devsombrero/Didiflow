@@ -1,0 +1,76 @@
+.badge {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+
+  &[data-status='in_progress'] {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  &[data-status='blocked'] {
+    border-color: var(--color-warning);
+    color: var(--color-warning);
+  }
+  &[data-status='done'] {
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+  &[data-status='cancelled'] {
+    text-decoration: line-through;
+  }
+}
+
+.priority {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.priority__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+
+  [data-priority='medium'] & {
+    background: var(--color-primary);
+  }
+  [data-priority='high'] & {
+    background: var(--color-warning);
+  }
+  [data-priority='urgent'] & {
+    background: var(--color-danger);
+  }
+}
+
+:host(.progress-host) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 120px;
+}
+
+.progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.progress__value {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  min-width: 3ch;
+  text-align: right;
+}

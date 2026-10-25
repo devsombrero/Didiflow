@@ -1,0 +1,54 @@
+# Windows packaging (NSIS). Build with: npm run dist
+# Requires DIDIFLOW_SUPABASE_URL / DIDIFLOW_SUPABASE_ANON_KEY for the target
+# project (see docs/release.md). Never put the service_role key here.
+appId: com.didiflow.app
+productName: DidiFlow
+copyright: Copyright © 2026 Deyvid Santos
+
+directories:
+  output: release
+  buildResources: build
+
+# The renderer (Angular) and the main/preload scripts (esbuild) are fully
+# bundled, so no node_modules are shipped.
+files:
+  - package.json
+  - dist/didiflow/browser/**/*
+  - dist-electron/**/*
+  - '!**/*.map'
+  - '!node_modules/**/*'
+
+asar: true
+
+# Hardening: the packaged binary cannot be used as a generic Node runtime,
+# ignores NODE_OPTIONS / --inspect, and only loads the integrity-checked asar.
+# (Automated E2E tests therefore run against the unpackaged build.)
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
+npmRebuild: false
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+  # Signing: set CSC_LINK / CSC_KEY_PASSWORD (see docs/release.md). Unsigned
+  # builds work but trigger Windows SmartScreen warnings.
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DidiFlow
+  artifactName: DidiFlow-Setup-${version}.${ext}
+  deleteAppDataOnUninstall: false
+
+publish: null

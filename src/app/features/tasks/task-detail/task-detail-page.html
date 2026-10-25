@@ -1,0 +1,145 @@
+@switch (state()) {
+  @case ('loading') {
+    <p class="muted" role="status">Carregando…</p>
+  }
+  @case ('not-found') {
+    <section class="card empty-state">
+      <p>Tarefa não encontrada ou excluída.</p>
+      <a class="btn" routerLink="/tasks">Voltar para a lista</a>
+    </section>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">Não foi possível carregar a tarefa.</div>
+  }
+  @default {
+    @if (task(); as task) {
+      <nav class="muted breadcrumb"><a routerLink="/tasks">Tarefas</a> / detalhe</nav>
+      <header class="page-header">
+        <div>
+          <h1>{{ task.title }}</h1>
+          <div class="meta">
+            <app-status-badge [status]="task.status" />
+            <app-priority-badge [priority]="task.priority" />
+            @if (task.archived_at) {
+              <span class="badge-archived">Arquivada</span>
+            }
+          </div>
+        </div>
+        <div class="actions">
+          <a class="btn btn--primary" [routerLink]="['/tasks', task.id, 'edit']">Editar</a>
+          @if (canComplete(task)) {
+            <a class="btn" routerLink="/focus" [queryParams]="{ task: task.id }">Focar</a>
+          }
+          <button type="button" class="btn" (click)="act(actions.duplicate(task))">Duplicar</button>
+          @if (canReopen(task)) {
+            <button type="button" class="btn" (click)="act(actions.reopen(task))">Reabrir</button>
+          } @else if (canCancel(task)) {
+            <button type="button" class="btn" (click)="act(actions.cancel(task))">Cancelar</button>
+          }
+          @if (task.archived_at) {
+            <button type="button" class="btn" (click)="act(actions.unarchive(task))">
+              Desarquivar
+            </button>
+          } @else {
+            <button type="button" class="btn" (click)="act(actions.archive(task))">Arquivar</button>
+          }
+          <button type="button" class="btn btn--danger" (click)="act(actions.remove(task))">
+            Excluir
+          </button>
+        </div>
+      </header>
+
+      <div class="detail-grid">
+        <section class="card">
+          <h2>Status e progresso</h2>
+          <app-task-progress-panel [task]="task" (changed)="task$.set($event)" />
+          <dl class="facts">
+            <dt>Entrega prevista</dt>
+            <dd>
+              {{ task.due_date | appDate }}
+              @if (deadline().label) {
+                <span class="deadline" [attr.data-kind]="deadline().kind">{{
+                  deadline().label
+                }}</span>
+              }
+            </dd>
+            <dt>Início</dt>
+            <dd>{{ task.start_date | appDate }}</dd>
+            <dt>Concluída em</dt>
+            <dd>{{ task.completed_at | appDate: true }}</dd>
+            <dt>Estimativa</dt>
+            <dd>{{ estimate() }}</dd>
+          </dl>
+        </section>
+
+        <section class="card">
+          <h2>Solicitação</h2>
+          <dl class="facts">
+            <dt>Projeto</dt>
+            <dd>{{ nameOf(task.project_id) }}</dd>
+            <dt>Categoria</dt>
+            <dd>{{ nameOf(task.category_id) }}</dd>
+            <dt>Contexto</dt>
+            <dd>{{ nameOf(task.context_id) }}</dd>
+            <dt>Tags</dt>
+            <dd>{{ tagNames().length ? tagNames().join(', ') : '—' }}</dd>
+            <dt>Solicitante</dt>
+            <dd>{{ task.requester_name || '—' }}</dd>
+            <dt>Solicitada em</dt>
+            <dd>{{ task.requested_at | appDate }}</dd>
+            <dt>Jira</dt>
+            <dd>
+              @if (task.jira_url) {
+                <button type="button" class="btn btn--link" (click)="openLink(task.jira_url)">
+                  {{ jiraLabel() }} ↗
+                </button>
+              } @else {
+                —
+              }
+            </dd>
+            <dt>Slack</dt>
+            <dd>
+              @if (task.slack_thread_url) {
+                <button
+                  type="button"
+                  class="btn btn--link"
+                  (click)="openLink(task.slack_thread_url)"
+                >
+                  {{ slackLabel() }} ↗
+                </button>
+              } @else {
+                —
+              }
+            </dd>
+          </dl>
+        </section>
+
+        <section class="card">
+          <h2>Tempo</h2>
+          <app-task-time-panel [task]="task" />
+        </section>
+
+        <section class="card">
+          <h2>Lembretes</h2>
+          <app-task-reminders-panel [taskId]="task.id" />
+        </section>
+
+        <section class="card detail-grid__wide">
+          <h2>Descrição</h2>
+          <p class="prose">{{ task.description || 'Sem descrição.' }}</p>
+          <h2>Observações</h2>
+          <p class="prose">{{ task.notes || 'Sem observações.' }}</p>
+        </section>
+        <section class="card detail-grid__wide">
+          <h2>Atividade</h2>
+          <app-task-activity-feed [taskId]="task.id" [version]="task.updated_at" />
+        </section>
+      </div>
+
+      <p class="muted footnote">
+        Criada em {{ task.created_at | appDate: true }} · atualizada em
+        {{ task.updated_at | appDate: true }}
+      </p>
+    }
+  }
+}

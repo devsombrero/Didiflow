@@ -1,0 +1,141 @@
+<header class="page-header">
+  <h1>Calendário</h1>
+  <a class="btn btn--primary" routerLink="/tasks/new">Nova tarefa</a>
+</header>
+
+<section class="toolbar" aria-label="Navegação do calendário">
+  <div class="segmented" role="group" aria-label="Visão">
+    <button type="button" [attr.aria-pressed]="view() === 'day'" (click)="setView('day')">
+      Dia
+    </button>
+    <button type="button" [attr.aria-pressed]="view() === 'week'" (click)="setView('week')">
+      Semana
+    </button>
+    <button type="button" [attr.aria-pressed]="view() === 'month'" (click)="setView('month')">
+      Mês
+    </button>
+  </div>
+  <div class="nav">
+    <button type="button" class="btn btn--sm" aria-label="Anterior" (click)="move(-1)">‹</button>
+    <button type="button" class="btn btn--sm" (click)="goToday()">Hoje</button>
+    <button type="button" class="btn btn--sm" aria-label="Próximo" (click)="move(1)">›</button>
+    <h2 class="nav__title">
+      @if (title(); as t) {
+        {{ t }}
+      } @else if (view() === 'day') {
+        {{ range().from | appDate }}
+      } @else {
+        {{ range().from | appDate }} – {{ range().to | appDate }}
+      }
+    </h2>
+  </div>
+  <div class="filters">
+    <select
+      class="input"
+      aria-label="Prioridade"
+      (change)="priority.set($any($event.target).value)"
+    >
+      <option value="">Todas as prioridades</option>
+      @for (p of priorities; track p) {
+        <option [value]="p" [selected]="p === priority()">{{ priorityLabels[p] }}</option>
+      }
+    </select>
+    <select class="input" aria-label="Status" (change)="status.set($any($event.target).value)">
+      <option value="">Todos os status</option>
+      @for (s of statuses; track s) {
+        <option [value]="s" [selected]="s === status()">{{ statusLabels[s] }}</option>
+      }
+    </select>
+  </div>
+</section>
+
+<p class="legend muted">
+  <span class="ev ev--start">▶ Início</span>
+  <span class="ev ev--due">⚑ Entrega</span>
+  <span class="ev ev--overdue">⚠ Atrasada</span>
+  <span class="ev ev--urgent">! Urgente ou vencendo</span>
+</p>
+
+@if (state() === 'error') {
+  <div class="alert" role="alert">
+    {{ errorMessage() }}
+    <button type="button" class="btn btn--link" (click)="load(range())">Tentar novamente</button>
+  </div>
+} @else {
+  <div
+    class="grid"
+    [class.grid--month]="view() === 'month'"
+    [class.grid--week]="view() === 'week'"
+    [class.grid--day]="view() === 'day'"
+    [attr.aria-busy]="state() === 'loading'"
+  >
+    @if (view() !== 'day') {
+      @for (weekday of weekdays; track weekday) {
+        <div class="grid__weekday" aria-hidden="true">{{ weekday }}</div>
+      }
+    }
+    @for (day of days(); track day.date) {
+      <section
+        class="cell"
+        [class.cell--out]="!day.inMonth && view() === 'month'"
+        [class.cell--today]="day.isToday"
+        [attr.aria-label]="day.date | appDate"
+      >
+        <header class="cell__header">
+          <button type="button" class="cell__date" (click)="openDay(day.date)">
+            {{ view() === 'day' ? (day.date | appDate) : day.date.slice(8) }}
+          </button>
+          <a
+            class="cell__add"
+            routerLink="/tasks/new"
+            [queryParams]="{ due: day.date }"
+            [attr.aria-label]="'Planejar tarefa para ' + (day.date | appDate)"
+            >+</a
+          >
+        </header>
+        <ul class="events">
+          @for (event of day.events; track event.task.id + event.kind) {
+            <li>
+              <a
+                class="ev"
+                [class.ev--start]="event.kind === 'start'"
+                [class.ev--due]="event.kind === 'due'"
+                [class.ev--overdue]="event.overdue"
+                [class.ev--done]="event.task.status === 'done' || event.task.status === 'cancelled'"
+                [routerLink]="['/tasks', event.task.id]"
+                [title]="
+                  eventLabel(event.kind) +
+                  ': ' +
+                  event.task.title +
+                  ' (' +
+                  statusLabels[event.task.status] +
+                  ')'
+                "
+              >
+                <span aria-hidden="true">{{
+                  event.overdue ? '⚠' : event.kind === 'start' ? '▶' : '⚑'
+                }}</span>
+                @if (event.urgent && !event.overdue) {
+                  <span class="ev__urgent" aria-label="urgente">!</span>
+                }
+                <span class="sr-only">{{ eventLabel(event.kind) }}:</span>
+                {{ event.task.title }}
+                @if (view() === 'day') {
+                  <span class="muted">
+                    · {{ statusLabels[event.task.status] }} ·
+                    {{ priorityLabels[event.task.priority] }} ·
+                    {{ event.task.progress_percentage }}%
+                  </span>
+                }
+              </a>
+            </li>
+          } @empty {
+            @if (view() === 'day') {
+              <li class="muted">Nada agendado para este dia.</li>
+            }
+          }
+        </ul>
+      </section>
+    }
+  </div>
+}

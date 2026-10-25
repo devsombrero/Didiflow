@@ -1,0 +1,12 @@
+dist
+dist-electron
+release
+coverage
+node_modules
+.angular
+package-lock.json
+supabase/.temp
+prompt.md
+src/app/core/supabase/database.types.ts
+test-results
+playwright-report
