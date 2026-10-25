@@ -21,6 +21,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASK_ROUTES),
       },
       {
+        path: 'time',
+        title: 'Registro de tempo · DidiFlow',
+        loadComponent: () => import('./features/time-tracking/time-page').then((m) => m.TimePage),
+      },
+      {
         path: 'organization',
         title: 'Organização · DidiFlow',
         loadComponent: () =>

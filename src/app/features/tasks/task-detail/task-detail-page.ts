@@ -7,6 +7,7 @@ import { ToastService } from '../../../shared/toast/toast.service';
 import { PriorityBadge, StatusBadge } from '../components/task-badges';
 import { TaskProgressPanel } from '../components/task-progress-panel';
 import { TaskActivityFeed } from '../components/task-activity-feed';
+import { TaskTimePanel } from '../../time-tracking/task-time-panel';
 import { TaskActions } from '../task-actions.service';
 import { deadlineLabel, deadlineState } from '../task-deadline';
 import type { Task, TaskWithTags } from '../task.model';
@@ -23,6 +24,7 @@ import { TasksService } from '../tasks.service';
     PriorityBadge,
     TaskProgressPanel,
     TaskActivityFeed,
+    TaskTimePanel,
   ],
   templateUrl: './task-detail-page.html',
   styleUrl: './task-detail-page.scss',
