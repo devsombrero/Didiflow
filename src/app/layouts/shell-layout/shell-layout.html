@@ -1,0 +1,24 @@
+<div class="shell">
+  <nav class="sidebar" aria-label="Navegação principal">
+    <p class="sidebar__brand">DidiFlow</p>
+    <ul class="sidebar__nav">
+      <li>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          Início
+        </a>
+      </li>
+      <li>
+        <a routerLink="/settings" routerLinkActive="active">Configurações</a>
+      </li>
+    </ul>
+    <div class="sidebar__user">
+      <span class="sidebar__name">{{
+        profileService.profile()?.display_name || user()?.email
+      }}</span>
+      <button type="button" class="btn btn--link" (click)="signOut()">Sair</button>
+    </div>
+  </nav>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>
