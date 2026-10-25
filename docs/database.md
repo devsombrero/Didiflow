@@ -120,4 +120,4 @@ O trigger `tasks_record_status_history` (AFTER, `security definer`) grava cada t
 
 ## Fases posteriores
 
-`personal_goals`, `skill_achievements`, `focus_sessions` e, se necessário, `notifications`.
+`focus_sessions` e, se necessário, `notifications`.

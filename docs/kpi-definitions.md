@@ -50,9 +50,28 @@ Calculados em `src/app/features/dashboard/metrics.ts` (funções puras, com test
 
 Cada indicador mostra nome, descrição, fórmula, período, valor atual, comparação com o período anterior (quando há dados nos dois), meta opcional, histórico e o estado sem dados.
 
+## Implementação
+
+Os indicadores 1–10 estão em `src/app/features/kpis/kpis.ts` (funções puras com testes de casos-limite). Detalhes de interpretação:
+
+- **Taxa de atraso (3):** o valor é a foto atual das tarefas abertas com prazo vencido; o detalhe mostra as entregas atrasadas no período. Por ser uma foto, não é comparada com o período anterior.
+- **Tempo de ciclo (5):** usa a primeira transição para `in_progress` registrada em `task_status_history`.
+- **Previsibilidade (6):** só considera entregas do período com estimativa **e** tempo registrado; 100% = estimativa exata, acima de 100% = levou mais que o estimado.
+- **Retrabalho (7):** conta transições de `done` para um status aberto. Reabrir uma tarefa cancelada não é retrabalho.
+- **Distribuição de esforço (8):** agrupa o tempo pela categoria da tarefa no momento do cálculo.
+
+Cada cartão mostra valor, descrição, fórmula, detalhe, comparação com o período anterior equivalente (quando ambos têm dados), metas associadas e o histórico dos últimos 6 períodos.
+
 ## Metas
 
-Metas pessoais seguem o modelo SMART: indicador, valor-alvo, período (início e fim) e descrição da relevância.
+Metas pessoais (`personal_goals`) seguem o modelo SMART:
+
+- **Específica:** título;
+- **Mensurável:** indicador, condição ("pelo menos" ou "no máximo") e valor-alvo;
+- **Alcançável** e **Relevante:** textos livres;
+- **Temporal:** início e fim.
+
+A meta é avaliada no intervalo `[início, min(fim, hoje)]`. Estados possíveis: ainda não começou, em andamento, atingida, não atingida ou sem dados suficientes. Para metas de taxa de atraso, usa-se a taxa histórica de entregas atrasadas no intervalo, já que uma foto não tem intervalo. O tempo investido é medido em horas.
 
 ## Cuidados
 
