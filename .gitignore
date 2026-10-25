@@ -56,3 +56,7 @@ Thumbs.db
 /supabase/.temp
 /supabase/.branches
 /src/environments/environment.ts
+
+# Playwright
+/test-results
+/playwright-report

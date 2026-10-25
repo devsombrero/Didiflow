@@ -23,7 +23,8 @@
     "db:lint": "supabase db lint --level warning",
     "env": "node scripts/write-env.mjs",
     "db:types": "supabase gen types typescript --local --schema public > src/app/core/supabase/database.types.ts",
-    "test:integration": "node --test \"tests/integration/**/*.test.mjs\""
+    "test:integration": "node --test \"tests/integration/**/*.test.mjs\"",
+    "test:e2e": "npm run build && npm run electron:build && playwright test"
   },
   "private": true,
   "packageManager": "npm@12.2.0",
@@ -44,6 +45,7 @@
     "@angular/cli": "^22.2.4",
     "@angular/compiler-cli": "^22.2.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "angular-eslint": "22.6.0",
     "concurrently": "^9.2.5",
     "cross-env": "^7.0.3",

@@ -25,6 +25,7 @@
 | `npm run db:test`                         | Testes pgTAP de RLS e constraints                                        |
 | `npm run db:lint`                         | Lint do schema (plpgsql_check)                                           |
 | `npm run db:types`                        | Regenera `src/app/core/supabase/database.types.ts`                       |
+| `npm run test:e2e`                        | Build + testes E2E do app Electron com Playwright (requer `db:start`)    |
 | `npm run test:integration`                | Auth e RLS pela API real do Supabase local (requer `db:start`)           |
 
 ## Configuração do ambiente local
@@ -46,6 +47,18 @@ O npm 12 bloqueia install scripts que não estejam em `allowScripts`. Nenhum é 
 - `esbuild`, `lmdb`, `msgpackr-extract` e `@parcel/watcher` usam binários pré-compilados de dependências opcionais.
 
 Revise com `npm install-scripts ls` antes de aprovar qualquer pacote.
+
+## Integração contínua
+
+`.github/workflows/ci.yml` roda em push para `main`/`develop` e em pull requests:
+
+| Job        | O que verifica                                                                                                             |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `quality`  | `npm ci`, Prettier, ESLint, typecheck do Electron, testes unitários (Angular e Electron), builds Angular e Electron        |
+| `database` | Sobe o Supabase local aplicando todas as migrations do zero, `db:lint`, pgTAP, tipos gerados em dia e testes de integração |
+| `e2e`      | Playwright no app Electron real (Xvfb) contra o Supabase local; relatório anexado em caso de falha                         |
+
+Os testes E2E usam um perfil isolado por execução (`DIDIFLOW_USER_DATA_DIR`, ignorado em builds empacotados) e só rodam contra Supabase local, porque criam usuários.
 
 ## Branches
 

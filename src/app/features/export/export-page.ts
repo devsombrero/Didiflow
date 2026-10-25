@@ -146,6 +146,7 @@ export class ExportPage {
       if (result.saved)
         this.toast.success(result.path ? `Arquivo salvo em ${result.path}` : 'Arquivo gerado.');
     } catch (error) {
+      console.error('Export failed', error);
       this.toast.error(describeError(error, 'Não foi possível exportar.'));
     } finally {
       this.busy.set(null);

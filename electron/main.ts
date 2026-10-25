@@ -11,6 +11,11 @@ import { isClientRoute, resolveRendererPath } from './renderer-path';
 // Only honored in unpackaged builds, so a packaged app can never be pointed
 // at an arbitrary URL through the environment.
 const devServerUrl = app.isPackaged ? undefined : process.env['DIDIFLOW_DEV_SERVER_URL'];
+
+// Automated tests run each app instance with an isolated profile (session,
+// secure store). Like the dev server URL, this is ignored in packaged builds.
+const userDataOverride = app.isPackaged ? undefined : process.env['DIDIFLOW_USER_DATA_DIR'];
+if (userDataOverride) app.setPath('userData', userDataOverride);
 const trustedOrigins = devServerUrl ? [APP_ORIGIN, new URL(devServerUrl).origin] : [APP_ORIGIN];
 const rendererRoot = path.join(app.getAppPath(), 'dist', 'didiflow', 'browser');
 const contentSecurityPolicy = buildContentSecurityPolicy(app.isPackaged);
