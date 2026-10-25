@@ -15,6 +15,8 @@ describe('DesktopBridge', () => {
       platform: 'win32',
       secureStore: { get: vi.fn(), set: vi.fn(), remove: vi.fn() },
       openExternal: vi.fn().mockResolvedValue(undefined),
+      notify: vi.fn().mockResolvedValue(true),
+      onNavigate: vi.fn(() => () => undefined),
     };
 
     it('exposes the secure store and desktop flag', () => {
@@ -28,9 +30,19 @@ describe('DesktopBridge', () => {
       await bridge.openExternal('https://example.atlassian.net/browse/DF-1');
       expect(api.openExternal).toHaveBeenCalledWith('https://example.atlassian.net/browse/DF-1');
     });
+
+    it('delegates notifications', async () => {
+      const bridge = setup(api);
+      await expect(bridge.notify({ title: 'Oi' })).resolves.toBe(true);
+      expect(api.notify).toHaveBeenCalledWith({ title: 'Oi' });
+    });
   });
 
   describe('in a plain browser', () => {
+    it('does not show notifications', async () => {
+      await expect(setup(null).notify({ title: 'Oi' })).resolves.toBe(false);
+    });
+
     it('has no secure store', () => {
       const bridge = setup(null);
       expect(bridge.isDesktop).toBe(false);

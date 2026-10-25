@@ -1,5 +1,9 @@
 import { inject, Injectable, InjectionToken } from '@angular/core';
-import type { DidiflowApi, SecureStoreApi } from '../../../../electron/ipc/contract';
+import type {
+  DesktopNotification,
+  DidiflowApi,
+  SecureStoreApi,
+} from '../../../../electron/ipc/contract';
 
 declare global {
   interface Window {
@@ -31,5 +35,15 @@ export class DesktopBridge {
       throw new Error('Only https:// URLs are allowed');
     }
     window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  /** Native notification (desktop only); resolves to false when not shown. */
+  async notify(notification: DesktopNotification): Promise<boolean> {
+    return this.api ? this.api.notify(notification) : false;
+  }
+
+  /** Navigation requests coming from notification clicks. */
+  onNavigate(listener: (route: string) => void): () => void {
+    return this.api ? this.api.onNavigate(listener) : () => undefined;
   }
 }

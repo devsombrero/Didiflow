@@ -6,7 +6,17 @@ export const IPC_CHANNELS = {
   secureStoreSet: 'secure-store:set',
   secureStoreRemove: 'secure-store:remove',
   openExternal: 'shell:open-external',
+  notify: 'notification:show',
+  /** Main → renderer: navigate to an in-app route (notification click). */
+  navigate: 'app:navigate',
 } as const;
+
+export interface DesktopNotification {
+  title: string;
+  body?: string;
+  /** In-app route opened when the notification is clicked, e.g. /tasks/123. */
+  route?: string;
+}
 
 export interface SecureStoreApi {
   get(key: string): Promise<string | null>;
@@ -20,4 +30,8 @@ export interface DidiflowApi {
   readonly secureStore: SecureStoreApi;
   /** Opens an https:// URL in the default browser. */
   openExternal(url: string): Promise<void>;
+  /** Shows a native notification; resolves to false when unsupported. */
+  notify(notification: DesktopNotification): Promise<boolean>;
+  /** Subscribes to navigation requests from the main process. Returns an unsubscribe function. */
+  onNavigate(listener: (route: string) => void): () => void;
 }
