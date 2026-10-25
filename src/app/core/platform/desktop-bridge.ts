@@ -2,6 +2,8 @@ import { inject, Injectable, InjectionToken } from '@angular/core';
 import type {
   DesktopNotification,
   DidiflowApi,
+  SaveFileRequest,
+  SaveFileResult,
   SecureStoreApi,
 } from '../../../../electron/ipc/contract';
 
@@ -40,6 +42,19 @@ export class DesktopBridge {
   /** Native notification (desktop only); resolves to false when not shown. */
   async notify(notification: DesktopNotification): Promise<boolean> {
     return this.api ? this.api.notify(notification) : false;
+  }
+
+  /** Saves an export through the native dialog (desktop) or a browser download. */
+  async saveFile(request: SaveFileRequest): Promise<SaveFileResult> {
+    if (this.api) return this.api.saveFile(request);
+    const type = request.kind === 'csv' ? 'text/csv;charset=utf-8' : 'application/json';
+    const url = URL.createObjectURL(new Blob([request.content], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = request.defaultName;
+    link.click();
+    URL.revokeObjectURL(url);
+    return { saved: true };
   }
 
   /** Navigation requests coming from notification clicks. */
