@@ -1,4 +1,15 @@
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  effect,
+  type ElementRef,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
@@ -10,7 +21,7 @@ import { PriorityBadge, StatusBadge } from '../tasks/components/task-badges';
 import { deadlineLabel, deadlineState } from '../tasks/task-deadline';
 import { OPEN_STATUSES } from '../tasks/task.model';
 
-type SearchRow = {
+interface SearchRow {
   id: string;
   title: string;
   status: (typeof OPEN_STATUSES)[number] | 'done' | 'cancelled';
@@ -22,7 +33,7 @@ type SearchRow = {
   description: string | null;
   notes: string | null;
   archived_at: string | null;
-};
+}
 
 type QuickFilter = 'all' | 'open' | 'done' | 'important';
 
@@ -64,8 +75,11 @@ export class SearchPage {
   );
 
   private requestId = 0;
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   constructor() {
+    // Focus the field when the page opens (keyboard users land ready to type).
+    afterNextRender(() => this.searchInput()?.nativeElement.focus());
     effect(() => this.query.set(this.q() ?? ''));
 
     effect((onCleanup) => {
