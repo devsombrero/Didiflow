@@ -22,7 +22,16 @@ test('security: renderer is isolated from Node and only exposes the preload API'
     expect(surface).toEqual({
       require: 'undefined',
       process: 'undefined',
-      api: ['notify', 'onNavigate', 'openExternal', 'platform', 'saveFile', 'secureStore'],
+      api: [
+        'backups',
+        'notify',
+        'onNavigate',
+        'openBackupFile',
+        'openExternal',
+        'platform',
+        'saveFile',
+        'secureStore',
+      ],
     });
     await expect(
       page.evaluate(() =>
@@ -152,6 +161,55 @@ test('kanban: drag a card between columns and keep it after reload', async () =>
     await expect(
       page.locator('.column[data-status="in_progress"] .card', { hasText: 'Card do quadro E2E' }),
     ).toBeVisible();
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('backup: automatic and manual backups, restore with replace', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Tarefa protegida por backup');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa protegida por backup');
+
+    await page.goto(page.url().replace(/\/tasks\/.*$/, '/backup'));
+    // The automatic backup runs right after sign-in (no previous backup in this profile).
+    await expect(page.locator('.files')).toContainText('Automático');
+
+    await page.getByRole('button', { name: 'Fazer backup agora' }).click();
+    await expect(page.locator('.toast--success')).toContainText('Backup criado');
+    await expect(page.locator('.files li', { hasText: 'Manual' })).toHaveCount(1);
+
+    // Delete the task, then bring it back from the manual backup.
+    await page.goto(page.url().replace(/\/backup$/, '/tasks'));
+    await page
+      .locator('tr', { hasText: 'Tarefa protegida por backup' })
+      .getByRole('button')
+      .click();
+    await page.getByRole('menuitem', { name: 'Excluir' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Excluir' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Tarefa excluída');
+
+    await page.goto(page.url().replace(/\/tasks$/, '/backup'));
+    await page
+      .locator('.files li', { hasText: 'Manual' })
+      .getByRole('button', { name: 'Restaurar' })
+      .click();
+    await expect(page.locator('.restore-card')).toContainText('Tarefas: ');
+    await page.getByRole('radio', { name: 'Substituir' }).click();
+    await page.locator('.restore-card').getByRole('button', { name: 'Restaurar' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Substituir' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Backup restaurado');
+    await expect(page.locator('.files')).toContainText('Antes de restaurar');
+
+    await page.goto(page.url().replace(/\/backup$/, '/tasks'));
+    await expect(page.locator('tr', { hasText: 'Tarefa protegida por backup' })).toBeVisible();
   } finally {
     await close();
     removeDir(userDataDir);

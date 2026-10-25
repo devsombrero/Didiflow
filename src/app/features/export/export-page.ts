@@ -59,7 +59,9 @@ const DATASETS: DatasetOption[] = [
   template: `
     <header class="page-header">
       <h1>Exportar dados</h1>
-      <a matButton="outlined" routerLink="/settings"><mat-icon>settings</mat-icon> Configurações</a>
+      <a matButton="outlined" routerLink="/backup"
+        ><mat-icon>backup</mat-icon> Backup e restauração</a
+      >
     </header>
     <p class="muted">
       As exportações incluem apenas os seus dados. Elas não substituem os backups do banco de dados

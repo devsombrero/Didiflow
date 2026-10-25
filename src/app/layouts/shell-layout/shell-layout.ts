@@ -22,6 +22,7 @@ import { TimerStore } from '../../features/time-tracking/time.service';
 import { TimerWidget } from '../../features/time-tracking/timer-widget';
 import { NotificationScheduler } from '../../features/notifications/notification-scheduler';
 import { FocusStore } from '../../features/focus/focus.service';
+import { BackupScheduler } from '../../features/backup/backup-scheduler';
 import { formatClock } from '../../features/time-tracking/time-calc';
 import { ToastService } from '../../shared/toast/toast.service';
 
@@ -53,6 +54,7 @@ export class ShellLayout implements OnInit {
   private readonly timer = inject(TimerStore);
   private readonly scheduler = inject(NotificationScheduler);
   protected readonly focus = inject(FocusStore);
+  private readonly backupScheduler = inject(BackupScheduler);
   protected readonly focusClock = computed(() =>
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
   );
@@ -80,6 +82,7 @@ export class ShellLayout implements OnInit {
         this.timer.clear();
         this.scheduler.stop();
         this.focus.clear();
+        this.backupScheduler.stop();
         void this.router.navigate(['/login']);
       }
     });
@@ -90,6 +93,7 @@ export class ShellLayout implements OnInit {
       await Promise.all([this.profileService.load(), this.timer.refresh()]);
       this.scheduler.start();
       void this.focus.restore().catch(() => undefined);
+      this.backupScheduler.start();
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
     }

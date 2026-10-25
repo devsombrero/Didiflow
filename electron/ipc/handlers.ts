@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   app,
@@ -9,12 +9,19 @@ import {
   shell,
   type IpcMainInvokeEvent,
 } from 'electron';
+import {
+  assertBackupContent,
+  assertBackupKind,
+  assertRetention,
+  type BackupStore,
+} from './backups';
 import { IPC_CHANNELS } from './contract';
 import type { SecureStore } from './secure-store';
 import {
   assertExternalUrl,
   assertNotification,
   assertSaveRequest,
+  MAX_SAVE_BYTES,
   assertStoreKey,
   assertStoreValue,
   IpcValidationError,
@@ -26,9 +33,15 @@ interface IpcDependencies {
   trustedOrigins: readonly string[];
   /** Window that receives navigation requests from notification clicks. */
   getWindow: () => BrowserWindow | null;
+  backups: BackupStore;
 }
 
-export function registerIpcHandlers({ store, trustedOrigins, getWindow }: IpcDependencies): void {
+export function registerIpcHandlers({
+  store,
+  trustedOrigins,
+  getWindow,
+  backups,
+}: IpcDependencies): void {
   const handle = (channel: string, listener: (...args: unknown[]) => unknown) => {
     ipcMain.handle(channel, (event: IpcMainInvokeEvent, ...args: unknown[]) => {
       if (!isTrustedOrigin(event.senderFrame?.url, trustedOrigins)) {
@@ -84,4 +97,36 @@ export function registerIpcHandlers({ store, trustedOrigins, getWindow }: IpcDep
     await writeFile(target, content, 'utf8');
     return { saved: true, path: target };
   });
+  handle(IPC_CHANNELS.openFile, async () => {
+    const window = getWindow();
+    const options = {
+      title: 'Restaurar backup',
+      defaultPath: backups.directory,
+      properties: ['openFile' as const],
+      filters: [{ name: 'Backup DidiFlow (JSON)', extensions: ['json'] }],
+    };
+    const result = window
+      ? await dialog.showOpenDialog(window, options)
+      : await dialog.showOpenDialog(options);
+    const file = result.filePaths[0];
+    if (result.canceled || !file) return { canceled: true };
+    if ((await stat(file)).size > MAX_SAVE_BYTES) throw new IpcValidationError('File too large');
+    const content = assertBackupContent(await readFile(file, 'utf8'));
+    return { canceled: false, name: path.basename(file), content };
+  });
+  handle(IPC_CHANNELS.backupList, () => backups.list());
+  handle(IPC_CHANNELS.backupWrite, (content, kind, retention) =>
+    backups.write(assertBackupContent(content), assertBackupKind(kind), assertRetention(retention)),
+  );
+  handle(IPC_CHANNELS.backupRead, (name) => backups.read(name as string));
+  handle(IPC_CHANNELS.backupDelete, (name) => backups.remove(name as string));
+  handle(IPC_CHANNELS.backupOpenFolder, async () => {
+    await mkdirSafe(backups.directory);
+    const error = await shell.openPath(backups.directory);
+    if (error) throw new Error(error);
+  });
+}
+
+async function mkdirSafe(directory: string): Promise<void> {
+  await mkdir(directory, { recursive: true });
 }
