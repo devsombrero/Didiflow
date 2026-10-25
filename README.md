@@ -4,16 +4,22 @@ Aplicação desktop para gestão pessoal de demandas: tarefas, prazos, progresso
 
 Stack: Electron · Angular 22 · Supabase (Auth, PostgreSQL, RLS).
 
-> Em desenvolvimento. Status atual: fundação e shell Electron concluídos; próxima etapa: Supabase e autenticação.
+> Em desenvolvimento. Status atual: fundação, shell Electron, schema com RLS e autenticação concluídos; próxima etapa: CRUD de tarefas.
 
 ## Início rápido
 
+Requer Node.js `^24.15` e Docker.
+
 ```bash
 npm ci
-npm start            # Angular no navegador (http://localhost:4200)
-npm run electron:dev # Angular + Electron
-npm run test:ci
+npm run db:start      # Supabase local
+cp .env.example .env  # preencha com os valores de `npx supabase status`
+npm run electron:dev  # Angular + Electron
 ```
+
+Testes: `npm run test:ci`, `npm run test:electron`, `npm run db:test` e `npm run test:integration`.
+
+Detalhes em [Fluxo de desenvolvimento](docs/development-workflow.md).
 
 ## Documentação
 
