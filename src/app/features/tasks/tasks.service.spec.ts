@@ -45,12 +45,12 @@ describe('TasksService', () => {
   });
 
   it('throws Supabase errors', async () => {
-    const { service } = setup({ data: null, error: { code: '42501' }, count: null } );
+    const { service } = setup({ data: null, error: { code: '42501' }, count: null });
     await expect(service.list(DEFAULT_TASK_QUERY)).rejects.toEqual({ code: '42501' });
   });
 
   it('cancels by clearing completed_at', async () => {
-    const { service, query } = setup({ data: { id: 't1' }, error: null } );
+    const { service, query } = setup({ data: { id: 't1' }, error: null });
     await service.cancel({ id: 't1', status: 'done' } as Task);
 
     expect(query.argsOf('update')).toEqual([{ status: 'cancelled', completed_at: null }]);
@@ -58,7 +58,7 @@ describe('TasksService', () => {
   });
 
   it('deletes logically', async () => {
-    const { service, query } = setup({ data: { id: 't1' }, error: null } );
+    const { service, query } = setup({ data: { id: 't1' }, error: null });
     await service.remove('t1');
 
     const [changes] = query.argsOf('update') as [{ deleted_at: string }];
