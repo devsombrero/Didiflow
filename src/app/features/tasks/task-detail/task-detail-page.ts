@@ -17,6 +17,7 @@ import { OrganizationStore } from '../../organization/organization.service';
 import { parseJiraLink, parseSlackLink } from '../../integrations/integrations';
 import { TasksService } from '../tasks.service';
 import { MATERIAL_UI } from '../../../shared/material';
+import { MarkdownView } from '../../../shared/markdown/markdown-view';
 
 @Component({
   selector: 'app-task-detail-page',
@@ -29,6 +30,7 @@ import { MATERIAL_UI } from '../../../shared/material';
     TaskActivityFeed,
     TaskTimePanel,
     TaskRemindersPanel,
+    MarkdownView,
     MATERIAL_UI,
   ],
   templateUrl: './task-detail-page.html',

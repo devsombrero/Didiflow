@@ -30,6 +30,8 @@ Para desinstalar: **Configurações do Windows → Aplicativos**. Seus dados fic
 | Tempo                              | Cronômetro (também na barra lateral), apontamentos manuais e totais                                                                               |
 | Busca (`Ctrl+K`)                   | Título, descrição, solicitante, projeto, tags e observações, sem diferenciar acentos                                                              |
 
+A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, **negrito**, _itálico_, listas, checklists (`- [ ]`), citações, código e links. Use a barra de formatação (atalhos `Ctrl+B`, `Ctrl+I` e `Ctrl+K`) e a aba **Visualizar** para conferir antes de salvar. Links abrem no navegador padrão.
+
 ### Status e progresso
 
 - Não iniciado = 0%; Em andamento = 1–99%; Concluído = 100%.
