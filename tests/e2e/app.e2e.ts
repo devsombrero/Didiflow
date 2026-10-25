@@ -290,3 +290,38 @@ test('attachments: stored on this computer, 50 MB per task, removable', async ()
     removeDir(sources);
   }
 });
+
+test('custom notifications: create in a dialog, test and see it in the bell', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Notificações' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Notificações personalizadas');
+
+    await page.getByRole('button', { name: 'Nova notificação' }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Nova notificação' });
+    await dialog.locator('#cn-title').fill('Beber água');
+    await dialog.locator('#cn-message').fill('Uma pausa rápida');
+    await dialog.getByRole('radio', { name: 'Intervalo' }).click();
+    await expect(dialog.locator('.preview')).toContainText('A cada 1 h, das 09:00 às 18:00');
+    await dialog.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Notificação criada');
+
+    const rule = page.locator('.rule', { hasText: 'Beber água' });
+    await expect(rule).toContainText('A cada 1 h, das 09:00 às 18:00');
+    await rule.getByRole('button', { name: /Ações de/ }).click();
+    await page.getByRole('menuitem', { name: 'Testar agora' }).click();
+    await expect(page.locator('.toast--notification').last()).toContainText('Beber água');
+
+    await page.getByRole('button', { name: /notificações não lidas/ }).click();
+    await expect(page.locator('.panel__list')).toContainText('Uma pausa rápida');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Notificações', exact: true })).toBeVisible();
+
+    await rule.getByRole('switch').click();
+    await expect(rule).toContainText('Pausada');
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});

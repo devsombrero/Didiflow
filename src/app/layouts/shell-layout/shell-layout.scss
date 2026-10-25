@@ -26,6 +26,10 @@
   color: var(--mat-sys-primary);
 }
 
+.sidebar__title {
+  flex: 1;
+}
+
 .sidebar__logo {
   font-size: 28px;
   width: 28px;
