@@ -47,7 +47,11 @@
 - O protocolo `app://` impede path traversal e serve as respostas com Content Security Policy:
   - `script-src 'self'` (sem scripts inline). Por isso o inlining de CSS crítico do Angular está desativado (`optimization.styles.inlineCritical: false`), já que ele usa handlers `onload` inline.
   - `style-src 'self' 'unsafe-inline'`: o Angular injeta estilos de componentes em runtime.
-  - `connect-src`: `*.supabase.co` e, só em builds não empacotados, o Supabase local (`127.0.0.1:54321`).
+  - `connect-src`: somente a origem do Supabase configurada no build (`DIDIFLOW_SUPABASE_URL`, mais o `wss://` correspondente) e, só em builds não empacotados, o Supabase local (`127.0.0.1:54321`).
+
+### Binário empacotado
+
+O instalador aplica Electron Fuses: sem `RunAsNode`, sem `NODE_OPTIONS`, sem argumentos de inspect, com validação de integridade do `app.asar` e carregamento só a partir dele (detalhes em `release.md`). As variáveis `DIDIFLOW_DEV_SERVER_URL` e `DIDIFLOW_USER_DATA_DIR` são ignoradas em builds empacotados.
 
 ### Secure store
 

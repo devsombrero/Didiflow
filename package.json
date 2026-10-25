@@ -1,6 +1,6 @@
 {
   "name": "didiflow",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "ng": "ng",
     "start": "npm run env && ng serve",
@@ -24,7 +24,9 @@
     "env": "node scripts/write-env.mjs",
     "db:types": "supabase gen types typescript --local --schema public > src/app/core/supabase/database.types.ts",
     "test:integration": "node --test \"tests/integration/**/*.test.mjs\"",
-    "test:e2e": "npm run build && npm run electron:build && playwright test"
+    "test:e2e": "npm run build && npm run electron:build && playwright test",
+    "icon": "node scripts/generate-icon.mjs",
+    "dist": "npm run build && npm run electron:build && electron-builder --win --publish never"
   },
   "private": true,
   "packageManager": "npm@12.2.0",
@@ -62,5 +64,10 @@
     "vitest": "^5.0.0",
     "wait-on": "^8.0.5"
   },
-  "main": "dist-electron/main.cjs"
+  "main": "dist-electron/main.cjs",
+  "description": "DidiFlow — gestão pessoal de demandas, prazos e indicadores.",
+  "author": {
+    "name": "Deyvid Santos",
+    "email": "deyvidsantosdatascience@gmail.com"
+  }
 }

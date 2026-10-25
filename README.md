@@ -1,12 +1,21 @@
 # DidiFlow
 
-Aplicação desktop para gestão pessoal de demandas: tarefas, prazos, progresso e indicadores individuais de produtividade.
+Aplicação desktop para gestão pessoal de demandas: tarefas, prazos, progresso, tempo e indicadores individuais de produtividade.
 
-Stack: Electron · Angular 22 · Supabase (Auth, PostgreSQL, RLS).
+Stack: Electron 44 · Angular 22 · Supabase (Auth, PostgreSQL com RLS).
 
-> Em desenvolvimento. Status atual: fundação, shell Electron, schema com RLS e autenticação concluídos; próxima etapa: CRUD de tarefas.
+**Versão 0.1.0.** Inclui o MVP completo e os recursos de planejamento, tempo, foco, notificações, busca e exportação. Veja o [CHANGELOG](CHANGELOG.md).
 
-## Início rápido
+## Funcionalidades
+
+- Autenticação com confirmação por código e sessão criptografada pelo sistema operacional.
+- CRUD completo de demandas: solicitante, links do Jira e do Slack, datas, estimativa, projeto, categoria, contexto e tags.
+- Status e progresso consistentes, garantidos no banco, com histórico e auditoria.
+- Dashboard, 10 KPIs com fórmulas documentadas e metas SMART.
+- Calendário, prioridades do dia, modo foco e registro de tempo.
+- Notificações nativas (com o app aberto), busca global (`Ctrl+K`) e exportação CSV/JSON.
+
+## Início rápido (desenvolvimento)
 
 Requer Node.js `^24.15` e Docker.
 
@@ -17,18 +26,25 @@ cp .env.example .env  # preencha com os valores de `npx supabase status`
 npm run electron:dev  # Angular + Electron
 ```
 
-Testes: `npm run test:ci`, `npm run test:electron`, `npm run db:test` e `npm run test:integration`.
+| Testes                         | Comando                                     |
+| ------------------------------ | ------------------------------------------- |
+| Unitários (Angular / Electron) | `npm run test:ci` / `npm run test:electron` |
+| Banco (pgTAP)                  | `npm run db:test`                           |
+| Integração (API real)          | `npm run test:integration`                  |
+| E2E (Playwright + Electron)    | `npm run test:e2e`                          |
 
-Detalhes em [Fluxo de desenvolvimento](docs/development-workflow.md).
+Instalador Windows: `npm run dist` (veja [release](docs/release.md)).
 
 ## Documentação
 
+- [Guia de uso](docs/user-guide.md)
 - [Arquitetura](docs/architecture.md)
 - [Modelo de dados](docs/database.md)
 - [Segurança](docs/security.md)
-- [Fluxo de desenvolvimento](docs/development-workflow.md)
+- [Fluxo de desenvolvimento e CI](docs/development-workflow.md)
 - [Definições de KPIs](docs/kpi-definitions.md)
 - [Backup, exportação e restauração](docs/backup-restore.md)
 - [Integrações](docs/integrations.md)
+- [Empacotamento e release](docs/release.md)
 
 Requisitos originais: [prompt.md](prompt.md).
