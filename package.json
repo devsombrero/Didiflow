@@ -10,7 +10,12 @@
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:ci": "ng test --watch=false"
+    "test:ci": "ng test --watch=false",
+    "electron:build": "node electron/build.mjs",
+    "electron:dev": "concurrently -k -n ng,electron \"ng serve\" \"wait-on http://localhost:4200 && npm run electron:build && cross-env DIDIFLOW_DEV_SERVER_URL=http://localhost:4200 electron .\"",
+    "electron:start": "ng build && npm run electron:build && electron .",
+    "typecheck:electron": "tsc -p electron/tsconfig.json",
+    "test:electron": "vitest run --config electron/vitest.config.mts"
   },
   "private": true,
   "packageManager": "npm@12.2.0",
@@ -30,12 +35,19 @@
     "@angular/compiler-cli": "^22.2.0",
     "@eslint/js": "^10.0.1",
     "angular-eslint": "22.6.0",
+    "concurrently": "^9.2.5",
+    "cross-env": "^7.0.3",
+    "electron": "^44.9.3",
+    "electron-builder": "^26.18.0",
+    "esbuild": "^0.28.2",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "8.71.0",
-    "vitest": "^5.0.0"
-  }
+    "vitest": "^5.0.0",
+    "wait-on": "^8.0.5"
+  },
+  "main": "dist-electron/main.cjs"
 }
