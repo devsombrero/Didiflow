@@ -85,9 +85,15 @@ export interface MetricFilters {
   statuses: readonly TaskStatus[];
   priorities: readonly TaskPriority[];
   categoryId: string | null;
+  projectId: string | null;
 }
 
-export const NO_FILTERS: MetricFilters = { statuses: [], priorities: [], categoryId: null };
+export const NO_FILTERS: MetricFilters = {
+  statuses: [],
+  priorities: [],
+  categoryId: null,
+  projectId: null,
+};
 
 export function applyFilters<T extends MetricTask>(
   tasks: readonly T[],
@@ -97,7 +103,8 @@ export function applyFilters<T extends MetricTask>(
     (task) =>
       (filters.statuses.length === 0 || filters.statuses.includes(task.status)) &&
       (filters.priorities.length === 0 || filters.priorities.includes(task.priority)) &&
-      (filters.categoryId === null || task.category_id === filters.categoryId),
+      (filters.categoryId === null || task.category_id === filters.categoryId) &&
+      (filters.projectId === null || task.project_id === filters.projectId),
   );
 }
 

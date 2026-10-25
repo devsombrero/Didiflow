@@ -12,6 +12,7 @@ import {
   type TaskPriority,
   type TaskStatus,
 } from '../tasks/task.model';
+import { OrganizationStore } from '../organization/organization.service';
 import { DashboardService } from './dashboard.service';
 import {
   applyFilters,
@@ -37,6 +38,7 @@ export class DashboardPage implements OnInit {
   private readonly dashboard = inject(DashboardService);
   private readonly clock = inject(UserClock);
   private readonly profile = inject(ProfileService).profile;
+  protected readonly org = inject(OrganizationStore);
 
   protected readonly presets = PERIOD_PRESETS;
   protected readonly statuses = TASK_STATUSES;
@@ -51,6 +53,8 @@ export class DashboardPage implements OnInit {
   protected readonly granularity = signal<Granularity>('week');
   protected readonly statusFilter = signal<TaskStatus | ''>('');
   protected readonly priorityFilter = signal<TaskPriority | ''>('');
+  protected readonly projectFilter = signal('');
+  protected readonly categoryFilter = signal('');
 
   protected readonly greeting = computed(() => {
     const name = this.profile()?.display_name;
@@ -62,6 +66,8 @@ export class DashboardPage implements OnInit {
       ...NO_FILTERS,
       statuses: this.statusFilter() ? [this.statusFilter() as TaskStatus] : [],
       priorities: this.priorityFilter() ? [this.priorityFilter() as TaskPriority] : [],
+      projectId: this.projectFilter() || null,
+      categoryId: this.categoryFilter() || null,
     }),
   );
   protected readonly summary = computed(() =>
@@ -116,7 +122,13 @@ export class DashboardPage implements OnInit {
     };
   });
 
-  protected readonly hasFilters = computed(() => !!this.statusFilter() || !!this.priorityFilter());
+  protected readonly hasFilters = computed(
+    () =>
+      !!this.statusFilter() ||
+      !!this.priorityFilter() ||
+      !!this.projectFilter() ||
+      !!this.categoryFilter(),
+  );
 
   async ngOnInit(): Promise<void> {
     await this.load();
@@ -129,12 +141,18 @@ export class DashboardPage implements OnInit {
   protected clearFilters(): void {
     this.statusFilter.set('');
     this.priorityFilter.set('');
+    this.projectFilter.set('');
+    this.categoryFilter.set('');
   }
 
   protected async load(): Promise<void> {
     this.state.set('loading');
     try {
-      this.tasks.set(await this.dashboard.metricTasks());
+      const [tasks] = await Promise.all([
+        this.dashboard.metricTasks(),
+        this.org.ensureLoaded().catch(() => undefined),
+      ]);
+      this.tasks.set(tasks);
       this.state.set('ready');
     } catch (error) {
       this.errorMessage.set(describeError(error, 'Não foi possível carregar o dashboard.'));

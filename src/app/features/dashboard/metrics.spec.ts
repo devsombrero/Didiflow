@@ -1,6 +1,7 @@
 import {
   applyFilters,
   deliveryBuckets,
+  NO_FILTERS,
   type MetricTask,
   openByPriority,
   periodFor,
@@ -189,11 +190,16 @@ describe('distributions and filters', () => {
   });
 
   it('filters by status, priority and category', () => {
+    expect(applyFilters(tasks, { ...NO_FILTERS, statuses: ['done'] })).toHaveLength(1);
     expect(
-      applyFilters(tasks, { statuses: ['done'], priorities: [], categoryId: null }),
+      applyFilters(tasks, { ...NO_FILTERS, priorities: ['high'], categoryId: 'c1' }),
     ).toHaveLength(1);
-    expect(
-      applyFilters(tasks, { statuses: [], priorities: ['high'], categoryId: 'c1' }),
-    ).toHaveLength(1);
+  });
+});
+
+describe('project filter', () => {
+  it('keeps only tasks of the selected project', () => {
+    const tasks = [task({ project_id: 'p1' }), task({ project_id: 'p2' }), task({})];
+    expect(applyFilters(tasks, { ...NO_FILTERS, projectId: 'p1' })).toHaveLength(1);
   });
 });
