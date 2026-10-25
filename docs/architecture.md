@@ -55,6 +55,11 @@ src/app/
 - Toda tela trata os estados carregando, erro, vazio e sucesso.
 - O cliente Supabase é um singleton em `core/`. A sessão é persistida pelo `secureStore` do Electron (ver `security.md`).
 
+## Notificações
+
+- Lembretes (`task_reminders`) e o resumo diário de prazos são verificados a cada minuto pelo `NotificationScheduler`, **somente enquanto o aplicativo está aberto** (inclusive minimizado). Não há serviço em segundo plano com o app fechado.
+- Cada lembrete é exibido uma vez (`sent_at`). O resumo de atrasadas e o de vencimentos próximos aparecem no máximo uma vez por dia por dispositivo, e respeitam as preferências de notificação.
+
 ## Supabase
 
 - Schema versionado em `supabase/migrations/`; nada é aplicado automaticamente em produção.
