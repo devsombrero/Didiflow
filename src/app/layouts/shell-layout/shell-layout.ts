@@ -7,6 +7,13 @@ import {
   type OnInit,
   viewChild,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -20,7 +27,19 @@ import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-shell-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TimerWidget],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TimerWidget,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './shell-layout.html',
   styleUrl: './shell-layout.scss',
   host: { '(document:keydown)': 'onKeydown($event)' },
@@ -38,6 +57,18 @@ export class ShellLayout implements OnInit {
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
   );
   protected readonly user = this.auth.user;
+  protected readonly navigation = [
+    { path: '/', label: 'Dashboard', icon: 'space_dashboard', exact: true },
+    { path: '/today', label: 'Hoje', icon: 'today', exact: false },
+    { path: '/focus', label: 'Foco', icon: 'timer', exact: false },
+    { path: '/tasks', label: 'Tarefas', icon: 'checklist', exact: false },
+    { path: '/calendar', label: 'Calendário', icon: 'calendar_month', exact: false },
+    { path: '/kpis', label: 'KPIs', icon: 'monitoring', exact: false },
+    { path: '/goals', label: 'Metas', icon: 'flag', exact: false },
+    { path: '/time', label: 'Tempo', icon: 'schedule', exact: false },
+    { path: '/organization', label: 'Organização', icon: 'folder_open', exact: false },
+    { path: '/settings', label: 'Configurações', icon: 'settings', exact: false },
+  ];
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   constructor() {

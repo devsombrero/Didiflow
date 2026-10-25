@@ -1,49 +1,69 @@
-// Design tokens. Light theme is the default; dark applies via
-// [data-theme='dark'] or the OS preference when no theme is forced.
-:root {
+@use '@angular/material' as mat;
+
+// ---------------------------------------------------------------------------
+// Angular Material (M3). theme-type: color-scheme emits light-dark() values,
+// so the theme follows the CSS color-scheme set below: the OS preference by
+// default, or [data-theme] when the user forces light/dark in Settings.
+// ---------------------------------------------------------------------------
+html {
   color-scheme: light;
-  --color-bg: #f6f7f9;
-  --color-surface: #ffffff;
-  --color-border: #e2e5ea;
-  --color-text: #1b1f24;
-  --color-text-muted: #5b6470;
-  --color-primary: #3157d5;
-  --color-primary-contrast: #ffffff;
-  --color-success: #1f8a4c;
-  --color-warning: #b26a00;
-  --color-danger: #c62828;
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$violet-palette,
+        theme-type: color-scheme,
+      ),
+      typography: (
+        plain-family: "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
+        brand-family: "'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif",
+      ),
+      density: -1,
+    )
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) {
+    color-scheme: dark;
+  }
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+// ---------------------------------------------------------------------------
+// App tokens mapped onto the Material system tokens, so custom components
+// (charts, calendar, badges) stay in step with the theme in both modes.
+// ---------------------------------------------------------------------------
+:root {
+  --color-bg: var(--mat-sys-surface);
+  --color-surface: var(--mat-sys-surface-container-low);
+  --color-surface-high: var(--mat-sys-surface-container);
+  --color-border: var(--mat-sys-outline-variant);
+  --color-text: var(--mat-sys-on-surface);
+  --color-text-muted: var(--mat-sys-on-surface-variant);
+  --color-primary: var(--mat-sys-primary);
+  --color-primary-contrast: var(--mat-sys-on-primary);
+  --color-success: light-dark(#1f7a44, #5fd08f);
+  --color-warning: light-dark(#8f5400, #f0a83a);
+  --color-danger: var(--mat-sys-error);
+  --radius-sm: 8px;
+  --radius-md: 16px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
-  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
-}
 
-@mixin dark-tokens {
-  color-scheme: dark;
-  --color-bg: #121418;
-  --color-surface: #1b1e24;
-  --color-border: #2c313a;
-  --color-text: #e6e8eb;
-  --color-text-muted: #9aa3ae;
-  --color-primary: #7b9bff;
-  --color-primary-contrast: #0d1020;
-  --color-success: #4cc784;
-  --color-warning: #f0a83a;
-  --color-danger: #ff6b6b;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    @include dark-tokens;
-  }
-}
-
-:root[data-theme='dark'] {
-  @include dark-tokens;
+  // Chart palette (dataviz reference palette, validated for both surfaces).
+  --series-1: light-dark(#2a78d6, #3987e5);
+  --series-2: light-dark(#eb6834, #d95926);
+  --series-3: light-dark(#1baf7a, #199e70);
+  --chart-grid: var(--mat-sys-outline-variant);
+  --chart-axis: var(--mat-sys-outline);
+  --chart-ink-muted: var(--mat-sys-on-surface-variant);
 }
 
 *,
@@ -59,109 +79,68 @@ body {
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.5;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--mat-sys-primary);
   outline-offset: 2px;
 }
 
-// ---------------------------------------------------------------------------
-// Base components shared by every feature
-// ---------------------------------------------------------------------------
-h1,
-h2,
-h3 {
+h1 {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+}
+
+h2 {
   margin: 0 0 var(--space-3);
-  line-height: 1.25;
+  font: var(--mat-sys-title-medium);
+}
+
+h3 {
+  margin: 0 0 var(--space-2);
+  font: var(--mat-sys-title-small);
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--mat-sys-primary);
 }
 
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-6);
+// ---------------------------------------------------------------------------
+// Layout helpers shared by every feature
+// ---------------------------------------------------------------------------
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .muted {
-  color: var(--color-text-muted);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-2);
 }
 
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-4);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-
-  label {
-    font-weight: 600;
-  }
-}
-
-.field--inline {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--space-2);
-
-  label {
-    font-weight: 400;
-  }
-}
-
-.input {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  color: var(--color-text);
-  font: inherit;
-
-  &.ng-invalid.ng-touched {
-    border-color: var(--color-danger);
-  }
-}
-
-.field-hint {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.field-error {
-  font-size: 12px;
-  color: var(--color-danger);
-}
-
-.alert {
-  padding: var(--space-3);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-}
-
-.alert--info {
-  border-color: var(--color-primary);
-  color: var(--color-text);
+  gap: 0 var(--space-4);
 }
 
 .actions {
@@ -171,62 +150,40 @@ a {
   flex-wrap: wrap;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-.btn--primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-primary-contrast);
-}
-
-.btn--link {
-  border-color: transparent;
-  background: none;
-  color: var(--color-primary);
-  padding-inline: 0;
-}
-
-.btn--danger {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
-  color: #fff;
-}
-
-.btn--sm {
-  padding: 2px var(--space-2);
-  font-size: 12px;
-}
-
-.page-header {
+.stack {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: var(--space-4);
-  margin-bottom: var(--space-4);
-  flex-wrap: wrap;
+}
 
-  h1 {
-    margin: 0;
-  }
+mat-form-field,
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.filters mat-form-field,
+.toolbar mat-form-field {
+  width: auto;
+  min-width: 180px;
+}
+
+.mat-mdc-card.section {
+  padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.hint-error {
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
+}
+
+.field-hint {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.field-error {
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
 }
 
 .empty-state {
@@ -238,6 +195,21 @@ a {
   }
 }
 
+.alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+.alert--info {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -247,89 +219,68 @@ a {
   white-space: nowrap;
 }
 
-// Chart tokens (reference palette from the dataviz guidelines, validated
-// against the light and dark surfaces).
-:root {
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --chart-grid: #e1e0d9;
-  --chart-axis: #c3c2b7;
-  --chart-ink-muted: #898781;
+.danger-button {
+  --mat-button-filled-container-color: var(--mat-sys-error);
+  --mat-button-filled-label-text-color: var(--mat-sys-on-error);
+  --mat-button-outlined-label-text-color: var(--mat-sys-error);
+  --mat-button-text-label-text-color: var(--mat-sys-error);
 }
 
-@mixin dark-chart-tokens {
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
-  --chart-grid: #2c2c2a;
-  --chart-axis: #383835;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    @include dark-chart-tokens;
-  }
-}
-
-:root[data-theme='dark'] {
-  @include dark-chart-tokens;
-}
-
-.chip {
-  padding: 2px var(--space-3);
-  border: 1px solid var(--color-border);
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
   border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  cursor: pointer;
-
-  &[aria-pressed='true'] {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    color: var(--color-primary-contrast);
-  }
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-small);
 }
 
-.tag-picker {
+// Toasts (MatSnackBar panel classes)
+.mat-mdc-snack-bar-container.toast--success {
+  --mat-snack-bar-button-color: var(--mat-sys-inverse-primary);
+}
+
+.mat-mdc-snack-bar-container.toast--error {
+  --mat-snack-bar-container-color: var(--mat-sys-error-container);
+  --mat-snack-bar-supporting-text-color: var(--mat-sys-on-error-container);
+  --mat-snack-bar-button-color: var(--mat-sys-on-error-container);
+}
+
+// Native range input used for task progress.
+input[type='range'] {
+  accent-color: var(--mat-sys-primary);
+}
+
+// Auth screens
+.auth-title {
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.auth-links {
   display: flex;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  border: 0;
-  padding: 0;
-  margin: 0;
-
-  legend {
-    font-weight: 600;
-    margin-bottom: var(--space-2);
-  }
 }
 
-.page-header .input {
-  width: auto;
+.auth-footer {
+  text-align: center;
 }
 
-.integrations {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  li {
-    display: grid;
-    grid-template-columns: 140px 120px 1fr;
-    gap: var(--space-3);
-    align-items: center;
-    padding: var(--space-2) 0;
-    border-bottom: 1px solid var(--color-border);
-  }
+// Breathing room between a card title and the first floating field label.
+.mat-mdc-card-header + .mat-mdc-card-content {
+  padding-top: var(--space-4);
 }
 
-.badge-status {
-  font-size: 12px;
-  color: var(--color-text-muted);
+.mat-mdc-card-content.form-row {
+  display: grid;
+}
 
-  &[data-status='manual-links'] {
-    color: var(--color-success);
-  }
+.form-row {
+  row-gap: var(--space-2);
+}
+
+.form {
+  gap: var(--space-3);
 }

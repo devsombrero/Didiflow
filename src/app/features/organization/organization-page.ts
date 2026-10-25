@@ -1,4 +1,6 @@
 import { Component, computed, inject, type OnInit, signal } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
+import { MatTabsModule } from '@angular/material/tabs';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -16,7 +18,7 @@ const MAX_NAME: Record<OrgKind, number> = {
 
 @Component({
   selector: 'app-organization-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, MATERIAL_FORMS, MATERIAL_UI, MatTabsModule],
   templateUrl: './organization-page.html',
   styleUrl: './organization-page.scss',
 })
@@ -27,6 +29,8 @@ export class OrganizationPage implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly kinds = ORG_KINDS;
+  protected readonly tabs: Tab[] = [...ORG_KINDS.map((k) => k.kind), 'requesters'];
+  protected readonly tabIndex = computed(() => this.tabs.indexOf(this.tab()));
   protected readonly tab = signal<Tab>('projects');
   protected readonly editingId = signal<string | null>(null);
   protected readonly busy = signal(false);

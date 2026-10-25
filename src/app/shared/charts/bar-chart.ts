@@ -138,12 +138,19 @@ export class BarChart {
 
   private buildConfig(): ChartConfiguration<'bar'> {
     this.themeVersion();
-    const styles = getComputedStyle(document.documentElement);
-    const token = (name: string) => styles.getPropertyValue(name).trim();
+    // Tokens may be light-dark() expressions; resolve them to a concrete color
+    // through a probe element, since canvas cannot parse CSS functions.
+    const probe = document.createElement('span');
+    document.body.appendChild(probe);
+    const token = (name: string) => {
+      probe.style.color = `var(${name})`;
+      return getComputedStyle(probe).color;
+    };
     const surface = token('--color-surface');
     const muted = token('--chart-ink-muted');
     const grid = token('--chart-grid');
     const axis = token('--chart-axis');
+    const resolved = (name: string) => token(name);
     const { labels, series } = this.data();
     const horizontal = this.horizontal();
     const stacked = this.stacked();
@@ -162,6 +169,9 @@ export class BarChart {
       ticks: { color: muted },
     };
 
+    const colors = new Map(series.map((s) => [s.colorVar, resolved(s.colorVar)]));
+    probe.remove();
+
     return {
       type: 'bar',
       data: {
@@ -169,8 +179,8 @@ export class BarChart {
         datasets: series.map((s) => ({
           label: s.label,
           data: s.values,
-          backgroundColor: token(s.colorVar),
-          hoverBackgroundColor: token(s.colorVar),
+          backgroundColor: colors.get(s.colorVar),
+          hoverBackgroundColor: colors.get(s.colorVar),
           borderRadius: 4,
           borderSkipped: 'start',
           // 2px surface gap between stacked segments.

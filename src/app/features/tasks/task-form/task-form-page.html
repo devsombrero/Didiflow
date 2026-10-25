@@ -4,208 +4,215 @@
 
 @switch (state()) {
   @case ('loading') {
-    <p class="muted" role="status">Carregando…</p>
+    <mat-progress-bar mode="indeterminate" />
   }
   @case ('not-found') {
-    <section class="card empty-state">
-      <p>Tarefa não encontrada.</p>
-      <a class="btn" routerLink="/tasks">Voltar para a lista</a>
-    </section>
+    <mat-card appearance="outlined" class="empty-state">
+      <mat-card-content>
+        <p>Tarefa não encontrada.</p>
+        <a matButton="outlined" routerLink="/tasks">Voltar para a lista</a>
+      </mat-card-content>
+    </mat-card>
   }
   @case ('error') {
-    <div class="alert" role="alert">Não foi possível carregar a tarefa.</div>
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>Não foi possível carregar a tarefa.
+    </div>
   }
   @default {
-    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-      <section class="card form">
-        <h2>Demanda</h2>
-        <div class="field">
-          <label for="title">Título *</label>
-          <input id="title" class="input" formControlName="title" maxlength="200" />
-          @if (form.controls.title.touched && form.controls.title.invalid) {
-            <span class="field-error">Informe um título de até 200 caracteres.</span>
-          }
-        </div>
-        <div class="field">
-          <label for="description">Descrição</label>
-          <textarea
-            id="description"
-            class="input"
-            rows="4"
-            formControlName="description"
-          ></textarea>
-        </div>
-        <div class="field">
-          <label for="priority">Prioridade</label>
-          <select id="priority" class="input" formControlName="priority">
-            @for (priority of priorities; track priority) {
-              <option [value]="priority">{{ priorityLabels[priority] }}</option>
+    <form class="task-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Demanda</mat-card-title></mat-card-header>
+        <mat-card-content class="form">
+          <mat-form-field>
+            <mat-label>Título</mat-label>
+            <input matInput id="title" formControlName="title" maxlength="200" required />
+            <mat-hint align="end">{{ form.controls.title.value.length }}/200</mat-hint>
+            <mat-error>Informe um título de até 200 caracteres.</mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Descrição</mat-label>
+            <textarea matInput id="description" rows="4" formControlName="description"></textarea>
+          </mat-form-field>
+          <mat-form-field class="narrow">
+            <mat-label>Prioridade</mat-label>
+            <mat-select id="priority" formControlName="priority">
+              @for (priority of priorities; track priority) {
+                <mat-option [value]="priority">{{ priorityLabels[priority] }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Organização</mat-card-title></mat-card-header>
+        <mat-card-content class="form">
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Projeto</mat-label>
+              <mat-select id="project_id" formControlName="project_id">
+                <mat-option value="">Sem projeto</mat-option>
+                @for (project of projectOptions(); track project.id) {
+                  <mat-option [value]="project.id">{{ project.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Categoria</mat-label>
+              <mat-select id="category_id" formControlName="category_id">
+                <mat-option value="">Sem categoria</mat-option>
+                @for (category of org.items().categories; track category.id) {
+                  <mat-option [value]="category.id">{{ category.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Contexto de trabalho</mat-label>
+              <mat-select id="context_id" formControlName="context_id">
+                <mat-option value="">Sem contexto</mat-option>
+                @for (context of org.items().work_contexts; track context.id) {
+                  <mat-option [value]="context.id">{{ context.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="tag-picker">
+            <span class="tag-picker__label">Tags</span>
+            @if (org.items().tags.length) {
+              <mat-chip-listbox multiple aria-label="Tags">
+                @for (tag of org.items().tags; track tag.id) {
+                  <mat-chip-option
+                    [selected]="selectedTags().includes(tag.id)"
+                    (selectionChange)="toggleTag(tag.id)"
+                  >
+                    {{ tag.name }}
+                  </mat-chip-option>
+                }
+              </mat-chip-listbox>
+            } @else {
+              <span class="field-hint">
+                Nenhuma tag cadastrada. Crie tags em <a routerLink="/organization">Organização</a>.
+              </span>
             }
-          </select>
-        </div>
-      </section>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-      <section class="card form">
-        <h2>Organização</h2>
-        <div class="form-row">
-          <div class="field">
-            <label for="project_id">Projeto</label>
-            <select id="project_id" class="input" formControlName="project_id">
-              <option value="">Sem projeto</option>
-              @for (project of projectOptions(); track project.id) {
-                <option [value]="project.id">{{ project.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="field">
-            <label for="category_id">Categoria</label>
-            <select id="category_id" class="input" formControlName="category_id">
-              <option value="">Sem categoria</option>
-              @for (category of org.items().categories; track category.id) {
-                <option [value]="category.id">{{ category.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="field">
-            <label for="context_id">Contexto de trabalho</label>
-            <select id="context_id" class="input" formControlName="context_id">
-              <option value="">Sem contexto</option>
-              @for (context of org.items().work_contexts; track context.id) {
-                <option [value]="context.id">{{ context.name }}</option>
-              }
-            </select>
-          </div>
-        </div>
-        <fieldset class="tag-picker">
-          <legend>Tags</legend>
-          @for (tag of org.items().tags; track tag.id) {
-            <button
-              type="button"
-              class="chip"
-              [attr.aria-pressed]="selectedTags().includes(tag.id)"
-              (click)="toggleTag(tag.id)"
-            >
-              {{ tag.name }}
-            </button>
-          } @empty {
-            <span class="field-hint">
-              Nenhuma tag cadastrada. Crie tags em <a routerLink="/organization">Organização</a>.
-            </span>
-          }
-        </fieldset>
-      </section>
-
-      <section class="card form">
-        <h2>Solicitação</h2>
-        <div class="form-row">
-          <div class="field">
-            <label for="requested_at">Data da solicitação</label>
-            <input id="requested_at" class="input" type="date" formControlName="requested_at" />
-          </div>
-          <div class="field">
-            <label for="requester_name">Solicitante</label>
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Solicitação</mat-card-title></mat-card-header>
+        <mat-card-content class="form-row">
+          <mat-form-field>
+            <mat-label>Data da solicitação</mat-label>
+            <input matInput id="requested_at" type="date" formControlName="requested_at" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Solicitante</mat-label>
             <input
+              matInput
               id="requester_name"
-              class="input"
               formControlName="requester_name"
-              list="requesters"
-              autocomplete="off"
+              [matAutocomplete]="requesters"
             />
-            <datalist id="requesters">
+            <mat-autocomplete #requesters="matAutocomplete">
               @for (requester of org.requesters(); track requester.name) {
-                <option [value]="requester.name"></option>
+                <mat-option [value]="requester.name">{{ requester.name }}</mat-option>
               }
-            </datalist>
-          </div>
-        </div>
-      </section>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
 
-      <section class="card form">
-        <h2>Vínculos</h2>
-        <div class="field field--inline">
-          <input id="has_jira_card" type="checkbox" formControlName="has_jira_card" />
-          <label for="has_jira_card">Possui card no Jira</label>
-        </div>
-        @if (form.controls.has_jira_card.value) {
-          <div class="field">
-            <label for="jira_url">URL do card no Jira *</label>
-            <input
-              id="jira_url"
-              class="input"
-              type="url"
-              formControlName="jira_url"
-              placeholder="https://empresa.atlassian.net/browse/ABC-123"
-            />
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Vínculos</mat-card-title></mat-card-header>
+        <mat-card-content class="form">
+          <mat-checkbox id="has_jira_card" formControlName="has_jira_card">
+            Possui card no Jira
+          </mat-checkbox>
+          @if (form.controls.has_jira_card.value) {
+            <mat-form-field>
+              <mat-label>URL do card no Jira</mat-label>
+              <input
+                matInput
+                id="jira_url"
+                type="url"
+                formControlName="jira_url"
+                placeholder="https://empresa.atlassian.net/browse/ABC-123"
+              />
+              <mat-icon matSuffix>link</mat-icon>
+            </mat-form-field>
             @if (form.errors?.['jiraUrl'] && form.controls.jira_url.touched) {
-              <span class="field-error">Informe uma URL começando com https://.</span>
+              <span class="hint-error">Informe uma URL começando com https://.</span>
             }
-          </div>
-        }
-        <div class="field field--inline">
-          <input id="has_slack_thread" type="checkbox" formControlName="has_slack_thread" />
-          <label for="has_slack_thread">Possui thread no Slack</label>
-        </div>
-        @if (form.controls.has_slack_thread.value) {
-          <div class="field">
-            <label for="slack_thread_url">URL da thread no Slack *</label>
-            <input
-              id="slack_thread_url"
-              class="input"
-              type="url"
-              formControlName="slack_thread_url"
-              placeholder="https://empresa.slack.com/archives/…"
-            />
+          }
+          <mat-checkbox id="has_slack_thread" formControlName="has_slack_thread">
+            Possui thread no Slack
+          </mat-checkbox>
+          @if (form.controls.has_slack_thread.value) {
+            <mat-form-field>
+              <mat-label>URL da thread no Slack</mat-label>
+              <input
+                matInput
+                id="slack_thread_url"
+                type="url"
+                formControlName="slack_thread_url"
+                placeholder="https://empresa.slack.com/archives/…"
+              />
+              <mat-icon matSuffix>link</mat-icon>
+            </mat-form-field>
             @if (form.errors?.['slackUrl'] && form.controls.slack_thread_url.touched) {
-              <span class="field-error">Informe uma URL começando com https://.</span>
+              <span class="hint-error">Informe uma URL começando com https://.</span>
             }
-          </div>
-        }
-      </section>
+          }
+        </mat-card-content>
+      </mat-card>
 
-      <section class="card form">
-        <h2>Planejamento</h2>
-        <div class="form-row">
-          <div class="field">
-            <label for="start_date">Data de início</label>
-            <input id="start_date" class="input" type="date" formControlName="start_date" />
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Planejamento</mat-card-title></mat-card-header>
+        <mat-card-content class="form">
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Data de início</mat-label>
+              <input matInput id="start_date" type="date" formControlName="start_date" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Data prevista de entrega</mat-label>
+              <input matInput id="due_date" type="date" formControlName="due_date" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Estimativa de esforço (horas)</mat-label>
+              <input
+                matInput
+                id="estimated_hours"
+                type="number"
+                min="0"
+                step="0.25"
+                formControlName="estimated_hours"
+              />
+              <mat-error>Informe um valor positivo.</mat-error>
+            </mat-form-field>
           </div>
-          <div class="field">
-            <label for="due_date">Data prevista de entrega</label>
-            <input id="due_date" class="input" type="date" formControlName="due_date" />
-            @if (form.errors?.['dueBeforeStart']) {
-              <span class="field-error">A entrega não pode ser anterior ao início.</span>
-            }
-          </div>
-          <div class="field">
-            <label for="estimated_hours">Estimativa de esforço (horas)</label>
-            <input
-              id="estimated_hours"
-              class="input"
-              type="number"
-              min="0"
-              step="0.25"
-              formControlName="estimated_hours"
-            />
-            @if (form.controls.estimated_hours.invalid) {
-              <span class="field-error">Informe um valor positivo.</span>
-            }
-          </div>
-        </div>
-      </section>
+          @if (form.errors?.['dueBeforeStart']) {
+            <span class="hint-error">A entrega não pode ser anterior ao início.</span>
+          }
+        </mat-card-content>
+      </mat-card>
 
-      <section class="card form">
-        <h2>Observações</h2>
-        <div class="field">
-          <label for="notes" class="sr-only">Observações</label>
-          <textarea id="notes" class="input" rows="3" formControlName="notes"></textarea>
-        </div>
-      </section>
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Observações</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <mat-form-field>
+            <mat-label>Observações</mat-label>
+            <textarea matInput id="notes" rows="3" formControlName="notes"></textarea>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
 
-      <div class="actions">
-        <button class="btn btn--primary" type="submit" [disabled]="saving()">
-          {{ saving() ? 'Salvando…' : 'Salvar' }}
+      <div class="actions form-actions">
+        <button matButton="filled" type="submit" [disabled]="saving()">
+          <mat-icon>save</mat-icon> {{ saving() ? 'Salvando…' : 'Salvar' }}
         </button>
-        <a class="btn" [routerLink]="id() ? ['/tasks', id()] : ['/tasks']">Cancelar</a>
+        <a matButton="outlined" [routerLink]="id() ? ['/tasks', id()] : ['/tasks']">Cancelar</a>
       </div>
     </form>
   }

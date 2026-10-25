@@ -5,11 +5,12 @@ import type { Task } from '../tasks/task.model';
 import { formatDuration, type TimeEntry, totalSeconds } from './time-calc';
 import { describeTimeError } from './time-errors';
 import { TimerStore, TimeService } from './time.service';
+import { MATERIAL_FORMS } from '../../shared/material';
 
 /** Time spent on one task, compared with its estimate, plus a timer shortcut. */
 @Component({
   selector: 'app-task-time-panel',
-  imports: [RouterLink],
+  imports: [RouterLink, MATERIAL_FORMS],
   template: `
     <dl class="facts">
       <dt>Registrado</dt>
@@ -23,17 +24,17 @@ import { TimerStore, TimeService } from './time.service';
     </dl>
     <div class="actions">
       @if (runningHere()) {
-        <button type="button" class="btn btn--primary" [disabled]="timer.busy()" (click)="stop()">
-          Finalizar cronômetro
+        <button matButton="filled" type="button" [disabled]="timer.busy()" (click)="stop()">
+          <mat-icon>stop_circle</mat-icon> Finalizar cronômetro
         </button>
       } @else if (!timer.running()) {
-        <button type="button" class="btn" [disabled]="timer.busy()" (click)="start()">
-          Iniciar cronômetro
+        <button matButton="tonal" type="button" [disabled]="timer.busy()" (click)="start()">
+          <mat-icon>play_circle</mat-icon> Iniciar cronômetro
         </button>
       } @else {
         <span class="field-hint">Há outro cronômetro em andamento.</span>
       }
-      <a class="btn btn--link" routerLink="/time">Registrar manualmente</a>
+      <a matButton routerLink="/time">Registrar manualmente</a>
     </div>
   `,
   styles: `

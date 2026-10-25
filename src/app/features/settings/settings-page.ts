@@ -1,4 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
@@ -21,8 +22,9 @@ export const THEMES: readonly { value: ThemePreference; label: string }[] = [
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './settings-page.html',
+  styleUrl: './settings-page.scss',
 })
 export class SettingsPage {
   private readonly profileService = inject(ProfileService);

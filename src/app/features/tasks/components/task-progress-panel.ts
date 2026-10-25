@@ -5,34 +5,33 @@ import { SELECTABLE_STATUSES, STATUS_LABELS, type Task, type TaskStatus } from '
 import { canChangeStatus, canComplete, canEditProgress } from '../task-rules';
 import { TasksService } from '../tasks.service';
 import { ProgressBar } from './task-badges';
+import { MATERIAL_FORMS } from '../../../shared/material';
 
 /** Status selector, manual progress slider and "complete" shortcut for one task. */
 @Component({
   selector: 'app-task-progress-panel',
-  imports: [ProgressBar],
+  imports: [ProgressBar, MATERIAL_FORMS],
   template: `
     <div class="panel">
-      <div class="field">
-        <label for="task-status">Status</label>
-        <select
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <mat-select
           id="task-status"
-          class="input"
+          [value]="task().status"
           [disabled]="!canChangeStatus() || busy()"
-          (change)="changeStatus($any($event.target).value)"
+          (selectionChange)="changeStatus($event.value)"
         >
           @if (task().status === 'cancelled') {
-            <option selected>{{ labels.cancelled }}</option>
+            <mat-option value="cancelled">{{ labels.cancelled }}</mat-option>
           }
           @for (status of statuses; track status) {
-            <option [value]="status" [selected]="status === task().status">
-              {{ labels[status] }}
-            </option>
+            <mat-option [value]="status">{{ labels[status] }}</mat-option>
           }
-        </select>
-      </div>
+        </mat-select>
+      </mat-form-field>
 
       <div class="field">
-        <label for="task-progress">Progresso</label>
+        <label for="task-progress" class="field__label">Progresso</label>
         @if (canEditProgress()) {
           <div class="slider">
             <input
@@ -56,13 +55,8 @@ import { ProgressBar } from './task-badges';
       </div>
 
       @if (canComplete()) {
-        <button
-          type="button"
-          class="btn btn--primary"
-          [disabled]="busy()"
-          (click)="changeStatus('done')"
-        >
-          Marcar como concluída
+        <button matButton="filled" type="button" [disabled]="busy()" (click)="changeStatus('done')">
+          <mat-icon>task_alt</mat-icon> Marcar como concluída
         </button>
       }
     </div>
@@ -71,7 +65,17 @@ import { ProgressBar } from './task-badges';
     .panel {
       display: flex;
       flex-direction: column;
-      gap: var(--space-4);
+      gap: var(--space-3);
+      padding-top: var(--space-2);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .field__label {
+      font: var(--mat-sys-label-large);
+      color: var(--mat-sys-on-surface-variant);
     }
     .slider {
       display: flex;
@@ -84,7 +88,7 @@ import { ProgressBar } from './task-badges';
     .slider output {
       min-width: 4ch;
       text-align: right;
-      font-weight: 600;
+      font: var(--mat-sys-title-small);
     }
   `,
 })

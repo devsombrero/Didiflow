@@ -2,60 +2,34 @@
   <h1>Busca</h1>
 </header>
 
-<div class="search-bar">
-  <label class="sr-only" for="search-input">Buscar tarefas</label>
+<mat-form-field class="search-field">
+  <mat-icon matPrefix>search</mat-icon>
+  <mat-label>Título, descrição, solicitante, projeto, tags ou observações</mat-label>
   <input
-    id="search-input"
-    class="input"
-    type="search"
     #searchInput
-    placeholder="Título, descrição, solicitante, projeto, tags ou observações"
+    matInput
+    id="search-input"
+    type="search"
+    aria-label="Buscar tarefas"
     [value]="query()"
     (input)="onInput($any($event.target).value)"
   />
-</div>
+</mat-form-field>
 
-<div class="chips" role="group" aria-label="Filtros rápidos">
-  <button
-    type="button"
-    class="chip"
-    [attr.aria-pressed]="filter() === 'all'"
-    (click)="filter.set('all')"
+<div class="chips">
+  <mat-chip-listbox
+    aria-label="Filtros rápidos"
+    [value]="filter()"
+    (change)="filter.set($event.value ?? 'all')"
   >
-    Todas
-  </button>
-  <button
-    type="button"
-    class="chip"
-    [attr.aria-pressed]="filter() === 'open'"
-    (click)="filter.set('open')"
-  >
-    Abertas
-  </button>
-  <button
-    type="button"
-    class="chip"
-    [attr.aria-pressed]="filter() === 'done'"
-    (click)="filter.set('done')"
-  >
-    Concluídas
-  </button>
-  <button
-    type="button"
-    class="chip"
-    [attr.aria-pressed]="filter() === 'important'"
-    (click)="filter.set('important')"
-  >
-    Alta prioridade
-  </button>
-  <label class="archived">
-    <input
-      type="checkbox"
-      [checked]="includeArchived()"
-      (change)="includeArchived.set($any($event.target).checked)"
-    />
+    <mat-chip-option value="all">Todas</mat-chip-option>
+    <mat-chip-option value="open">Abertas</mat-chip-option>
+    <mat-chip-option value="done">Concluídas</mat-chip-option>
+    <mat-chip-option value="important">Alta prioridade</mat-chip-option>
+  </mat-chip-listbox>
+  <mat-slide-toggle [checked]="includeArchived()" (change)="includeArchived.set($event.checked)">
     Incluir arquivadas
-  </label>
+  </mat-slide-toggle>
 </div>
 
 @switch (state()) {
@@ -63,7 +37,7 @@
     <p class="muted">Digite para buscar. Dica: use Ctrl+K em qualquer tela.</p>
   }
   @case ('error') {
-    <div class="alert" role="alert">{{ errorMessage() }}</div>
+    <div class="alert" role="alert"><mat-icon>error</mat-icon>{{ errorMessage() }}</div>
   }
   @default {
     <p class="muted" role="status" [attr.aria-busy]="state() === 'loading'">
@@ -71,41 +45,49 @@
     </p>
     <ul class="results">
       @for (row of filtered(); track row.id) {
-        <li class="card result">
-          <a class="result__title" [routerLink]="['/tasks', row.id]">
-            <app-highlighted-text [text]="row.title" [terms]="terms()" />
-          </a>
-          <div class="result__meta">
-            <app-status-badge [status]="row.status" />
-            <app-priority-badge [priority]="row.priority" />
-            @if (row.due_date) {
-              <span>Entrega {{ row.due_date | appDate }}</span>
-              @if (deadline(row); as label) {
-                <span class="deadline">{{ label }}</span>
+        <li>
+          <mat-card appearance="outlined" class="result">
+            <mat-card-content>
+              <a class="result__title" [routerLink]="['/tasks', row.id]">
+                <app-highlighted-text [text]="row.title" [terms]="terms()" />
+              </a>
+              <div class="result__meta">
+                <app-status-badge [status]="row.status" />
+                <app-priority-badge [priority]="row.priority" />
+                @if (row.due_date) {
+                  <span>Entrega {{ row.due_date | appDate }}</span>
+                  @if (deadline(row); as label) {
+                    <span class="deadline">{{ label }}</span>
+                  }
+                }
+                @if (row.archived_at) {
+                  <span class="tag"><mat-icon inline>archive</mat-icon> Arquivada</span>
+                }
+              </div>
+              @if (snippet(row); as text) {
+                <p class="result__snippet">
+                  <app-highlighted-text [text]="text" [terms]="terms()" />
+                </p>
               }
-            }
-            @if (row.archived_at) {
-              <span class="muted">Arquivada</span>
-            }
-          </div>
-          @if (snippet(row); as text) {
-            <p class="result__snippet"><app-highlighted-text [text]="text" [terms]="terms()" /></p>
-          }
-          <div class="result__meta muted">
-            @if (row.project_name) {
-              <span
-                >Projeto: <app-highlighted-text [text]="row.project_name" [terms]="terms()"
-              /></span>
-            }
-            @if (row.requester_name) {
-              <span
-                >Solicitante: <app-highlighted-text [text]="row.requester_name" [terms]="terms()"
-              /></span>
-            }
-            @for (tag of row.tag_names; track tag) {
-              <span class="tag"><app-highlighted-text [text]="tag" [terms]="terms()" /></span>
-            }
-          </div>
+              <div class="result__meta muted">
+                @if (row.project_name) {
+                  <span
+                    ><mat-icon inline>folder</mat-icon>
+                    <app-highlighted-text [text]="row.project_name" [terms]="terms()"
+                  /></span>
+                }
+                @if (row.requester_name) {
+                  <span
+                    ><mat-icon inline>person</mat-icon>
+                    <app-highlighted-text [text]="row.requester_name" [terms]="terms()"
+                  /></span>
+                }
+                @for (tag of row.tag_names; track tag) {
+                  <span class="tag"><app-highlighted-text [text]="tag" [terms]="terms()" /></span>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
         </li>
       } @empty {
         @if (state() === 'ready') {

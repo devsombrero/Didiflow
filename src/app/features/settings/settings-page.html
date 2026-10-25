@@ -1,138 +1,135 @@
 <header class="page-header">
   <h1>Configurações</h1>
-  <a class="btn" routerLink="/export">Exportar dados</a>
+  <a matButton="outlined" routerLink="/export"><mat-icon>download</mat-icon> Exportar e backup</a>
 </header>
 
 @if (!loaded()) {
-  <p class="muted" role="status">Carregando…</p>
+  <mat-progress-bar mode="indeterminate" />
 } @else {
-  <div class="form">
-    <section class="card">
-      <h2>Perfil</h2>
-      <form class="form" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
-        <div class="field">
-          <label for="display_name">Nome de exibição</label>
-          <input id="display_name" class="input" formControlName="display_name" />
-          @if (
-            profileForm.controls.display_name.touched && profileForm.controls.display_name.invalid
-          ) {
-            <span class="field-error">Informe um nome de até 80 caracteres.</span>
-          }
-        </div>
-        <div class="actions">
-          <button
-            class="btn btn--primary"
-            type="submit"
-            [disabled]="savingProfile() || profileForm.pristine"
-          >
-            Salvar perfil
-          </button>
-        </div>
-      </form>
-    </section>
+  <div class="settings">
+    <mat-card appearance="outlined" class="section">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>person</mat-icon>
+        <mat-card-title>Perfil</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form class="form" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+          <mat-form-field>
+            <mat-label>Nome de exibição</mat-label>
+            <input matInput id="display_name" formControlName="display_name" />
+            <mat-error>Informe um nome de até 80 caracteres.</mat-error>
+          </mat-form-field>
+          <div class="actions">
+            <button
+              matButton="filled"
+              type="submit"
+              [disabled]="savingProfile() || profileForm.pristine"
+            >
+              Salvar perfil
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
 
-    <section class="card">
-      <h2>Preferências</h2>
-      <form class="form" [formGroup]="preferencesForm" (ngSubmit)="savePreferences()" novalidate>
-        <div class="form-row">
-          <div class="field">
-            <label for="theme">Tema</label>
-            <select id="theme" class="input" formControlName="theme">
-              @for (theme of themes; track theme.value) {
-                <option [value]="theme.value">{{ theme.label }}</option>
-              }
-            </select>
+    <mat-card appearance="outlined" class="section">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>tune</mat-icon>
+        <mat-card-title>Preferências</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form class="form" [formGroup]="preferencesForm" (ngSubmit)="savePreferences()" novalidate>
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Tema</mat-label>
+              <mat-select id="theme" formControlName="theme">
+                @for (theme of themes; track theme.value) {
+                  <mat-option [value]="theme.value">{{ theme.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Fuso horário</mat-label>
+              <mat-select id="timezone" formControlName="timezone">
+                @for (zone of timezones(); track zone) {
+                  <mat-option [value]="zone">{{ zone }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Formato de data</mat-label>
+              <mat-select id="date_format" formControlName="date_format">
+                @for (format of dateFormats; track format.value) {
+                  <mat-option [value]="format.value">{{ format.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           </div>
-          <div class="field">
-            <label for="timezone">Fuso horário</label>
-            <select id="timezone" class="input" formControlName="timezone">
-              @for (zone of timezones(); track zone) {
-                <option [value]="zone">{{ zone }}</option>
-              }
-            </select>
-          </div>
-          <div class="field">
-            <label for="date_format">Formato de data</label>
-            <select id="date_format" class="input" formControlName="date_format">
-              @for (format of dateFormats; track format.value) {
-                <option [value]="format.value">{{ format.label }}</option>
-              }
-            </select>
-          </div>
-        </div>
 
-        <fieldset class="form">
-          <legend><strong>Notificações</strong></legend>
-          <div class="field field--inline">
+          <h3>Notificações</h3>
+          <mat-slide-toggle id="notifications_enabled" formControlName="notifications_enabled">
+            Ativar notificações
+          </mat-slide-toggle>
+          <mat-slide-toggle id="notify_due_soon" formControlName="notify_due_soon">
+            Avisar sobre vencimentos próximos
+          </mat-slide-toggle>
+          <mat-slide-toggle id="notify_overdue" formControlName="notify_overdue">
+            Alertar sobre tarefas atrasadas
+          </mat-slide-toggle>
+          <mat-form-field class="narrow">
+            <mat-label>Antecedência do aviso (dias)</mat-label>
             <input
-              id="notifications_enabled"
-              type="checkbox"
-              formControlName="notifications_enabled"
-            />
-            <label for="notifications_enabled">Ativar notificações</label>
-          </div>
-          <div class="field field--inline">
-            <input id="notify_due_soon" type="checkbox" formControlName="notify_due_soon" />
-            <label for="notify_due_soon">Avisar sobre vencimentos próximos</label>
-          </div>
-          <div class="field field--inline">
-            <input id="notify_overdue" type="checkbox" formControlName="notify_overdue" />
-            <label for="notify_overdue">Alertar sobre tarefas atrasadas</label>
-          </div>
-          <div class="field">
-            <label for="due_soon_days">Antecedência do aviso de vencimento (dias)</label>
-            <input
+              matInput
               id="due_soon_days"
-              class="input"
               type="number"
               min="0"
               max="30"
               formControlName="due_soon_days"
             />
-            @if (preferencesForm.controls.due_soon_days.invalid) {
-              <span class="field-error">Informe um valor entre 0 e 30.</span>
-            }
-          </div>
-          <span class="field-hint">
+            <mat-error>Informe um valor entre 0 e 30.</mat-error>
+          </mat-form-field>
+          <p class="field-hint">
             As notificações aparecem apenas enquanto o DidiFlow estiver aberto (inclusive
             minimizado). Com o aplicativo fechado, nenhum aviso é exibido.
-          </span>
-          <div>
-            <button type="button" class="btn btn--sm" (click)="testNotification()">
-              Testar notificação
+          </p>
+          <div class="actions">
+            <button
+              matButton="filled"
+              type="submit"
+              [disabled]="savingPreferences() || preferencesForm.pristine"
+            >
+              Salvar preferências
+            </button>
+            <button matButton="outlined" type="button" (click)="testNotification()">
+              <mat-icon>notifications</mat-icon> Testar notificação
             </button>
           </div>
-        </fieldset>
+        </form>
+      </mat-card-content>
+    </mat-card>
 
-        <div class="actions">
-          <button
-            class="btn btn--primary"
-            type="submit"
-            [disabled]="savingPreferences() || preferencesForm.pristine"
-          >
-            Salvar preferências
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Integrações</h2>
-      <p class="muted">
-        Nesta versão, Jira e Slack funcionam por links cadastrados manualmente em cada tarefa. As
-        demais integrações estão planejadas; nenhuma conta externa é acessada pelo aplicativo.
-      </p>
-      <ul class="integrations">
-        @for (item of integrations; track item.id) {
-          <li>
-            <strong>{{ item.name }}</strong>
-            <span class="badge-status" [attr.data-status]="item.status">
-              {{ item.status === 'manual-links' ? 'Links manuais' : 'Planejada' }}
-            </span>
-            <span class="muted">{{ item.description }}</span>
-          </li>
-        }
-      </ul>
-    </section>
+    <mat-card appearance="outlined" class="section">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>extension</mat-icon>
+        <mat-card-title>Integrações</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="muted">
+          Nesta versão, Jira e Slack funcionam por links cadastrados manualmente em cada tarefa. As
+          demais integrações estão planejadas; nenhuma conta externa é acessada pelo aplicativo.
+        </p>
+        <ul class="integrations">
+          @for (item of integrations; track item.id) {
+            <li>
+              <strong>{{ item.name }}</strong>
+              <span class="badge-status" [attr.data-status]="item.status">
+                {{ item.status === 'manual-links' ? 'Links manuais' : 'Planejada' }}
+              </span>
+              <span class="muted">{{ item.description }}</span>
+            </li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
   </div>
 }

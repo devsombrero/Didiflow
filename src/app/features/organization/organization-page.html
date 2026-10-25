@@ -2,118 +2,117 @@
   <h1>Organização</h1>
 </header>
 
-<div class="tabs" role="tablist" aria-label="Tipos de organização">
-  @for (k of kinds; track k.kind) {
-    <button
-      type="button"
-      role="tab"
-      [attr.aria-selected]="tab() === k.kind"
-      (click)="selectTab(k.kind)"
-    >
-      {{ k.label }}
-    </button>
-  }
-  <button
-    type="button"
-    role="tab"
-    [attr.aria-selected]="tab() === 'requesters'"
-    (click)="selectTab('requesters')"
-  >
-    Solicitantes
-  </button>
-</div>
-
 @switch (state()) {
   @case ('loading') {
-    <p class="muted" role="status">Carregando…</p>
+    <mat-progress-bar mode="indeterminate" />
   }
   @case ('error') {
-    <div class="alert" role="alert">Não foi possível carregar a organização.</div>
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>Não foi possível carregar a organização.
+    </div>
   }
   @default {
-    <section class="card" role="tabpanel">
-      @if (tab() === 'requesters') {
-        <p class="muted">
-          Solicitantes são registrados no campo "Solicitante" de cada tarefa. A lista mostra quantas
-          tarefas ativas cada pessoa solicitou.
-        </p>
-        @if (store.requesters().length === 0) {
-          <p class="empty-state muted">Nenhum solicitante registrado ainda.</p>
-        } @else {
-          <ul class="items">
-            @for (requester of store.requesters(); track requester.name) {
-              <li class="item">
-                <span class="item__name">{{ requester.name }}</span>
-                <span class="muted">{{ requester.task_count }} tarefa(s)</span>
-              </li>
-            }
-          </ul>
+    <mat-card appearance="outlined">
+      <mat-tab-group
+        animationDuration="0ms"
+        [selectedIndex]="tabIndex()"
+        (selectedIndexChange)="selectTab(tabs[$event])"
+      >
+        @for (k of kinds; track k.kind) {
+          <mat-tab [label]="k.label" />
         }
-      } @else {
-        <form class="item-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
-          <label class="sr-only" for="org-name">Nome</label>
-          <input
-            id="org-name"
-            class="input"
-            formControlName="name"
-            [attr.maxlength]="maxName()"
-            [placeholder]="(editingId() ? 'Renomear ' : 'Novo(a) ') + current()?.singular"
-          />
-          <label class="sr-only" for="org-color">Cor</label>
-          <input id="org-color" class="color" type="color" formControlName="color" />
-          @if (tab() === 'projects') {
-            <label class="sr-only" for="org-description">Descrição</label>
-            <input
-              id="org-description"
-              class="input"
-              formControlName="description"
-              placeholder="Descrição (opcional)"
-            />
-          }
-          <button class="btn btn--primary" type="submit" [disabled]="busy()">
-            {{ editingId() ? 'Salvar' : 'Adicionar' }}
-          </button>
-          @if (editingId()) {
-            <button class="btn" type="button" (click)="cancelEdit()">Cancelar</button>
-          }
-        </form>
-        @if (form.controls.name.touched && form.controls.name.invalid) {
-          <p class="field-error">Informe um nome de até {{ maxName() }} caracteres.</p>
-        }
+        <mat-tab label="Solicitantes" />
+      </mat-tab-group>
 
-        @if (list().length === 0) {
-          <p class="empty-state muted">Nenhum(a) {{ current()?.singular }} cadastrado(a).</p>
+      <mat-card-content class="panel">
+        @if (tab() === 'requesters') {
+          <p class="muted">
+            Solicitantes são registrados no campo "Solicitante" de cada tarefa. A lista mostra
+            quantas tarefas ativas cada pessoa solicitou.
+          </p>
+          @if (store.requesters().length === 0) {
+            <p class="empty-state muted">Nenhum solicitante registrado ainda.</p>
+          } @else {
+            <ul class="items">
+              @for (requester of store.requesters(); track requester.name) {
+                <li class="item">
+                  <mat-icon>person</mat-icon>
+                  <span class="item__name">{{ requester.name }}</span>
+                  <span class="muted">{{ requester.task_count }} tarefa(s)</span>
+                </li>
+              }
+            </ul>
+          }
         } @else {
-          <ul class="items">
-            @for (item of list(); track item.id) {
-              <li class="item" [class.item--archived]="item.archived_at">
-                <span
-                  class="swatch"
-                  [style.background]="item.color ?? 'var(--color-border)'"
-                ></span>
-                <span class="item__name">
-                  {{ item.name }}
-                  @if (item.archived_at) {
-                    <span class="muted">(arquivado)</span>
-                  }
-                  @if (item.description) {
-                    <span class="item__description muted">{{ item.description }}</span>
-                  }
-                </span>
-                <span class="actions">
-                  <button type="button" class="btn btn--sm" (click)="edit(item)">Editar</button>
+          <form class="item-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+            <mat-form-field class="item-form__name">
+              <mat-label>{{
+                (editingId() ? 'Renomear ' : 'Novo(a) ') + current()?.singular
+              }}</mat-label>
+              <input matInput id="org-name" formControlName="name" [attr.maxlength]="maxName()" />
+              <mat-error>Informe um nome de até {{ maxName() }} caracteres.</mat-error>
+            </mat-form-field>
+            <label class="color" matTooltip="Cor">
+              <span class="sr-only">Cor</span>
+              <input id="org-color" type="color" formControlName="color" />
+            </label>
+            @if (tab() === 'projects') {
+              <mat-form-field class="item-form__description">
+                <mat-label>Descrição (opcional)</mat-label>
+                <input matInput id="org-description" formControlName="description" />
+              </mat-form-field>
+            }
+            <button matButton="filled" type="submit" [disabled]="busy()">
+              <mat-icon>{{ editingId() ? 'save' : 'add' }}</mat-icon>
+              {{ editingId() ? 'Salvar' : 'Adicionar' }}
+            </button>
+            @if (editingId()) {
+              <button matButton type="button" (click)="cancelEdit()">Cancelar</button>
+            }
+          </form>
+
+          @if (list().length === 0) {
+            <p class="empty-state muted">Nenhum(a) {{ current()?.singular }} cadastrado(a).</p>
+          } @else {
+            <ul class="items">
+              @for (item of list(); track item.id) {
+                <li class="item" [class.item--archived]="item.archived_at">
+                  <span
+                    class="swatch"
+                    [style.background]="item.color ?? 'var(--color-border)'"
+                  ></span>
+                  <span class="item__name">
+                    {{ item.name }}
+                    @if (item.archived_at) {
+                      <span class="muted">(arquivado)</span>
+                    }
+                    @if (item.description) {
+                      <span class="item__description muted">{{ item.description }}</span>
+                    }
+                  </span>
+                  <button matIconButton type="button" aria-label="Editar" (click)="edit(item)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
                   @if (tab() === 'projects') {
-                    <button type="button" class="btn btn--sm" (click)="toggleArchive(item)">
-                      {{ item.archived_at ? 'Reativar' : 'Arquivar' }}
+                    <button
+                      matIconButton
+                      type="button"
+                      [attr.aria-label]="item.archived_at ? 'Reativar' : 'Arquivar'"
+                      [matTooltip]="item.archived_at ? 'Reativar' : 'Arquivar'"
+                      (click)="toggleArchive(item)"
+                    >
+                      <mat-icon>{{ item.archived_at ? 'unarchive' : 'archive' }}</mat-icon>
                     </button>
                   }
-                  <button type="button" class="btn btn--sm" (click)="remove(item)">Excluir</button>
-                </span>
-              </li>
-            }
-          </ul>
+                  <button matIconButton type="button" aria-label="Excluir" (click)="remove(item)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
         }
-      }
-    </section>
+      </mat-card-content>
+    </mat-card>
   }
 }

@@ -4,41 +4,32 @@
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: var(--space-4);
   align-items: start;
-}
-
-.main,
-.side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
 }
 
 .inline-form {
   display: grid;
   grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
-  gap: var(--space-2);
+  gap: 0 var(--space-2);
+  align-items: start;
+
+  button {
+    margin-top: var(--space-2);
+  }
 }
 
 .week-nav {
-  display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-
-  h2 {
-    margin: 0;
-  }
+  gap: var(--space-1);
 }
 
 .day h3 {
   display: flex;
   justify-content: space-between;
-  margin: var(--space-4) 0 var(--space-2);
-  font-size: 14px;
-  color: var(--color-text-muted);
+  margin: var(--space-4) 0 var(--space-1);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .entries {
@@ -51,20 +42,24 @@
     grid-template-columns: 110px minmax(0, 1fr) auto auto;
     gap: var(--space-3);
     align-items: center;
-    padding: var(--space-2) 0;
-    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-1) 0;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
   }
 }
 
 .entries__time {
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .entries__what {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.entries__actions {
+  display: flex;
 }
 
 .totals {
@@ -77,7 +72,7 @@
 
   dd {
     margin: 0;
-    font-weight: 700;
+    font: var(--mat-sys-title-medium);
   }
 }
 

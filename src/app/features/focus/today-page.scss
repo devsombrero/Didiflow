@@ -16,7 +16,7 @@
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-2) 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
   }
 }
 
@@ -26,14 +26,15 @@
 }
 
 .position {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--color-bg);
   display: grid;
   place-items: center;
-  font-weight: 700;
   flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  font: var(--mat-sys-label-large);
 }
 
 .info {
@@ -44,9 +45,13 @@
   gap: 2px;
 
   a {
-    color: var(--color-text);
-    font-weight: 600;
+    color: var(--mat-sys-on-surface);
+    font: var(--mat-sys-title-small);
     text-decoration: none;
+
+    &:hover {
+      color: var(--mat-sys-primary);
+    }
   }
 }
 
@@ -54,11 +59,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-size: 12px;
+  font: var(--mat-sys-body-small);
+}
+
+.row-actions {
+  display: flex;
 }
 
 .reason {
-  font-size: 12px;
+  font: var(--mat-sys-body-small);
+  color: var(--color-warning);
 }
 
 .empty {

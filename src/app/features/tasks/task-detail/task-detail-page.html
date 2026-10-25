@@ -1,19 +1,25 @@
 @switch (state()) {
   @case ('loading') {
-    <p class="muted" role="status">Carregando…</p>
+    <mat-progress-bar mode="indeterminate" />
   }
   @case ('not-found') {
-    <section class="card empty-state">
-      <p>Tarefa não encontrada ou excluída.</p>
-      <a class="btn" routerLink="/tasks">Voltar para a lista</a>
-    </section>
+    <mat-card appearance="outlined" class="empty-state">
+      <mat-card-content>
+        <p>Tarefa não encontrada ou excluída.</p>
+        <a matButton="outlined" routerLink="/tasks">Voltar para a lista</a>
+      </mat-card-content>
+    </mat-card>
   }
   @case ('error') {
-    <div class="alert" role="alert">Não foi possível carregar a tarefa.</div>
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>Não foi possível carregar a tarefa.
+    </div>
   }
   @default {
     @if (task(); as task) {
-      <nav class="muted breadcrumb"><a routerLink="/tasks">Tarefas</a> / detalhe</nav>
+      <nav class="breadcrumb">
+        <a matButton routerLink="/tasks"><mat-icon>arrow_back</mat-icon> Tarefas</a>
+      </nav>
       <header class="page-header">
         <div>
           <h1>{{ task.title }}</h1>
@@ -21,119 +27,158 @@
             <app-status-badge [status]="task.status" />
             <app-priority-badge [priority]="task.priority" />
             @if (task.archived_at) {
-              <span class="badge-archived">Arquivada</span>
+              <span class="tag"><mat-icon inline>archive</mat-icon> Arquivada</span>
             }
           </div>
         </div>
-        <div class="actions">
-          <a class="btn btn--primary" [routerLink]="['/tasks', task.id, 'edit']">Editar</a>
+        <div class="page-actions">
+          <a matButton="filled" [routerLink]="['/tasks', task.id, 'edit']">
+            <mat-icon>edit</mat-icon> Editar
+          </a>
           @if (canComplete(task)) {
-            <a class="btn" routerLink="/focus" [queryParams]="{ task: task.id }">Focar</a>
+            <a matButton="tonal" routerLink="/focus" [queryParams]="{ task: task.id }">
+              <mat-icon>timer</mat-icon> Focar
+            </a>
           }
-          <button type="button" class="btn" (click)="act(actions.duplicate(task))">Duplicar</button>
-          @if (canReopen(task)) {
-            <button type="button" class="btn" (click)="act(actions.reopen(task))">Reabrir</button>
-          } @else if (canCancel(task)) {
-            <button type="button" class="btn" (click)="act(actions.cancel(task))">Cancelar</button>
-          }
-          @if (task.archived_at) {
-            <button type="button" class="btn" (click)="act(actions.unarchive(task))">
-              Desarquivar
-            </button>
-          } @else {
-            <button type="button" class="btn" (click)="act(actions.archive(task))">Arquivar</button>
-          }
-          <button type="button" class="btn btn--danger" (click)="act(actions.remove(task))">
-            Excluir
+          <button matIconButton type="button" [matMenuTriggerFor]="more" aria-label="Mais ações">
+            <mat-icon>more_vert</mat-icon>
           </button>
+          <mat-menu #more="matMenu">
+            <button mat-menu-item (click)="act(actions.duplicate(task))">
+              <mat-icon>content_copy</mat-icon><span>Duplicar</span>
+            </button>
+            @if (canReopen(task)) {
+              <button mat-menu-item (click)="act(actions.reopen(task))">
+                <mat-icon>replay</mat-icon><span>Reabrir</span>
+              </button>
+            } @else if (canCancel(task)) {
+              <button mat-menu-item (click)="act(actions.cancel(task))">
+                <mat-icon>block</mat-icon><span>Cancelar</span>
+              </button>
+            }
+            @if (task.archived_at) {
+              <button mat-menu-item (click)="act(actions.unarchive(task))">
+                <mat-icon>unarchive</mat-icon><span>Desarquivar</span>
+              </button>
+            } @else {
+              <button mat-menu-item (click)="act(actions.archive(task))">
+                <mat-icon>archive</mat-icon><span>Arquivar</span>
+              </button>
+            }
+            <mat-divider />
+            <button mat-menu-item class="danger-item" (click)="act(actions.remove(task))">
+              <mat-icon>delete</mat-icon><span>Excluir</span>
+            </button>
+          </mat-menu>
         </div>
       </header>
 
       <div class="detail-grid">
-        <section class="card">
-          <h2>Status e progresso</h2>
-          <app-task-progress-panel [task]="task" (changed)="task$.set($event)" />
-          <dl class="facts">
-            <dt>Entrega prevista</dt>
-            <dd>
-              {{ task.due_date | appDate }}
-              @if (deadline().label) {
-                <span class="deadline" [attr.data-kind]="deadline().kind">{{
-                  deadline().label
-                }}</span>
-              }
-            </dd>
-            <dt>Início</dt>
-            <dd>{{ task.start_date | appDate }}</dd>
-            <dt>Concluída em</dt>
-            <dd>{{ task.completed_at | appDate: true }}</dd>
-            <dt>Estimativa</dt>
-            <dd>{{ estimate() }}</dd>
-          </dl>
-        </section>
+        <mat-card appearance="outlined" class="section">
+          <mat-card-header><mat-card-title>Status e progresso</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <app-task-progress-panel [task]="task" (changed)="task$.set($event)" />
+            <dl class="facts">
+              <dt>Entrega prevista</dt>
+              <dd>
+                {{ task.due_date | appDate }}
+                @if (deadline().label) {
+                  <span class="deadline" [attr.data-kind]="deadline().kind">{{
+                    deadline().label
+                  }}</span>
+                }
+              </dd>
+              <dt>Início</dt>
+              <dd>{{ task.start_date | appDate }}</dd>
+              <dt>Concluída em</dt>
+              <dd>{{ task.completed_at | appDate: true }}</dd>
+              <dt>Estimativa</dt>
+              <dd>{{ estimate() }}</dd>
+            </dl>
+          </mat-card-content>
+        </mat-card>
 
-        <section class="card">
-          <h2>Solicitação</h2>
-          <dl class="facts">
-            <dt>Projeto</dt>
-            <dd>{{ nameOf(task.project_id) }}</dd>
-            <dt>Categoria</dt>
-            <dd>{{ nameOf(task.category_id) }}</dd>
-            <dt>Contexto</dt>
-            <dd>{{ nameOf(task.context_id) }}</dd>
-            <dt>Tags</dt>
-            <dd>{{ tagNames().length ? tagNames().join(', ') : '—' }}</dd>
-            <dt>Solicitante</dt>
-            <dd>{{ task.requester_name || '—' }}</dd>
-            <dt>Solicitada em</dt>
-            <dd>{{ task.requested_at | appDate }}</dd>
-            <dt>Jira</dt>
-            <dd>
-              @if (task.jira_url) {
-                <button type="button" class="btn btn--link" (click)="openLink(task.jira_url)">
-                  {{ jiraLabel() }} ↗
-                </button>
-              } @else {
-                —
-              }
-            </dd>
-            <dt>Slack</dt>
-            <dd>
-              @if (task.slack_thread_url) {
-                <button
-                  type="button"
-                  class="btn btn--link"
-                  (click)="openLink(task.slack_thread_url)"
-                >
-                  {{ slackLabel() }} ↗
-                </button>
-              } @else {
-                —
-              }
-            </dd>
-          </dl>
-        </section>
+        <mat-card appearance="outlined" class="section">
+          <mat-card-header><mat-card-title>Solicitação</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <dl class="facts">
+              <dt>Projeto</dt>
+              <dd>{{ nameOf(task.project_id) }}</dd>
+              <dt>Categoria</dt>
+              <dd>{{ nameOf(task.category_id) }}</dd>
+              <dt>Contexto</dt>
+              <dd>{{ nameOf(task.context_id) }}</dd>
+              <dt>Tags</dt>
+              <dd>
+                @for (tag of tagNames(); track tag) {
+                  <span class="tag">{{ tag }}</span>
+                } @empty {
+                  —
+                }
+              </dd>
+              <dt>Solicitante</dt>
+              <dd>{{ task.requester_name || '—' }}</dd>
+              <dt>Solicitada em</dt>
+              <dd>{{ task.requested_at | appDate }}</dd>
+              <dt>Jira</dt>
+              <dd>
+                @if (task.jira_url) {
+                  <button
+                    matButton
+                    type="button"
+                    class="link-button"
+                    (click)="openLink(task.jira_url)"
+                  >
+                    {{ jiraLabel() }} <mat-icon iconPositionEnd>open_in_new</mat-icon>
+                  </button>
+                } @else {
+                  —
+                }
+              </dd>
+              <dt>Slack</dt>
+              <dd>
+                @if (task.slack_thread_url) {
+                  <button
+                    matButton
+                    type="button"
+                    class="link-button"
+                    (click)="openLink(task.slack_thread_url)"
+                  >
+                    {{ slackLabel() }} <mat-icon iconPositionEnd>open_in_new</mat-icon>
+                  </button>
+                } @else {
+                  —
+                }
+              </dd>
+            </dl>
+          </mat-card-content>
+        </mat-card>
 
-        <section class="card">
-          <h2>Tempo</h2>
-          <app-task-time-panel [task]="task" />
-        </section>
+        <mat-card appearance="outlined" class="section">
+          <mat-card-header><mat-card-title>Tempo</mat-card-title></mat-card-header>
+          <mat-card-content><app-task-time-panel [task]="task" /></mat-card-content>
+        </mat-card>
 
-        <section class="card">
-          <h2>Lembretes</h2>
-          <app-task-reminders-panel [taskId]="task.id" />
-        </section>
+        <mat-card appearance="outlined" class="section">
+          <mat-card-header><mat-card-title>Lembretes</mat-card-title></mat-card-header>
+          <mat-card-content><app-task-reminders-panel [taskId]="task.id" /></mat-card-content>
+        </mat-card>
 
-        <section class="card detail-grid__wide">
-          <h2>Descrição</h2>
-          <p class="prose">{{ task.description || 'Sem descrição.' }}</p>
-          <h2>Observações</h2>
-          <p class="prose">{{ task.notes || 'Sem observações.' }}</p>
-        </section>
-        <section class="card detail-grid__wide">
-          <h2>Atividade</h2>
-          <app-task-activity-feed [taskId]="task.id" [version]="task.updated_at" />
-        </section>
+        <mat-card appearance="outlined" class="section detail-grid__wide">
+          <mat-card-header><mat-card-title>Descrição</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <p class="prose">{{ task.description || 'Sem descrição.' }}</p>
+            <h3>Observações</h3>
+            <p class="prose">{{ task.notes || 'Sem observações.' }}</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="section detail-grid__wide">
+          <mat-card-header><mat-card-title>Atividade</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <app-task-activity-feed [taskId]="task.id" [version]="task.updated_at" />
+          </mat-card-content>
+        </mat-card>
       </div>
 
       <p class="muted footnote">

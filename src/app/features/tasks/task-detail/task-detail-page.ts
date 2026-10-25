@@ -16,6 +16,7 @@ import { canCancel, canComplete, canReopen } from '../task-rules';
 import { OrganizationStore } from '../../organization/organization.service';
 import { parseJiraLink, parseSlackLink } from '../../integrations/integrations';
 import { TasksService } from '../tasks.service';
+import { MATERIAL_UI } from '../../../shared/material';
 
 @Component({
   selector: 'app-task-detail-page',
@@ -28,6 +29,7 @@ import { TasksService } from '../tasks.service';
     TaskActivityFeed,
     TaskTimePanel,
     TaskRemindersPanel,
+    MATERIAL_UI,
   ],
   templateUrl: './task-detail-page.html',
   styleUrl: './task-detail-page.scss',

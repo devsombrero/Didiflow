@@ -59,15 +59,16 @@ describe('TaskListPage', () => {
 
   it('reloads with the status filter when a chip is toggled', async () => {
     const { fixture, element, list } = await setup([task({})]);
-    const blocked = Array.from(element.querySelectorAll<HTMLButtonElement>('.chip')).find(
-      (chip) => chip.textContent?.trim() === 'Bloqueado',
-    );
-    blocked?.click();
+    const chip = Array.from(element.querySelectorAll('mat-chip-option')).find(
+      (option) => option.textContent?.trim() === 'Bloqueado',
+    )!;
+    const action = chip.querySelector<HTMLElement>('[role="option"]')!;
+    action.click();
     await fixture.whenStable();
 
     expect(list).toHaveBeenLastCalledWith(
       expect.objectContaining({ statuses: ['blocked'], page: 1 }),
     );
-    expect(blocked?.getAttribute('aria-pressed')).toBe('true');
+    expect(action.getAttribute('aria-selected')).toBe('true');
   });
 });

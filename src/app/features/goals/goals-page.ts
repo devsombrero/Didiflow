@@ -1,4 +1,5 @@
 import { Component, computed, inject, type OnInit, signal } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
@@ -30,7 +31,7 @@ const ACHIEVEMENT_KINDS = [
 
 @Component({
   selector: 'app-goals-page',
-  imports: [ReactiveFormsModule, RouterLink, AppDatePipe],
+  imports: [ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './goals-page.html',
   styleUrl: './goals-page.scss',
 })

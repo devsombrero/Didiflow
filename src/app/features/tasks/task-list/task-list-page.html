@@ -1,237 +1,277 @@
 <header class="page-header">
   <h1>Tarefas</h1>
-  <a class="btn btn--primary" routerLink="/tasks/new" title="Atalho: N">Nova tarefa</a>
+  <div class="page-actions">
+    <a matButton="filled" routerLink="/tasks/new" matTooltip="Atalho: N">
+      <mat-icon>add</mat-icon> Nova tarefa
+    </a>
+  </div>
 </header>
 
-<section class="toolbar" aria-label="Filtros">
-  <input
-    #searchInput
-    class="input toolbar__search"
-    type="search"
-    placeholder="Buscar por título, descrição, solicitante ou observações (/)"
-    aria-label="Buscar tarefas"
-    [value]="searchTerm()"
-    (input)="searchTerm.set($any($event.target).value)"
-  />
+<mat-card appearance="outlined" class="filters-card">
+  <mat-card-content>
+    <div class="toolbar">
+      <mat-form-field class="toolbar__search">
+        <mat-icon matPrefix>search</mat-icon>
+        <mat-label>Buscar (/)</mat-label>
+        <input
+          #searchInput
+          matInput
+          type="search"
+          aria-label="Buscar tarefas"
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Prioridade</mat-label>
+        <mat-select
+          [value]="query().priorities[0] ?? ''"
+          (selectionChange)="setPriority($event.value)"
+        >
+          <mat-option value="">Todas</mat-option>
+          @for (priority of priorities; track priority) {
+            <mat-option [value]="priority">{{ priorityLabels[priority] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Arquivo</mat-label>
+        <mat-select [value]="query().archive" (selectionChange)="setArchive($event.value)">
+          <mat-option value="active">Ativas</mat-option>
+          <mat-option value="archived">Arquivadas</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Ordenação</mat-label>
+        <mat-select [value]="sortIndex()" (selectionChange)="setSort($event.value)">
+          @for (option of sortOptions; track option.label; let i = $index) {
+            <mat-option [value]="i">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
 
-  <select class="input" aria-label="Prioridade" (change)="setPriority($any($event.target).value)">
-    <option value="" [selected]="query().priorities.length === 0">Todas as prioridades</option>
-    @for (priority of priorities; track priority) {
-      <option [value]="priority" [selected]="query().priorities.includes(priority)">
-        {{ priorityLabels[priority] }}
-      </option>
-    }
-  </select>
+    <div class="toolbar">
+      <mat-form-field>
+        <mat-label>Projeto</mat-label>
+        <mat-select
+          [value]="query().projectId ?? ''"
+          (selectionChange)="setFilter('projectId', $event.value)"
+        >
+          <mat-option value="">Todos</mat-option>
+          @for (item of org.items().projects; track item.id) {
+            <mat-option [value]="item.id">{{ item.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Categoria</mat-label>
+        <mat-select
+          [value]="query().categoryId ?? ''"
+          (selectionChange)="setFilter('categoryId', $event.value)"
+        >
+          <mat-option value="">Todas</mat-option>
+          @for (item of org.items().categories; track item.id) {
+            <mat-option [value]="item.id">{{ item.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Contexto</mat-label>
+        <mat-select
+          [value]="query().contextId ?? ''"
+          (selectionChange)="setFilter('contextId', $event.value)"
+        >
+          <mat-option value="">Todos</mat-option>
+          @for (item of org.items().work_contexts; track item.id) {
+            <mat-option [value]="item.id">{{ item.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Tag</mat-label>
+        <mat-select
+          [value]="query().tagId ?? ''"
+          (selectionChange)="setFilter('tagId', $event.value)"
+        >
+          <mat-option value="">Todas</mat-option>
+          @for (item of org.items().tags; track item.id) {
+            <mat-option [value]="item.id">{{ item.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Solicitante</mat-label>
+        <mat-select
+          [value]="query().requester ?? ''"
+          (selectionChange)="setFilter('requester', $event.value)"
+        >
+          <mat-option value="">Todos</mat-option>
+          @for (item of org.requesters(); track item.name) {
+            <mat-option [value]="item.name">{{ item.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
 
-  <select class="input" aria-label="Arquivo" (change)="setArchive($any($event.target).value)">
-    <option value="active" [selected]="query().archive === 'active'">Ativas</option>
-    <option value="archived" [selected]="query().archive === 'archived'">Arquivadas</option>
-  </select>
-
-  <select class="input" aria-label="Ordenação" (change)="setSort($any($event.target).value)">
-    @for (option of sortOptions; track option.label; let i = $index) {
-      <option [value]="i" [selected]="sortIndex() === i">{{ option.label }}</option>
-    }
-  </select>
-</section>
-
-<section class="toolbar toolbar--secondary" aria-label="Filtros de organização">
-  <select
-    class="input"
-    aria-label="Projeto"
-    (change)="setFilter('projectId', $any($event.target).value)"
-  >
-    <option value="" [selected]="!query().projectId">Todos os projetos</option>
-    @for (item of org.items().projects; track item.id) {
-      <option [value]="item.id" [selected]="item.id === query().projectId">{{ item.name }}</option>
-    }
-  </select>
-  <select
-    class="input"
-    aria-label="Categoria"
-    (change)="setFilter('categoryId', $any($event.target).value)"
-  >
-    <option value="" [selected]="!query().categoryId">Todas as categorias</option>
-    @for (item of org.items().categories; track item.id) {
-      <option [value]="item.id" [selected]="item.id === query().categoryId">{{ item.name }}</option>
-    }
-  </select>
-  <select
-    class="input"
-    aria-label="Contexto"
-    (change)="setFilter('contextId', $any($event.target).value)"
-  >
-    <option value="" [selected]="!query().contextId">Todos os contextos</option>
-    @for (item of org.items().work_contexts; track item.id) {
-      <option [value]="item.id" [selected]="item.id === query().contextId">{{ item.name }}</option>
-    }
-  </select>
-  <select class="input" aria-label="Tag" (change)="setFilter('tagId', $any($event.target).value)">
-    <option value="" [selected]="!query().tagId">Todas as tags</option>
-    @for (item of org.items().tags; track item.id) {
-      <option [value]="item.id" [selected]="item.id === query().tagId">{{ item.name }}</option>
-    }
-  </select>
-  <select
-    class="input"
-    aria-label="Solicitante"
-    (change)="setFilter('requester', $any($event.target).value)"
-  >
-    <option value="" [selected]="!query().requester">Todos os solicitantes</option>
-    @for (item of org.requesters(); track item.name) {
-      <option [value]="item.name" [selected]="item.name === query().requester">
-        {{ item.name }}
-      </option>
-    }
-  </select>
-</section>
-
-<div class="chips" role="group" aria-label="Filtrar por status">
-  @for (status of statuses; track status) {
-    <button
-      type="button"
-      class="chip"
-      [attr.aria-pressed]="query().statuses.includes(status)"
-      (click)="toggleStatus(status)"
-    >
-      {{ statusLabels[status] }}
-    </button>
-  }
-  @if (hasFilters()) {
-    <button type="button" class="btn btn--link btn--sm" (click)="clearFilters()">
-      Limpar filtros
-    </button>
-  }
-</div>
+    <div class="status-filter">
+      <mat-chip-listbox multiple aria-label="Filtrar por status">
+        @for (status of statuses; track status) {
+          <mat-chip-option
+            [selected]="query().statuses.includes(status)"
+            (selectionChange)="toggleStatus(status)"
+          >
+            {{ statusLabels[status] }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+      @if (hasFilters()) {
+        <button matButton type="button" (click)="clearFilters()">
+          <mat-icon>filter_alt_off</mat-icon> Limpar filtros
+        </button>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
 
 @switch (state()) {
   @case ('error') {
     <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>
       {{ errorMessage() }}
-      <button type="button" class="btn btn--link" (click)="goToPage(query().page)">
-        Tentar novamente
-      </button>
+      <button matButton type="button" (click)="goToPage(query().page)">Tentar novamente</button>
     </div>
   }
   @default {
     @if (state() === 'ready' && result().total === 0) {
-      <section class="card empty-state">
-        @if (hasFilters()) {
-          <p>Nenhuma tarefa encontrada com esses filtros.</p>
-          <button type="button" class="btn" (click)="clearFilters()">Limpar filtros</button>
-        } @else {
-          <p>Você ainda não cadastrou nenhuma demanda.</p>
-          <a class="btn btn--primary" routerLink="/tasks/new">Cadastrar a primeira tarefa</a>
-        }
-      </section>
+      <mat-card appearance="outlined" class="empty-state">
+        <mat-card-content>
+          @if (hasFilters()) {
+            <mat-icon class="empty-state__icon">search_off</mat-icon>
+            <p>Nenhuma tarefa encontrada com esses filtros.</p>
+            <button matButton="outlined" type="button" (click)="clearFilters()">
+              Limpar filtros
+            </button>
+          } @else {
+            <mat-icon class="empty-state__icon">checklist</mat-icon>
+            <p>Você ainda não cadastrou nenhuma demanda.</p>
+            <a matButton="filled" routerLink="/tasks/new">Cadastrar a primeira tarefa</a>
+          }
+        </mat-card-content>
+      </mat-card>
     } @else {
-      <div class="table-wrap card" [attr.aria-busy]="state() === 'loading'">
-        <table class="table">
-          <caption class="sr-only">
-            Lista de tarefas
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Título</th>
-              <th scope="col">Status</th>
-              <th scope="col">Prioridade</th>
-              <th scope="col">Progresso</th>
-              <th scope="col">Entrega</th>
-              <th scope="col">Solicitante</th>
-              <th scope="col"><span class="sr-only">Ações</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (task of result().items; track task.id) {
-              @let deadline = deadlineOf(task);
+      <mat-card appearance="outlined" class="table-card">
+        @if (state() === 'loading') {
+          <mat-progress-bar mode="indeterminate" />
+        }
+        <div class="table-wrap" [attr.aria-busy]="state() === 'loading'">
+          <table class="table">
+            <caption class="sr-only">
+              Lista de tarefas
+            </caption>
+            <thead>
               <tr>
-                <td>
-                  <a class="table__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
-                  @if (task.project_id || task.task_tags.length) {
-                    <div class="table__meta">
-                      @if (nameOf(task.project_id); as project) {
-                        <span>{{ project }}</span>
-                      }
-                      @for (link of task.task_tags; track link.tag_id) {
-                        @if (nameOf(link.tag_id); as tag) {
-                          <span class="tag">{{ tag }}</span>
+                <th scope="col">Título</th>
+                <th scope="col">Status</th>
+                <th scope="col">Prioridade</th>
+                <th scope="col">Progresso</th>
+                <th scope="col">Entrega</th>
+                <th scope="col">Solicitante</th>
+                <th scope="col"><span class="sr-only">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (task of result().items; track task.id) {
+                @let deadline = deadlineOf(task);
+                <tr>
+                  <td>
+                    <a class="table__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                    @if (task.project_id || task.task_tags.length) {
+                      <div class="table__meta">
+                        @if (nameOf(task.project_id); as project) {
+                          <span class="table__project"
+                            ><mat-icon inline>folder</mat-icon>{{ project }}</span
+                          >
                         }
-                      }
-                    </div>
-                  }
-                </td>
-                <td><app-status-badge [status]="task.status" /></td>
-                <td><app-priority-badge [priority]="task.priority" /></td>
-                <td><app-progress-bar [value]="task.progress_percentage" /></td>
-                <td>
-                  {{ task.due_date | appDate }}
-                  @if (deadline.label) {
-                    <span class="deadline" [attr.data-kind]="deadline.kind">{{
-                      deadline.label
-                    }}</span>
-                  }
-                </td>
-                <td>{{ task.requester_name || '—' }}</td>
-                <td class="table__actions">
-                  <details class="menu">
-                    <summary class="btn btn--sm" [attr.aria-label]="'Ações de ' + task.title">
-                      ⋯
-                    </summary>
-                    <div class="menu__items">
-                      <a [routerLink]="['/tasks', task.id, 'edit']">Editar</a>
+                        @for (link of task.task_tags; track link.tag_id) {
+                          @if (nameOf(link.tag_id); as tag) {
+                            <span class="tag">{{ tag }}</span>
+                          }
+                        }
+                      </div>
+                    }
+                  </td>
+                  <td><app-status-badge [status]="task.status" /></td>
+                  <td><app-priority-badge [priority]="task.priority" /></td>
+                  <td><app-progress-bar [value]="task.progress_percentage" /></td>
+                  <td>
+                    {{ task.due_date | appDate }}
+                    @if (deadline.label) {
+                      <span class="deadline" [attr.data-kind]="deadline.kind">{{
+                        deadline.label
+                      }}</span>
+                    }
+                  </td>
+                  <td>{{ task.requester_name || '—' }}</td>
+                  <td class="table__actions">
+                    <button
+                      matIconButton
+                      type="button"
+                      [matMenuTriggerFor]="rowMenu"
+                      [attr.aria-label]="'Ações de ' + task.title"
+                    >
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #rowMenu="matMenu">
+                      <a mat-menu-item [routerLink]="['/tasks', task.id, 'edit']">
+                        <mat-icon>edit</mat-icon><span>Editar</span>
+                      </a>
                       @if (canComplete(task)) {
-                        <button type="button" (click)="act(actions.complete(task))">
-                          Concluir
+                        <button mat-menu-item (click)="act(actions.complete(task))">
+                          <mat-icon>task_alt</mat-icon><span>Concluir</span>
                         </button>
                       }
-                      <button type="button" (click)="act(actions.duplicate(task))">Duplicar</button>
+                      <button mat-menu-item (click)="act(actions.duplicate(task))">
+                        <mat-icon>content_copy</mat-icon><span>Duplicar</span>
+                      </button>
                       @if (canReopen(task)) {
-                        <button type="button" (click)="act(actions.reopen(task))">Reabrir</button>
+                        <button mat-menu-item (click)="act(actions.reopen(task))">
+                          <mat-icon>replay</mat-icon><span>Reabrir</span>
+                        </button>
                       } @else if (canCancel(task)) {
-                        <button type="button" (click)="act(actions.cancel(task))">Cancelar</button>
+                        <button mat-menu-item (click)="act(actions.cancel(task))">
+                          <mat-icon>block</mat-icon><span>Cancelar</span>
+                        </button>
                       }
                       @if (task.archived_at) {
-                        <button type="button" (click)="act(actions.unarchive(task))">
-                          Desarquivar
+                        <button mat-menu-item (click)="act(actions.unarchive(task))">
+                          <mat-icon>unarchive</mat-icon><span>Desarquivar</span>
                         </button>
                       } @else {
-                        <button type="button" (click)="act(actions.archive(task))">Arquivar</button>
+                        <button mat-menu-item (click)="act(actions.archive(task))">
+                          <mat-icon>archive</mat-icon><span>Arquivar</span>
+                        </button>
                       }
-                      <button type="button" class="danger" (click)="act(actions.remove(task))">
-                        Excluir
+                      <mat-divider />
+                      <button mat-menu-item class="danger-item" (click)="act(actions.remove(task))">
+                        <mat-icon>delete</mat-icon><span>Excluir</span>
                       </button>
-                    </div>
-                  </details>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      @if (totalPages() > 1) {
-        <nav class="pager" aria-label="Paginação">
-          <button
-            type="button"
-            class="btn btn--sm"
-            [disabled]="query().page <= 1"
-            (click)="goToPage(query().page - 1)"
-          >
-            Anterior
-          </button>
-          <span
-            >Página {{ query().page }} de {{ totalPages() }} · {{ result().total }} tarefas</span
-          >
-          <button
-            type="button"
-            class="btn btn--sm"
-            [disabled]="query().page >= totalPages()"
-            (click)="goToPage(query().page + 1)"
-          >
-            Próxima
-          </button>
-        </nav>
-      }
+                    </mat-menu>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <mat-paginator
+          [length]="result().total"
+          [pageIndex]="query().page - 1"
+          [pageSize]="query().pageSize"
+          [pageSizeOptions]="[10, 20, 50]"
+          (page)="onPage($event)"
+          aria-label="Paginação"
+        />
+      </mat-card>
     }
   }
 }
