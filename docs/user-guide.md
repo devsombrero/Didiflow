@@ -32,6 +32,14 @@ Para desinstalar: **Configurações do Windows → Aplicativos**. Seus dados fic
 
 A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, **negrito**, _itálico_, listas, checklists (`- [ ]`), citações, código e links. Use a barra de formatação (atalhos `Ctrl+B`, `Ctrl+I` e `Ctrl+K`) e a aba **Visualizar** para conferir antes de salvar. Links abrem no navegador padrão.
 
+**Anexos** (detalhe da tarefa, aplicativo desktop):
+
+- **Limite:** até 50 MB por tarefa, somando todos os arquivos.
+- **Onde ficam:** os arquivos são copiados para `%APPDATA%\didiflow\attachments`, no próprio computador; o Supabase guarda só nome, tipo, tamanho e checksum.
+- **Espaço em disco:** antes de copiar, o app confere a cota da tarefa e o espaço livre no disco, que precisa continuar com pelo menos 200 MB livres. O painel mostra o uso da cota e o espaço livre.
+- **Ações:** abrir com o programa padrão, mostrar na pasta, salvar uma cópia e remover. Executáveis não são abertos diretamente.
+- **Outro computador:** um anexo feito em outra máquina aparece como "arquivo não está neste computador".
+
 ### Status e progresso
 
 - Não iniciado = 0%; Em andamento = 1–99%; Concluído = 100%.
