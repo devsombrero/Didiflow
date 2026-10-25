@@ -4,6 +4,8 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.3.0] - 2026-10-25
+
 ### Adicionado
 
 - Notificações personalizadas (uma vez, diária, dias úteis, semanal ou por intervalo com horário ativo), central de notificações com contador de não lidas e cartões de aviso com ação "Abrir".
