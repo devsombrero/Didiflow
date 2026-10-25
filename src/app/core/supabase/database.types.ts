@@ -177,6 +177,26 @@ isOneToOne: false
       referencedColumns: ["id","owner_id"]
     }
                   ]
+                },"task_links": {
+                  Row: {
+                    "created_at": string,"id": string,"owner_id": string,"task_id": string,"title": string | null,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"task_id": string,"title"?: string | null,"url": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"task_id"?: string,"title"?: string | null,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "task_links_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
                 },"task_reminders": {
                   Row: {
                     "created_at": string,"id": string,"note": string | null,"owner_id": string,"remind_at": string,"sent_at": string | null,"task_id": string
