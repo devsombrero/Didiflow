@@ -63,6 +63,11 @@ export const routes: Routes = [
           import('./features/organization/organization-page').then((m) => m.OrganizationPage),
       },
       {
+        path: 'backup',
+        title: 'Backup · DidiFlow',
+        loadComponent: () => import('./features/backup/backup-page').then((m) => m.BackupPage),
+      },
+      {
         path: 'export',
         title: 'Exportar dados · DidiFlow',
         loadComponent: () => import('./features/export/export-page').then((m) => m.ExportPage),
