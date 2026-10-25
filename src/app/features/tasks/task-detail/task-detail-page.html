@@ -91,7 +91,7 @@
             <dd>
               @if (task.jira_url) {
                 <button type="button" class="btn btn--link" (click)="openLink(task.jira_url)">
-                  Abrir card
+                  {{ jiraLabel() }} ↗
                 </button>
               } @else {
                 —
@@ -105,7 +105,7 @@
                   class="btn btn--link"
                   (click)="openLink(task.slack_thread_url)"
                 >
-                  Abrir thread
+                  {{ slackLabel() }} ↗
                 </button>
               } @else {
                 —

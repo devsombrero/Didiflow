@@ -14,6 +14,7 @@ import { deadlineLabel, deadlineState } from '../task-deadline';
 import type { Task, TaskWithTags } from '../task.model';
 import { canCancel, canComplete, canReopen } from '../task-rules';
 import { OrganizationStore } from '../../organization/organization.service';
+import { parseJiraLink, parseSlackLink } from '../../integrations/integrations';
 import { TasksService } from '../tasks.service';
 
 @Component({
@@ -61,6 +62,14 @@ export class TaskDetailPage implements OnInit {
   });
 
   protected readonly tagNames = signal<string[]>([]);
+  protected readonly jiraLabel = computed(() => {
+    const url = this.task()?.jira_url;
+    return url ? (parseJiraLink(url)?.label ?? 'Abrir card') : '';
+  });
+  protected readonly slackLabel = computed(() => {
+    const url = this.task()?.slack_thread_url;
+    return url ? (parseSlackLink(url)?.label ?? 'Abrir thread') : '';
+  });
 
   protected nameOf(id: string | null): string {
     return id ? (this.org.byId().get(id)?.name ?? '—') : '—';
