@@ -17,17 +17,18 @@ Para desinstalar: **Configurações do Windows → Aplicativos**. Seus dados fic
 
 ## Dia a dia
 
-| Tela             | Para quê                                                                                      |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| Dashboard        | Abertas, atrasadas, vencendo, entregas no prazo, tempo investido e gráficos do período        |
-| Hoje             | Lista de prioridades do dia, com sugestões (atrasadas, vencendo, alta prioridade)             |
-| Foco             | Sessões de foco cronometradas (25/50/90 min), opcionalmente registradas e lançadas como tempo |
-| Tarefas          | Lista com busca (`/`), filtros combinados, ordenação, paginação e ações por linha             |
-| Calendário       | Dia, semana e mês por data de início e entrega; `+` em um dia planeja uma tarefa              |
-| KPIs             | Os 10 indicadores, com fórmula, comparação com o período anterior e histórico                 |
-| Metas            | Metas SMART com acompanhamento automático, e registros de cursos e certificações              |
-| Tempo            | Cronômetro (também na barra lateral), apontamentos manuais e totais                           |
-| Busca (`Ctrl+K`) | Título, descrição, solicitante, projeto, tags e observações, sem diferenciar acentos          |
+| Tela                               | Para quê                                                                                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard                          | Abertas, atrasadas, vencendo, entregas no prazo, tempo investido e gráficos do período                                                            |
+| Hoje                               | Lista de prioridades do dia, com sugestões (atrasadas, vencendo, alta prioridade)                                                                 |
+| Foco                               | Sessões de foco cronometradas (25/50/90 min), opcionalmente registradas e lançadas como tempo                                                     |
+| Tarefas                            | Lista com busca (`/`), filtros combinados, ordenação, paginação e ações por linha                                                                 |
+| Quadro (Tarefas → ícone de quadro) | Kanban por status: arraste os cards entre colunas ou use o menu "Mover para" (acessível por teclado). Concluídas e canceladas dos últimos 14 dias |
+| Calendário                         | Dia, semana e mês por data de início e entrega; `+` em um dia planeja uma tarefa                                                                  |
+| KPIs                               | Os 10 indicadores, com fórmula, comparação com o período anterior e histórico                                                                     |
+| Metas                              | Metas SMART com acompanhamento automático, e registros de cursos e certificações                                                                  |
+| Tempo                              | Cronômetro (também na barra lateral), apontamentos manuais e totais                                                                               |
+| Busca (`Ctrl+K`)                   | Título, descrição, solicitante, projeto, tags e observações, sem diferenciar acentos                                                              |
 
 ### Status e progresso
 

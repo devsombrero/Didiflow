@@ -6,6 +6,7 @@ import type {
   Task,
   TaskInsert,
   TaskPage,
+  TaskPriority,
   TaskQuery,
   TaskStatus,
   TaskUpdate,
@@ -55,6 +56,33 @@ export class TasksService {
       .range(from, from + query.pageSize - 1);
     if (error) throw error;
     return { items: data as unknown as TaskWithTags[], total: count ?? 0 };
+  }
+
+  /**
+   * Tasks for the Kanban board: all open work, plus tasks completed (and, if
+   * requested, cancelled) since `recentSince`. Archived/deleted are excluded.
+   */
+  async boardTasks(options: {
+    recentSince: string;
+    includeCancelled: boolean;
+    projectId: string | null;
+    priority: TaskPriority | null;
+  }): Promise<TaskWithTags[]> {
+    const recent = [`and(status.eq.done,completed_at.gte.${options.recentSince})`];
+    if (options.includeCancelled) {
+      recent.push(`and(status.eq.cancelled,updated_at.gte.${options.recentSince})`);
+    }
+    let request = this.supabase
+      .from('tasks')
+      .select('*, task_tags(tag_id)')
+      .is('deleted_at', null)
+      .is('archived_at', null)
+      .or(['status.in.(not_started,in_progress,blocked)', ...recent].join(','));
+    if (options.projectId) request = request.eq('project_id', options.projectId);
+    if (options.priority) request = request.eq('priority', options.priority);
+    const { data, error } = await request.limit(500);
+    if (error) throw error;
+    return data as unknown as TaskWithTags[];
   }
 
   /** Open, active tasks for pickers (time entries, focus, planning). */

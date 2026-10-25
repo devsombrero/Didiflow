@@ -14,6 +14,11 @@ export const TASK_ROUTES: Routes = [
     loadComponent: () => import('./task-form/task-form-page').then((m) => m.TaskFormPage),
   },
   {
+    path: 'board',
+    title: 'Quadro · DidiFlow',
+    loadComponent: () => import('./kanban/kanban-page').then((m) => m.KanbanPage),
+  },
+  {
     path: ':id',
     title: 'Tarefa · DidiFlow',
     loadComponent: () => import('./task-detail/task-detail-page').then((m) => m.TaskDetailPage),

@@ -284,3 +284,13 @@ input[type='range'] {
 .form {
   gap: var(--space-3);
 }
+
+// CDK drag & drop (the preview is rendered at the document body).
+.cdk-drag-preview {
+  box-shadow: var(--mat-sys-level3);
+  border-radius: var(--radius-sm);
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
