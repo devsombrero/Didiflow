@@ -1,13 +1,17 @@
-import { app, BrowserWindow, net, protocol, session, shell } from 'electron';
+import { app, BrowserWindow, net, protocol, safeStorage, session, shell } from 'electron';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { APP_HOST, APP_ORIGIN, APP_SCHEME, buildContentSecurityPolicy } from './config';
+import { registerIpcHandlers } from './ipc/handlers';
+import { SecureStore } from './ipc/secure-store';
+import { assertExternalUrl, isTrustedOrigin } from './ipc/validation';
 import { isClientRoute, resolveRendererPath } from './renderer-path';
 
 // Only honored in unpackaged builds, so a packaged app can never be pointed
 // at an arbitrary URL through the environment.
 const devServerUrl = app.isPackaged ? undefined : process.env['DIDIFLOW_DEV_SERVER_URL'];
+const trustedOrigins = devServerUrl ? [APP_ORIGIN, new URL(devServerUrl).origin] : [APP_ORIGIN];
 const rendererRoot = path.join(app.getAppPath(), 'dist', 'didiflow', 'browser');
 const contentSecurityPolicy = buildContentSecurityPolicy(app.isPackaged);
 
@@ -18,12 +22,7 @@ protocol.registerSchemesAsPrivileged([
 let mainWindow: BrowserWindow | null = null;
 
 function isTrustedUrl(url: string): boolean {
-  try {
-    const { origin } = new URL(url);
-    return origin === APP_ORIGIN || (!!devServerUrl && origin === new URL(devServerUrl).origin);
-  } catch {
-    return false;
-  }
+  return isTrustedOrigin(url, trustedOrigins);
 }
 
 async function isFile(filePath: string): Promise<boolean> {
@@ -67,8 +66,10 @@ function hardenWebContents(): void {
     });
     contents.on('will-attach-webview', (event) => event.preventDefault());
     contents.setWindowOpenHandler(({ url }) => {
-      if (url.startsWith('https://')) {
-        void shell.openExternal(url);
+      try {
+        void shell.openExternal(assertExternalUrl(url));
+      } catch {
+        // Non-https targets are silently dropped.
       }
       return { action: 'deny' };
     });
@@ -127,6 +128,14 @@ if (!app.requestSingleInstanceLock()) {
       callback(false),
     );
     registerAppProtocol();
+    registerIpcHandlers({
+      store: new SecureStore(path.join(app.getPath('userData'), 'secure-store.json'), {
+        isAvailable: () => safeStorage.isEncryptionAvailable(),
+        encrypt: (plainText) => safeStorage.encryptString(plainText),
+        decrypt: (encrypted) => safeStorage.decryptString(encrypted),
+      }),
+      trustedOrigins,
+    });
     createMainWindow();
 
     app.on('activate', () => {
