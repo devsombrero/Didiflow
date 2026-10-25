@@ -7,15 +7,29 @@
 
 ## Comandos
 
-| Comando                                   | Ação                                                |
-| ----------------------------------------- | --------------------------------------------------- |
-| `npm start`                               | Servidor de desenvolvimento Angular                 |
-| `npm run build`                           | Build de produção do Angular                        |
-| `npm run lint`                            | ESLint                                              |
-| `npm run format` / `npm run format:check` | Prettier                                            |
-| `npm test` / `npm run test:ci`            | Testes unitários (Vitest) em watch / execução única |
+| Comando                                   | Ação                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| `npm start`                               | Servidor de desenvolvimento Angular                                      |
+| `npm run build`                           | Build de produção do Angular                                             |
+| `npm run lint`                            | ESLint                                                                   |
+| `npm run format` / `npm run format:check` | Prettier                                                                 |
+| `npm test` / `npm run test:ci`            | Testes unitários (Vitest) em watch / execução única                      |
+| `npm run electron:dev`                    | `ng serve` + Electron apontando para `http://localhost:4200`             |
+| `npm run electron:start`                  | Build de produção do Angular + Electron servindo `app://`                |
+| `npm run electron:build`                  | Empacota `electron/main.ts` e `preload.ts` em `dist-electron/` (esbuild) |
+| `npm run typecheck:electron`              | Verificação de tipos do código Electron                                  |
+| `npm run test:electron`                   | Testes do processo principal (Vitest, ambiente Node)                     |
 
-Comandos de Electron e Supabase são documentados à medida que as features correspondentes forem integradas.
+Comandos do Supabase são documentados quando a feature correspondente for integrada.
+
+### Observações sobre o npm 12
+
+O npm 12 bloqueia install scripts que não estejam em `allowScripts`. Nenhum é necessário hoje:
+
+- O Electron baixa o binário na primeira execução, e não no `postinstall`.
+- `esbuild`, `lmdb`, `msgpackr-extract` e `@parcel/watcher` usam binários pré-compilados de dependências opcionais.
+
+Revise com `npm install-scripts ls` antes de aprovar qualquer pacote.
 
 ## Branches
 

@@ -4,13 +4,14 @@ Aplicação desktop para gestão pessoal de demandas: tarefas, prazos, progresso
 
 Stack: Electron · Angular 22 · Supabase (Auth, PostgreSQL, RLS).
 
-> Em desenvolvimento. Status atual: fundação do projeto (`feature/project-setup`).
+> Em desenvolvimento. Status atual: fundação e shell Electron concluídos; próxima etapa: Supabase e autenticação.
 
 ## Início rápido
 
 ```bash
 npm ci
-npm start        # Angular em http://localhost:4200
+npm start            # Angular no navegador (http://localhost:4200)
+npm run electron:dev # Angular + Electron
 npm run test:ci
 ```
 

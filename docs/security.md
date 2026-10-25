@@ -23,10 +23,22 @@
 ## Electron
 
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
-- O preload expõe apenas funções explícitas; não expõe `ipcRenderer` nem módulos do Node.
-- Todo payload IPC é validado no processo principal.
-- Navegação para origens externas e `window.open` são bloqueados. `openExternal` aceita apenas URLs `https://`.
-- Content Security Policy restringe `connect-src` à URL do Supabase configurada.
+- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`); não expõe `ipcRenderer` nem módulos do Node.
+- Todo payload IPC é validado no processo principal (`electron/ipc/validation.ts`):
+  - chaves do secure store: `[A-Za-z0-9._:-]{1,128}`; valores: string de até 64 KiB;
+  - `openExternal`: apenas `https://`, sem credenciais na URL, até 2048 caracteres.
+- Handlers IPC rejeitam chamadas de frames fora das origens confiáveis (`app://didiflow` e, só em builds não empacotados, o dev server).
+- `DIDIFLOW_DEV_SERVER_URL` é ignorada em builds empacotados.
+- Navegação para origens externas, `window.open` e `<webview>` são bloqueados. Links `https://` abertos via `window.open` vão para o navegador padrão.
+- Todas as requisições de permissão (câmera, geolocalização, notificações...) são negadas até que uma feature precise delas.
+- O protocolo `app://` impede path traversal e serve as respostas com Content Security Policy:
+  - `script-src 'self'` (sem scripts inline). Por isso o inlining de CSS crítico do Angular está desativado (`optimization.styles.inlineCritical: false`), já que ele usa handlers `onload` inline.
+  - `style-src 'self' 'unsafe-inline'`: o Angular injeta estilos de componentes em runtime.
+  - `connect-src`: `*.supabase.co` e, só em builds não empacotados, o Supabase local (`127.0.0.1:54321`).
+
+### Secure store
+
+`electron/ipc/secure-store.ts` grava os valores criptografados com `safeStorage` em `%APPDATA%/didiflow/secure-store.json` (base64), com escrita atômica e serializada. Se a criptografia do SO não estiver disponível, os valores ficam só em memória e a sessão não sobrevive a reinicializações. Tokens nunca são gravados em texto puro.
 
 ## Dados e banco
 

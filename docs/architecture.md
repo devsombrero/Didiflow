@@ -6,7 +6,7 @@ O DidiFlow é uma aplicação desktop composta por três partes com responsabili
 ┌──────────────────────────── Electron ────────────────────────────┐
 │  main process (electron/main.ts)                                 │
 │   - ciclo de vida, janela, protocolo app://                      │
-│   - IPC: secureStore (safeStorage), openExternal, notify         │
+│   - IPC: secureStore (safeStorage), openExternal                 │
 │                         ▲  contextBridge (preload.ts)            │
 │  renderer (sandbox, contextIsolation, sem Node)                  │
 │   └─ Angular 22 ─────────────── HTTPS ───────────────► Supabase  │
