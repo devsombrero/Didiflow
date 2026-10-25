@@ -6,6 +6,7 @@ const angular = require('angular-eslint');
 const prettier = require('eslint-config-prettier');
 
 module.exports = defineConfig([
+  { ignores: ['src/app/core/supabase/database.types.ts'] },
   {
     files: ['**/*.ts'],
     extends: [

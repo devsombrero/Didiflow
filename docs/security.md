@@ -2,23 +2,34 @@
 
 ## Credenciais do Supabase
 
-- O aplicativo usa somente a **anon key** e a URL do projeto. Ambas são públicas por natureza; a proteção dos dados vem das políticas RLS.
-- A **service_role key nunca** entra no código Angular, no processo Electron nem no pacote distribuído. Ela só é usada em ferramentas administrativas fora do app, se necessário.
-- Configuração por variáveis de ambiente (`.env`, não versionado). O repositório contém apenas `.env.example`, com valores fictícios.
-- Em dev, os valores vêm do Supabase local (`supabase status`). Em produção, são injetados no build.
+- O aplicativo usa somente a URL do projeto e a **anon/publishable key**. Ambas são públicas por natureza; a proteção dos dados vem das políticas RLS.
+- A **service_role/secret key nunca** entra no código Angular, no processo Electron nem no pacote distribuído. Ela só é usada em ferramentas administrativas fora do app, se necessário.
+- Os valores vêm de `DIDIFLOW_SUPABASE_URL` e `DIDIFLOW_SUPABASE_ANON_KEY`, lidas do ambiente ou de um `.env` (não versionado). O repositório contém apenas `.env.example`.
+- `scripts/write-env.mjs` gera `src/environments/environment.ts` (não versionado) antes de `start` e `build`. O script recusa:
+  - chaves `sb_secret_*` ou JWTs com `role: service_role`;
+  - URLs que não sejam `https`, exceto o Supabase local em `http://127.0.0.1` ou `localhost`.
+- Em dev, os valores vêm de `npx supabase status`. As chaves locais são as chaves demo padrão do Supabase CLI, públicas e válidas só no stack local. Em produção, a CI injeta as variáveis no build.
 
 ## Autorização
 
-- RLS habilitado em todas as tabelas com dados privados, com políticas `select/insert/update/delete` restritas a `owner_id = auth.uid()`.
+- RLS habilitado em todas as tabelas com dados privados, com políticas `select/insert/update/delete` restritas a `owner_id = (select auth.uid())`, sempre `to authenticated`.
+- `anon` não tem nenhum privilégio nas tabelas, sequências ou funções de `public`.
+- `TRUNCATE`, `REFERENCES` e `TRIGGER` são revogados de `authenticated`. O Supabase concede esses privilégios por padrão, e `TRUNCATE` ignora RLS.
+- `profiles` e `user_preferences` aceitam `UPDATE` só nas colunas editáveis (grants por coluna); linhas são criadas por trigger.
+- Chaves estrangeiras compostas com `owner_id` impedem referências entre usuários diferentes (ver `database.md`).
+- Tabelas de histórico são somente leitura para o usuário; inserções acontecem por triggers.
 - Filtros no Angular servem para UX, nunca como barreira de segurança.
-- Tabelas de auditoria não aceitam `update` nem `delete` pelo usuário; inserções acontecem por triggers.
-- O isolamento é testado contra um Postgres real (Supabase local), não apenas por testes de frontend.
+- O isolamento é testado contra um Postgres real:
+  - `supabase/tests/database/rls.test.sql` (pgTAP, `npm run db:test`);
+  - `tests/integration/` (API real com a chave pública, `npm run test:integration`).
 
 ## Autenticação e sessão
 
-- Senhas são gerenciadas exclusivamente pelo Supabase Auth.
-- A sessão (access e refresh token) é persistida pelo `secureStore` do Electron, que criptografa os dados com `safeStorage` (DPAPI no Windows) no processo principal. O renderer não grava tokens em `localStorage`.
-- A recuperação de senha usa código OTP enviado por e-mail, dispensando deep links no MVP.
+- Senhas são gerenciadas exclusivamente pelo Supabase Auth: mínimo de 8 caracteres, com maiúsculas, minúsculas e dígitos (`supabase/config.toml`, espelhado no formulário).
+- O cadastro exige confirmação de e-mail. Confirmação e recuperação de senha usam **códigos OTP de 6 dígitos** (templates em `supabase/templates/`), sem links de redirecionamento ou deep links.
+- A recuperação responde da mesma forma exista ou não a conta, para não permitir enumeração.
+- A sessão (access e refresh token) é persistida pelo `secureStore` do Electron, que criptografa os dados com `safeStorage` (DPAPI no Windows) no processo principal. O renderer não grava tokens em `localStorage`; esse fallback existe só quando o Angular roda no navegador, durante o desenvolvimento.
+- O logout remove a sessão do secure store.
 
 ## Electron
 

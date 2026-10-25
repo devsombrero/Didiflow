@@ -55,3 +55,4 @@ Thumbs.db
 # Supabase local
 /supabase/.temp
 /supabase/.branches
+/src/environments/environment.ts

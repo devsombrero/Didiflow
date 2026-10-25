@@ -1,0 +1,111 @@
+<h1>Configurações</h1>
+
+@if (!loaded()) {
+  <p class="muted" role="status">Carregando…</p>
+} @else {
+  <div class="form">
+    <section class="card">
+      <h2>Perfil</h2>
+      <form class="form" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+        <div class="field">
+          <label for="display_name">Nome de exibição</label>
+          <input id="display_name" class="input" formControlName="display_name" />
+          @if (
+            profileForm.controls.display_name.touched && profileForm.controls.display_name.invalid
+          ) {
+            <span class="field-error">Informe um nome de até 80 caracteres.</span>
+          }
+        </div>
+        <div class="actions">
+          <button
+            class="btn btn--primary"
+            type="submit"
+            [disabled]="savingProfile() || profileForm.pristine"
+          >
+            Salvar perfil
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Preferências</h2>
+      <form class="form" [formGroup]="preferencesForm" (ngSubmit)="savePreferences()" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="theme">Tema</label>
+            <select id="theme" class="input" formControlName="theme">
+              @for (theme of themes; track theme.value) {
+                <option [value]="theme.value">{{ theme.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="timezone">Fuso horário</label>
+            <select id="timezone" class="input" formControlName="timezone">
+              @for (zone of timezones(); track zone) {
+                <option [value]="zone">{{ zone }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="date_format">Formato de data</label>
+            <select id="date_format" class="input" formControlName="date_format">
+              @for (format of dateFormats; track format.value) {
+                <option [value]="format.value">{{ format.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <fieldset class="form">
+          <legend><strong>Notificações</strong></legend>
+          <div class="field field--inline">
+            <input
+              id="notifications_enabled"
+              type="checkbox"
+              formControlName="notifications_enabled"
+            />
+            <label for="notifications_enabled">Ativar notificações</label>
+          </div>
+          <div class="field field--inline">
+            <input id="notify_due_soon" type="checkbox" formControlName="notify_due_soon" />
+            <label for="notify_due_soon">Avisar sobre vencimentos próximos</label>
+          </div>
+          <div class="field field--inline">
+            <input id="notify_overdue" type="checkbox" formControlName="notify_overdue" />
+            <label for="notify_overdue">Alertar sobre tarefas atrasadas</label>
+          </div>
+          <div class="field">
+            <label for="due_soon_days">Antecedência do aviso de vencimento (dias)</label>
+            <input
+              id="due_soon_days"
+              class="input"
+              type="number"
+              min="0"
+              max="30"
+              formControlName="due_soon_days"
+            />
+            @if (preferencesForm.controls.due_soon_days.invalid) {
+              <span class="field-error">Informe um valor entre 0 e 30.</span>
+            }
+          </div>
+          <span class="field-hint">
+            As notificações nativas serão ativadas em uma próxima versão; as preferências já ficam
+            salvas.
+          </span>
+        </fieldset>
+
+        <div class="actions">
+          <button
+            class="btn btn--primary"
+            type="submit"
+            [disabled]="savingPreferences() || preferencesForm.pristine"
+          >
+            Salvar preferências
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

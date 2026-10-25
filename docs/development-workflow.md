@@ -19,8 +19,24 @@
 | `npm run electron:build`                  | Empacota `electron/main.ts` e `preload.ts` em `dist-electron/` (esbuild) |
 | `npm run typecheck:electron`              | Verificação de tipos do código Electron                                  |
 | `npm run test:electron`                   | Testes do processo principal (Vitest, ambiente Node)                     |
+| `npm run env`                             | Gera `src/environments/environment.ts` a partir do `.env`                |
+| `npm run db:start` / `npm run db:stop`    | Sobe ou para o Supabase local (Docker)                                   |
+| `npm run db:reset`                        | Recria o banco local aplicando todas as migrations                       |
+| `npm run db:test`                         | Testes pgTAP de RLS e constraints                                        |
+| `npm run db:lint`                         | Lint do schema (plpgsql_check)                                           |
+| `npm run db:types`                        | Regenera `src/app/core/supabase/database.types.ts`                       |
+| `npm run test:integration`                | Auth e RLS pela API real do Supabase local (requer `db:start`)           |
 
-Comandos do Supabase são documentados quando a feature correspondente for integrada.
+## Configuração do ambiente local
+
+1. `npm ci`
+2. `npm run db:start`: a primeira execução baixa as imagens Docker.
+3. `npx supabase status`: copie `API_URL` e `PUBLISHABLE_KEY` para um `.env` baseado em `.env.example`.
+4. `npm run electron:dev`
+
+Os e-mails de confirmação e de recuperação de senha chegam ao Mailpit em `http://127.0.0.1:54324`. O Studio fica em `http://127.0.0.1:54323`.
+
+Depois de criar ou alterar uma migration, rode `npm run db:reset`, `npm run db:test` e `npm run db:types`.
 
 ### Observações sobre o npm 12
 
