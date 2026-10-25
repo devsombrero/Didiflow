@@ -21,6 +21,16 @@ export const routes: Routes = [
         loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASK_ROUTES),
       },
       {
+        path: 'kpis',
+        title: 'KPIs · DidiFlow',
+        loadComponent: () => import('./features/kpis/kpis-page').then((m) => m.KpisPage),
+      },
+      {
+        path: 'goals',
+        title: 'Metas · DidiFlow',
+        loadComponent: () => import('./features/goals/goals-page').then((m) => m.GoalsPage),
+      },
+      {
         path: 'time',
         title: 'Registro de tempo · DidiFlow',
         loadComponent: () => import('./features/time-tracking/time-page').then((m) => m.TimePage),
