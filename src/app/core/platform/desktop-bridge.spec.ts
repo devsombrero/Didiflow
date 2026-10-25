@@ -26,6 +26,17 @@ describe('DesktopBridge', () => {
         remove: vi.fn(),
         openFolder: vi.fn(),
       },
+      attachments: {
+        add: vi.fn(),
+        open: vi.fn(),
+        reveal: vi.fn(),
+        saveAs: vi.fn(),
+        remove: vi.fn(),
+        removeTask: vi.fn(),
+        exists: vi.fn(),
+        prune: vi.fn(),
+        usage: vi.fn(),
+      },
     };
 
     it('exposes the secure store and desktop flag', () => {

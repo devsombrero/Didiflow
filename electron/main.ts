@@ -3,6 +3,7 @@ import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { APP_HOST, APP_ORIGIN, APP_SCHEME, buildContentSecurityPolicy } from './config';
+import { AttachmentStore } from './ipc/attachments';
 import { BackupStore } from './ipc/backups';
 import { registerIpcHandlers } from './ipc/handlers';
 import { SecureStore } from './ipc/secure-store';
@@ -146,6 +147,7 @@ if (!app.requestSingleInstanceLock()) {
       trustedOrigins,
       getWindow: () => mainWindow,
       backups: new BackupStore(path.join(app.getPath('userData'), 'backups')),
+      attachments: new AttachmentStore(path.join(app.getPath('userData'), 'attachments')),
     });
     createMainWindow();
 

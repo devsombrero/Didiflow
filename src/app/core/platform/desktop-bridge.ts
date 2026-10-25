@@ -1,5 +1,6 @@
 import { inject, Injectable, InjectionToken } from '@angular/core';
 import type {
+  AttachmentApi,
   BackupApi,
   DesktopNotification,
   OpenFileResult,
@@ -32,6 +33,9 @@ export class DesktopBridge {
 
   /** Local backups folder; null outside Electron. */
   readonly backups: BackupApi | null = this.api?.backups ?? null;
+
+  /** Task attachment files on this computer; null outside Electron. */
+  readonly attachments: AttachmentApi | null = this.api?.attachments ?? null;
 
   async openExternal(url: string): Promise<void> {
     if (this.api) {
