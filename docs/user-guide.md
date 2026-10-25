@@ -43,6 +43,10 @@ Para desinstalar: **Configurações do Windows → Aplicativos**. Seus dados fic
 
 Lembretes por tarefa e avisos diários de atrasos e vencimentos aparecem **apenas com o aplicativo aberto** (mesmo minimizado). Clicar na notificação abre a tarefa. Desative em Configurações.
 
+### Backup e restauração
+
+**Menu da conta → Backup e restauração:** backups automáticos locais (frequência e retenção configuráveis), backup manual e restauração a partir de um backup local ou de um arquivo, nos modos **Mesclar** ou **Substituir**. Antes de restaurar, um backup de segurança é criado automaticamente.
+
 ### Exportação
 
 **Configurações → Exportar dados:** tarefas, organização, tempo e KPIs em CSV (compatível com o Excel) ou JSON, além de uma cópia completa em JSON. Veja [backup-restore.md](backup-restore.md).

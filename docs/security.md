@@ -34,7 +34,7 @@
 ## Electron
 
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
-- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`, `notify`, `onNavigate`, `saveFile`); não expõe `ipcRenderer` nem módulos do Node.
+- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`, `notify`, `onNavigate`, `saveFile`, `openBackupFile`, `backups`); não expõe `ipcRenderer` nem módulos do Node.
 - Todo payload IPC é validado no processo principal (`electron/ipc/validation.ts`):
   - chaves do secure store: `[A-Za-z0-9._:-]{1,128}`; valores: string de até 64 KiB;
   - `openExternal`: apenas `https://`, sem credenciais na URL, até 2048 caracteres;
