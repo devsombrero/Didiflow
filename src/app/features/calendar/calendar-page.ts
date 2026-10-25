@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
@@ -26,7 +27,7 @@ const COLUMNS = 'id,title,status,priority,start_date,due_date,progress_percentag
 
 @Component({
   selector: 'app-calendar-page',
-  imports: [RouterLink, AppDatePipe],
+  imports: [RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './calendar-page.html',
   styleUrl: './calendar-page.scss',
 })

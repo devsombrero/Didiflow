@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, type OnInit, signal } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
@@ -13,7 +14,7 @@ const PRESETS = [25, 50, 90];
 
 @Component({
   selector: 'app-focus-page',
-  imports: [ReactiveFormsModule, RouterLink, AppDatePipe],
+  imports: [ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './focus-page.html',
   styleUrl: './focus-page.scss',
 })

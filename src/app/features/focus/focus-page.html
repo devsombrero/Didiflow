@@ -1,104 +1,112 @@
 <header class="page-header">
   <h1>Modo foco</h1>
-  <a class="btn" routerLink="/today">Prioridades de hoje</a>
+  <a matButton="outlined" routerLink="/today"><mat-icon>today</mat-icon> Prioridades de hoje</a>
 </header>
 
 @if (store.active(); as active) {
-  <section class="card focus">
-    <p class="focus__task">{{ active.taskTitle ?? 'Foco livre' }}</p>
-    <p class="focus__clock" role="timer" [attr.aria-label]="'Tempo restante ' + clock()">
-      {{ clock() }}
-    </p>
-    <div
-      class="focus__bar"
-      role="progressbar"
-      aria-valuemin="0"
-      aria-valuemax="100"
-      [attr.aria-valuenow]="progress()"
-      aria-label="Progresso da sessão"
-    >
-      <div [style.width.%]="progress()"></div>
-    </div>
-    <p class="muted">
-      {{ active.plannedMinutes }} min
-      @if (active.id) {
-        · sessão registrada
-      }
-      @if (active.logTime) {
-        · o tempo será lançado na tarefa
-      }
-    </p>
-    <button type="button" class="btn" (click)="stop()">Interromper</button>
-  </section>
+  <mat-card appearance="outlined" class="focus">
+    <mat-card-content>
+      <p class="focus__task">{{ active.taskTitle ?? 'Foco livre' }}</p>
+      <div class="focus__ring">
+        <mat-progress-spinner
+          mode="determinate"
+          [value]="progress()"
+          [diameter]="240"
+          [strokeWidth]="10"
+          aria-label="Progresso da sessão"
+        />
+        <p class="focus__clock" role="timer" [attr.aria-label]="'Tempo restante ' + clock()">
+          {{ clock() }}
+        </p>
+      </div>
+      <p class="muted">
+        {{ active.plannedMinutes }} min
+        @if (active.id) {
+          · sessão registrada
+        }
+        @if (active.logTime) {
+          · o tempo será lançado na tarefa
+        }
+      </p>
+      <button matButton="outlined" type="button" (click)="stop()">
+        <mat-icon>stop</mat-icon> Interromper
+      </button>
+    </mat-card-content>
+  </mat-card>
 } @else {
-  @if (store.finished(); as finished) {
-    <div class="alert alert--info" role="status">{{ finishedMessage() }}</div>
+  @if (store.finished()) {
+    <div class="alert alert--info" role="status">
+      <mat-icon>celebration</mat-icon>{{ finishedMessage() }}
+    </div>
   }
-  <section class="card">
-    <h2>Nova sessão</h2>
-    <form class="form" [formGroup]="form" (ngSubmit)="start()" novalidate>
-      <div class="field">
-        <label for="focus-task">Tarefa</label>
-        <select id="focus-task" class="input" formControlName="task_id">
-          <option value="">Foco livre (sem tarefa)</option>
-          @for (task of taskOptions(); track task.id) {
-            <option [value]="task.id">{{ task.title }}</option>
-          }
-        </select>
-      </div>
-      <div class="field">
-        <span id="duration-label"><strong>Duração (minutos)</strong></span>
-        <div class="presets" role="group" aria-labelledby="duration-label">
-          @for (preset of presets; track preset) {
-            <button
-              type="button"
-              class="chip"
-              [attr.aria-pressed]="form.controls.minutes.value === preset"
-              (click)="form.controls.minutes.setValue(preset)"
-            >
-              {{ preset }}
-            </button>
-          }
-          <label class="sr-only" for="focus-minutes">Duração personalizada</label>
-          <input
-            id="focus-minutes"
-            class="input minutes"
-            type="number"
-            min="1"
-            max="240"
-            formControlName="minutes"
-          />
+  <mat-card appearance="outlined" class="section new-session">
+    <mat-card-header><mat-card-title>Nova sessão</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <form class="form" [formGroup]="form" (ngSubmit)="start()" novalidate>
+        <mat-form-field>
+          <mat-label>Tarefa</mat-label>
+          <mat-select id="focus-task" formControlName="task_id">
+            <mat-option value="">Foco livre (sem tarefa)</mat-option>
+            @for (task of taskOptions(); track task.id) {
+              <mat-option [value]="task.id">{{ task.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div class="presets">
+          <mat-button-toggle-group
+            aria-label="Duração predefinida"
+            hideSingleSelectionIndicator
+            [value]="form.controls.minutes.value"
+            (change)="form.controls.minutes.setValue($event.value)"
+          >
+            @for (preset of presets; track preset) {
+              <mat-button-toggle [value]="preset">{{ preset }} min</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+          <mat-form-field class="minutes">
+            <mat-label>Minutos</mat-label>
+            <input
+              matInput
+              id="focus-minutes"
+              type="number"
+              min="1"
+              max="240"
+              formControlName="minutes"
+            />
+          </mat-form-field>
         </div>
-      </div>
-      <div class="field field--inline">
-        <input id="focus-record" type="checkbox" formControlName="record" />
-        <label for="focus-record">Registrar a sessão de foco no histórico</label>
-      </div>
-      <div class="field field--inline">
-        <input id="focus-log" type="checkbox" formControlName="log_time" />
-        <label for="focus-log">Lançar o tempo focado como registro de tempo</label>
-      </div>
-      <div class="actions">
-        <button class="btn btn--primary" type="submit" [disabled]="starting()">Começar</button>
-      </div>
-    </form>
-  </section>
+        <mat-slide-toggle id="focus-record" formControlName="record">
+          Registrar a sessão de foco no histórico
+        </mat-slide-toggle>
+        <mat-slide-toggle id="focus-log" formControlName="log_time">
+          Lançar o tempo focado como registro de tempo
+        </mat-slide-toggle>
+        <div class="actions">
+          <button matButton="filled" type="submit" [disabled]="starting()">
+            <mat-icon>play_arrow</mat-icon> Começar
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
 }
 
-<section class="card history">
-  <h2>Sessões recentes</h2>
-  <ul>
-    @for (session of history(); track session.id) {
-      <li>
-        <span>{{ session.started_at | appDate: true }}</span>
-        <span>{{ session.tasks?.title ?? 'Foco livre' }}</span>
-        <span>{{ durationOf(session) }} de {{ session.planned_minutes }} min</span>
-        <span [class.muted]="!session.completed">{{
-          session.completed ? 'Concluída' : 'Interrompida'
-        }}</span>
-      </li>
-    } @empty {
-      <li class="muted">Nenhuma sessão registrada.</li>
-    }
-  </ul>
-</section>
+<mat-card appearance="outlined" class="section history">
+  <mat-card-header><mat-card-title>Sessões recentes</mat-card-title></mat-card-header>
+  <mat-card-content>
+    <ul>
+      @for (session of history(); track session.id) {
+        <li>
+          <span>{{ session.started_at | appDate: true }}</span>
+          <span>{{ session.tasks?.title ?? 'Foco livre' }}</span>
+          <span>{{ durationOf(session) }} de {{ session.planned_minutes }} min</span>
+          <span [class.muted]="!session.completed">{{
+            session.completed ? 'Concluída' : 'Interrompida'
+          }}</span>
+        </li>
+      } @empty {
+        <li class="muted">Nenhuma sessão registrada.</li>
+      }
+    </ul>
+  </mat-card-content>
+</mat-card>

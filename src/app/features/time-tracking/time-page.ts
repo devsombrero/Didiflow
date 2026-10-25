@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
@@ -22,7 +23,7 @@ interface DayGroup {
 
 @Component({
   selector: 'app-time-page',
-  imports: [ReactiveFormsModule, RouterLink, AppDatePipe],
+  imports: [ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './time-page.html',
   styleUrl: './time-page.scss',
 })

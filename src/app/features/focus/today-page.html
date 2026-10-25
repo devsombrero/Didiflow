@@ -1,110 +1,124 @@
 <header class="page-header">
   <h1>Prioridades de hoje</h1>
-  <a class="btn btn--primary" routerLink="/focus">Modo foco</a>
+  <a matButton="filled" routerLink="/focus"><mat-icon>timer</mat-icon> Modo foco</a>
 </header>
 
 @switch (state()) {
   @case ('loading') {
-    <p class="muted" role="status">Carregando…</p>
+    <mat-progress-bar mode="indeterminate" />
   }
   @case ('error') {
-    <div class="alert" role="alert">Não foi possível carregar as prioridades.</div>
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>Não foi possível carregar as prioridades.
+    </div>
   }
   @default {
     <div class="layout">
-      <section class="card">
-        <h2>Minha lista ({{ priorities().length }})</h2>
-        <ol class="list">
-          @for (row of priorities(); track row.id; let i = $index; let last = $last) {
-            <li [class.done]="row.tasks?.status === 'done'">
-              <span class="position">{{ i + 1 }}</span>
-              <div class="info">
-                @if (row.tasks; as task) {
-                  <a [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
-                  <span class="meta">
-                    <app-priority-badge [priority]="task.priority" />
-                    <span class="muted">{{ statusLabels[task.status] }}</span>
-                    <app-progress-bar [value]="task.progress_percentage" />
-                  </span>
-                }
-              </div>
-              <span class="actions">
-                <button
-                  type="button"
-                  class="btn btn--sm"
-                  aria-label="Subir"
-                  [disabled]="i === 0 || busy()"
-                  (click)="shift(i, -1)"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  class="btn btn--sm"
-                  aria-label="Descer"
-                  [disabled]="last || busy()"
-                  (click)="shift(i, 1)"
-                >
-                  ↓
-                </button>
-                @if (row.tasks?.status !== 'done') {
-                  <a class="btn btn--sm" routerLink="/focus" [queryParams]="{ task: row.task_id }"
-                    >Focar</a
-                  >
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header>
+          <mat-card-title>Minha lista ({{ priorities().length }})</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <ol class="list">
+            @for (row of priorities(); track row.id; let i = $index; let last = $last) {
+              <li [class.done]="row.tasks?.status === 'done'">
+                <span class="position">{{ i + 1 }}</span>
+                <div class="info">
+                  @if (row.tasks; as task) {
+                    <a [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                    <span class="meta">
+                      <app-priority-badge [priority]="task.priority" />
+                      <span class="muted">{{ statusLabels[task.status] }}</span>
+                      <app-progress-bar [value]="task.progress_percentage" />
+                    </span>
+                  }
+                </div>
+                <span class="row-actions">
                   <button
+                    matIconButton
                     type="button"
-                    class="btn btn--sm"
-                    [disabled]="busy()"
-                    (click)="complete(row)"
+                    aria-label="Subir"
+                    [disabled]="i === 0 || busy()"
+                    (click)="shift(i, -1)"
                   >
-                    Concluir
+                    <mat-icon>arrow_upward</mat-icon>
                   </button>
-                }
-                <button type="button" class="btn btn--sm" [disabled]="busy()" (click)="remove(row)">
-                  Remover
-                </button>
-              </span>
-            </li>
-          } @empty {
-            <li class="muted empty">
-              Escolha poucas tarefas para hoje: comece pelas sugestões ao lado.
-            </li>
-          }
-        </ol>
-        @if (others().length) {
-          <label class="sr-only" for="add-task">Adicionar outra tarefa</label>
-          <select id="add-task" class="input" (change)="add($any($event.target).value)">
-            <option value="">Adicionar outra tarefa…</option>
-            @for (task of others(); track task.id) {
-              <option [value]="task.id">{{ task.title }}</option>
+                  <button
+                    matIconButton
+                    type="button"
+                    aria-label="Descer"
+                    [disabled]="last || busy()"
+                    (click)="shift(i, 1)"
+                  >
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+                  <button
+                    matIconButton
+                    type="button"
+                    [matMenuTriggerFor]="rowMenu"
+                    aria-label="Mais ações"
+                  >
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #rowMenu="matMenu">
+                    @if (row.tasks?.status !== 'done') {
+                      <a mat-menu-item routerLink="/focus" [queryParams]="{ task: row.task_id }">
+                        <mat-icon>timer</mat-icon><span>Focar</span>
+                      </a>
+                      <button mat-menu-item [disabled]="busy()" (click)="complete(row)">
+                        <mat-icon>task_alt</mat-icon><span>Concluir</span>
+                      </button>
+                    }
+                    <button mat-menu-item [disabled]="busy()" (click)="remove(row)">
+                      <mat-icon>remove_circle</mat-icon><span>Remover da lista</span>
+                    </button>
+                  </mat-menu>
+                </span>
+              </li>
+            } @empty {
+              <li class="muted empty">
+                Escolha poucas tarefas para hoje: comece pelas sugestões ao lado.
+              </li>
             }
-          </select>
-        }
-      </section>
-
-      <section class="card">
-        <h2>Sugestões</h2>
-        <ul class="suggestions">
-          @for (suggestion of suggestions(); track suggestion.task.id) {
-            <li>
-              <div class="info">
-                <a [routerLink]="['/tasks', suggestion.task.id]">{{ suggestion.task.title }}</a>
-                <span class="muted reason">{{ suggestion.reason }}</span>
-              </div>
-              <button
-                type="button"
-                class="btn btn--sm"
-                [disabled]="busy()"
-                (click)="add(suggestion.task.id)"
-              >
-                Adicionar
-              </button>
-            </li>
-          } @empty {
-            <li class="muted">Nada urgente: nenhuma tarefa atrasada ou vencendo em breve.</li>
+          </ol>
+          @if (others().length) {
+            <mat-form-field>
+              <mat-label>Adicionar outra tarefa</mat-label>
+              <mat-select id="add-task" (selectionChange)="add($event.value)">
+                @for (task of others(); track task.id) {
+                  <mat-option [value]="task.id">{{ task.title }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
           }
-        </ul>
-      </section>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Sugestões</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <ul class="suggestions">
+            @for (suggestion of suggestions(); track suggestion.task.id) {
+              <li>
+                <div class="info">
+                  <a [routerLink]="['/tasks', suggestion.task.id]">{{ suggestion.task.title }}</a>
+                  <span class="reason">{{ suggestion.reason }}</span>
+                </div>
+                <button
+                  matButton="tonal"
+                  type="button"
+                  [disabled]="busy()"
+                  (click)="add(suggestion.task.id)"
+                >
+                  <mat-icon>add</mat-icon> Adicionar
+                </button>
+              </li>
+            } @empty {
+              <li class="muted">Nada urgente: nenhuma tarefa atrasada ou vencendo em breve.</li>
+            }
+          </ul>
+        </mat-card-content>
+      </mat-card>
     </div>
   }
 }
