@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatIconRegistry } from '@angular/material/icon';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
@@ -18,6 +19,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
+    // Required by ngx-charts (legacy animation triggers); loaded lazily.
+    provideAnimationsAsync(),
     { provide: APP_ENVIRONMENT, useValue: environment },
     // Icons come from the bundled Material Symbols font (no network access).
     provideAppInitializer(() => {

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideSupabaseMock } from '../../../testing/supabase.mock';
 import { provideOrganizationMock } from '../../../testing/organization.mock';
@@ -8,12 +9,13 @@ import type { MetricTask } from './metrics';
 
 describe('DashboardPage', () => {
   async function setup(tasks: Partial<MetricTask>[]) {
-    // Canvas is not implemented in jsdom; charts are covered by metrics specs.
+    // SVG layout is not implemented in jsdom; charts are covered by metrics specs.
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     await TestBed.configureTestingModule({
       imports: [DashboardPage],
       providers: [
         provideRouter([]),
+        provideNoopAnimations(),
         provideSupabaseMock(),
         provideOrganizationMock(),
         {
