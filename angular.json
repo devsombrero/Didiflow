@@ -82,7 +82,13 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html", "electron/**/*.ts"]
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html",
+              "electron/**/*.ts",
+              "tests/**/*.ts",
+              "playwright.config.ts"
+            ]
           }
         }
       }
