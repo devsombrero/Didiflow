@@ -16,19 +16,19 @@ O DidiFlow é uma aplicação desktop composta por três partes com responsabili
 
 ## Decisões técnicas
 
-| Tema                   | Decisão                                               | Motivo                                                                       |
-| ---------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Gerenciador de pacotes | npm 12                                                | Único instalado no ambiente; um só lockfile.                                 |
-| Interface              | Angular 22, componentes standalone, zoneless, signals | Versão estável atual; sem NgModules nem zone.js.                             |
-| TypeScript             | 6.0.x                                                 | Faixa exigida por `@angular/build` 22 (`>=6.0 <6.1`).                        |
-| Desktop                | Electron 44.x                                         | Linha estável com patches; a 45.0.0 era recente demais no início do projeto. |
-| Empacotamento          | electron-builder, alvo Windows (NSIS)                 | SO definido para o projeto.                                                  |
-| Backend                | Supabase (Auth, PostgreSQL, RLS)                      | Backend gerenciado; autorização no banco.                                    |
-| Gráficos               | ng2-charts + chart.js                                 | Leve e compatível com Angular 22.                                            |
-| Estado                 | Serviços com signals                                  | Escopo pessoal não justifica NgRx.                                           |
-| Testes unitários       | Vitest (runner do `@angular/build`)                   | Padrão do Angular 22.                                                        |
-| Testes e2e             | Playwright                                            | Suporta Electron.                                                            |
-| Supabase em dev        | Local via Docker (`supabase start`)                   | Migrations e testes de RLS reproduzíveis e offline.                          |
+| Tema                   | Decisão                                               | Motivo                                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Gerenciador de pacotes | npm 12                                                | Único instalado no ambiente; um só lockfile.                                                                                                            |
+| Interface              | Angular 22, componentes standalone, zoneless, signals | Versão estável atual; sem NgModules nem zone.js.                                                                                                        |
+| TypeScript             | 6.0.x                                                 | Faixa exigida por `@angular/build` 22 (`>=6.0 <6.1`).                                                                                                   |
+| Desktop                | Electron 44.x                                         | Linha estável com patches; a 45.0.0 era recente demais no início do projeto.                                                                            |
+| Empacotamento          | electron-builder, alvo Windows (NSIS)                 | SO definido para o projeto.                                                                                                                             |
+| Backend                | Supabase (Auth, PostgreSQL, RLS)                      | Backend gerenciado; autorização no banco.                                                                                                               |
+| Gráficos               | chart.js 4 com wrapper próprio (`shared/charts`)      | Sem dependência de `@angular/cdk`; só os controllers usados são registrados no chunk lazy do dashboard. Paleta validada para daltonismo nos dois temas. |
+| Estado                 | Serviços com signals                                  | Escopo pessoal não justifica NgRx.                                                                                                                      |
+| Testes unitários       | Vitest (runner do `@angular/build`)                   | Padrão do Angular 22.                                                                                                                                   |
+| Testes e2e             | Playwright                                            | Suporta Electron.                                                                                                                                       |
+| Supabase em dev        | Local via Docker (`supabase start`)                   | Migrations e testes de RLS reproduzíveis e offline.                                                                                                     |
 
 ## Electron
 
