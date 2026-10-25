@@ -1,0 +1,87 @@
+.layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+h3 {
+  margin-top: var(--space-6);
+  font-size: 15px;
+}
+
+.goal {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+
+  p {
+    margin: var(--space-1) 0;
+  }
+}
+
+.goal__header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.goal__status {
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+
+  &[data-status='achieved'] {
+    color: var(--color-success);
+  }
+
+  &[data-status='missed'] {
+    color: var(--color-danger);
+  }
+
+  &[data-status='in_progress'] {
+    color: var(--color-primary);
+  }
+}
+
+.goal__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+.goal__note {
+  font-size: 13px;
+}
+
+.progress {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.achievements {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
