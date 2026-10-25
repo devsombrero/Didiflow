@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(32);
+select plan(29);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: two users (Alice, Bob) created as the auth service would.
@@ -120,7 +120,7 @@ select throws_ok($$select * from public.profiles$$, '42501', null, 'anon cannot 
 reset role;
 
 -- ---------------------------------------------------------------------------
--- Task integrity constraints
+-- Task integrity constraints (status/progress rules: see progress.test.sql)
 -- ---------------------------------------------------------------------------
 select pg_temp.login_as('11111111-1111-1111-1111-111111111111');
 
@@ -130,15 +130,6 @@ select throws_ok(
 select lives_ok(
   $$insert into public.tasks (title, start_date, due_date) values ('x', '2026-10-10', '2026-10-10')$$,
   'due date may equal start date');
-select throws_ok(
-  $$insert into public.tasks (title, status, progress_percentage) values ('x', 'not_started', 10)$$,
-  '23514', null, 'not started tasks must be at 0%');
-select throws_ok(
-  $$insert into public.tasks (title, status, progress_percentage) values ('x', 'in_progress', 100)$$,
-  '23514', null, 'in progress tasks must be between 1% and 99%');
-select throws_ok(
-  $$insert into public.tasks (title, status, progress_percentage) values ('x', 'done', 100)$$,
-  '23514', null, 'done tasks require completed_at');
 select throws_ok(
   $$insert into public.tasks (title, has_jira_card, jira_url) values ('x', true, 'http://jira.local/1')$$,
   '23514', null, 'Jira URL must be https');
