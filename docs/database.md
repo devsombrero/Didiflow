@@ -117,7 +117,3 @@ O trigger `tasks_record_status_history` (AFTER, `security definer`) grava cada t
 - Um índice único parcial (`owner_id where ended_at is null`) garante no máximo um cronômetro ativo por usuário.
 - Cada registro tem no máximo 24 horas, `ended_at >= started_at`, e a tarefa associada precisa ser do mesmo dono (FK composta, `on delete set null`).
 - As RPCs `start_timer`, `pause_timer`, `resume_timer` e `stop_timer` (security invoker) usam `now()` do servidor. Assim o cronômetro não depende de a janela continuar aberta, nem do relógio local.
-
-## Fases posteriores
-
-`focus_sessions` e, se necessário, `notifications`.

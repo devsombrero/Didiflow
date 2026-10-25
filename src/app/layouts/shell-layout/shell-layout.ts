@@ -1,4 +1,4 @@
-import { Component, effect, inject, type OnInit } from '@angular/core';
+import { Component, computed, effect, inject, type OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -6,6 +6,8 @@ import { OrganizationStore } from '../../features/organization/organization.serv
 import { TimerStore } from '../../features/time-tracking/time.service';
 import { TimerWidget } from '../../features/time-tracking/timer-widget';
 import { NotificationScheduler } from '../../features/notifications/notification-scheduler';
+import { FocusStore } from '../../features/focus/focus.service';
+import { formatClock } from '../../features/time-tracking/time-calc';
 import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
@@ -22,6 +24,10 @@ export class ShellLayout implements OnInit {
   private readonly org = inject(OrganizationStore);
   private readonly timer = inject(TimerStore);
   private readonly scheduler = inject(NotificationScheduler);
+  protected readonly focus = inject(FocusStore);
+  protected readonly focusClock = computed(() =>
+    formatClock(this.focus.remaining()).replace(/^00:/, ''),
+  );
   protected readonly user = this.auth.user;
 
   constructor() {
@@ -32,6 +38,7 @@ export class ShellLayout implements OnInit {
         this.org.clear();
         this.timer.clear();
         this.scheduler.stop();
+        this.focus.clear();
         void this.router.navigate(['/login']);
       }
     });
@@ -41,6 +48,7 @@ export class ShellLayout implements OnInit {
     try {
       await Promise.all([this.profileService.load(), this.timer.refresh()]);
       this.scheduler.start();
+      void this.focus.restore().catch(() => undefined);
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
     }

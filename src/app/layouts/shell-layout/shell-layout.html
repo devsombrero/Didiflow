@@ -8,6 +8,17 @@
         >
       </li>
       <li>
+        <a routerLink="/today" routerLinkActive="active">Hoje</a>
+      </li>
+      <li>
+        <a routerLink="/focus" routerLinkActive="active">
+          Foco
+          @if (focus.active()) {
+            <span class="nav-badge">{{ focusClock() }}</span>
+          }
+        </a>
+      </li>
+      <li>
         <a routerLink="/tasks" routerLinkActive="active">Tarefas</a>
       </li>
       <li>

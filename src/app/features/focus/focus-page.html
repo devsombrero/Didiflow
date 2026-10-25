@@ -1,0 +1,104 @@
+<header class="page-header">
+  <h1>Modo foco</h1>
+  <a class="btn" routerLink="/today">Prioridades de hoje</a>
+</header>
+
+@if (store.active(); as active) {
+  <section class="card focus">
+    <p class="focus__task">{{ active.taskTitle ?? 'Foco livre' }}</p>
+    <p class="focus__clock" role="timer" [attr.aria-label]="'Tempo restante ' + clock()">
+      {{ clock() }}
+    </p>
+    <div
+      class="focus__bar"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      [attr.aria-valuenow]="progress()"
+      aria-label="Progresso da sessão"
+    >
+      <div [style.width.%]="progress()"></div>
+    </div>
+    <p class="muted">
+      {{ active.plannedMinutes }} min
+      @if (active.id) {
+        · sessão registrada
+      }
+      @if (active.logTime) {
+        · o tempo será lançado na tarefa
+      }
+    </p>
+    <button type="button" class="btn" (click)="stop()">Interromper</button>
+  </section>
+} @else {
+  @if (store.finished(); as finished) {
+    <div class="alert alert--info" role="status">{{ finishedMessage() }}</div>
+  }
+  <section class="card">
+    <h2>Nova sessão</h2>
+    <form class="form" [formGroup]="form" (ngSubmit)="start()" novalidate>
+      <div class="field">
+        <label for="focus-task">Tarefa</label>
+        <select id="focus-task" class="input" formControlName="task_id">
+          <option value="">Foco livre (sem tarefa)</option>
+          @for (task of taskOptions(); track task.id) {
+            <option [value]="task.id">{{ task.title }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <span id="duration-label"><strong>Duração (minutos)</strong></span>
+        <div class="presets" role="group" aria-labelledby="duration-label">
+          @for (preset of presets; track preset) {
+            <button
+              type="button"
+              class="chip"
+              [attr.aria-pressed]="form.controls.minutes.value === preset"
+              (click)="form.controls.minutes.setValue(preset)"
+            >
+              {{ preset }}
+            </button>
+          }
+          <label class="sr-only" for="focus-minutes">Duração personalizada</label>
+          <input
+            id="focus-minutes"
+            class="input minutes"
+            type="number"
+            min="1"
+            max="240"
+            formControlName="minutes"
+          />
+        </div>
+      </div>
+      <div class="field field--inline">
+        <input id="focus-record" type="checkbox" formControlName="record" />
+        <label for="focus-record">Registrar a sessão de foco no histórico</label>
+      </div>
+      <div class="field field--inline">
+        <input id="focus-log" type="checkbox" formControlName="log_time" />
+        <label for="focus-log">Lançar o tempo focado como registro de tempo</label>
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary" type="submit" [disabled]="starting()">Começar</button>
+      </div>
+    </form>
+  </section>
+}
+
+<section class="card history">
+  <h2>Sessões recentes</h2>
+  <ul>
+    @for (session of history(); track session.id) {
+      <li>
+        <span>{{ session.started_at | appDate: true }}</span>
+        <span>{{ session.tasks?.title ?? 'Foco livre' }}</span>
+        <span>{{ durationOf(session) }} de {{ session.planned_minutes }} min</span>
+        <span [class.muted]="!session.completed">{{
+          session.completed ? 'Concluída' : 'Interrompida'
+        }}</span>
+      </li>
+    } @empty {
+      <li class="muted">Nenhuma sessão registrada.</li>
+    }
+  </ul>
+</section>

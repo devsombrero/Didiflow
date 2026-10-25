@@ -27,6 +27,9 @@
         </div>
         <div class="actions">
           <a class="btn btn--primary" [routerLink]="['/tasks', task.id, 'edit']">Editar</a>
+          @if (canComplete(task)) {
+            <a class="btn" routerLink="/focus" [queryParams]="{ task: task.id }">Focar</a>
+          }
           <button type="button" class="btn" (click)="act(actions.duplicate(task))">Duplicar</button>
           @if (canReopen(task)) {
             <button type="button" class="btn" (click)="act(actions.reopen(task))">Reabrir</button>

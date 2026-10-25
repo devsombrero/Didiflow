@@ -12,7 +12,7 @@ import { TaskRemindersPanel } from '../../notifications/task-reminders-panel';
 import { TaskActions } from '../task-actions.service';
 import { deadlineLabel, deadlineState } from '../task-deadline';
 import type { Task, TaskWithTags } from '../task.model';
-import { canCancel, canReopen } from '../task-rules';
+import { canCancel, canComplete, canReopen } from '../task-rules';
 import { OrganizationStore } from '../../organization/organization.service';
 import { TasksService } from '../tasks.service';
 
@@ -67,6 +67,7 @@ export class TaskDetailPage implements OnInit {
   }
 
   protected readonly canCancel = canCancel;
+  protected readonly canComplete = canComplete;
   protected readonly canReopen = canReopen;
 
   async ngOnInit(): Promise<void> {
