@@ -103,6 +103,26 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"task_reminders": {
+                  Row: {
+                    "created_at": string,"id": string,"note": string | null,"owner_id": string,"remind_at": string,"sent_at": string | null,"task_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"note"?: string | null,"owner_id"?: string,"remind_at": string,"sent_at"?: string | null,"task_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"note"?: string | null,"owner_id"?: string,"remind_at"?: string,"sent_at"?: string | null,"task_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "task_reminders_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
                 },"task_status_history": {
                   Row: {
                     "changed_at": string,"changed_by": string | null,"from_progress": number | null,"from_status": Database["public"]['Enums']["task_status"] | null,"id": number,"owner_id": string,"task_id": string,"to_progress": number,"to_status": Database["public"]['Enums']["task_status"]
