@@ -3,6 +3,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { ProfileService } from '../../core/profile/profile.service';
+import { INTEGRATIONS } from '../integrations/integrations';
 import type { ThemePreference } from '../../core/theme/theme.service';
 import { ToastService } from '../../shared/toast/toast.service';
 
@@ -31,6 +32,7 @@ export class SettingsPage {
 
   protected readonly dateFormats = DATE_FORMATS;
   protected readonly themes = THEMES;
+  protected readonly integrations = INTEGRATIONS;
   protected readonly timezones = signal<readonly string[]>(Intl.supportedValuesOf('timeZone'));
   protected readonly loaded = signal(false);
   protected readonly savingProfile = signal(false);

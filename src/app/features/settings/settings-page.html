@@ -115,5 +115,24 @@
         </div>
       </form>
     </section>
+
+    <section class="card">
+      <h2>Integrações</h2>
+      <p class="muted">
+        Nesta versão, Jira e Slack funcionam por links cadastrados manualmente em cada tarefa. As
+        demais integrações estão planejadas; nenhuma conta externa é acessada pelo aplicativo.
+      </p>
+      <ul class="integrations">
+        @for (item of integrations; track item.id) {
+          <li>
+            <strong>{{ item.name }}</strong>
+            <span class="badge-status" [attr.data-status]="item.status">
+              {{ item.status === 'manual-links' ? 'Links manuais' : 'Planejada' }}
+            </span>
+            <span class="muted">{{ item.description }}</span>
+          </li>
+        }
+      </ul>
+    </section>
   </div>
 }
