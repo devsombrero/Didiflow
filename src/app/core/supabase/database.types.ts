@@ -153,6 +153,26 @@ isOneToOne: false
       referencedColumns: ["id","owner_id"]
     }
                   ]
+                },"time_entries": {
+                  Row: {
+                    "created_at": string,"description": string | null,"duration_seconds": number | null,"ended_at": string | null,"id": string,"owner_id": string,"paused_at": string | null,"paused_seconds": number,"source": string,"started_at": string,"task_id": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"description"?: string | null,"duration_seconds"?: number | null,"ended_at"?: string | null,"id"?: string,"owner_id"?: string,"paused_at"?: string | null,"paused_seconds"?: number,"source"?: string,"started_at": string,"task_id"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"description"?: string | null,"duration_seconds"?: number | null,"ended_at"?: string | null,"id"?: string,"owner_id"?: string,"paused_at"?: string | null,"paused_seconds"?: number,"source"?: string,"started_at"?: string,"task_id"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "time_entries_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
                 },"user_preferences": {
                   Row: {
                     "created_at": string,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
@@ -195,7 +215,90 @@ isOneToOne: false
                 }
           }
           Functions: {
-            [_ in never]: never
+            "pause_timer":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,
+"description": string | null,
+"duration_seconds": number | null,
+"ended_at": string | null,
+"id": string,
+"owner_id": string,
+"paused_at": string | null,
+"paused_seconds": number,
+"source": string,
+"started_at": string,
+"task_id": string | null,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "time_entries"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"resume_timer":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,
+"description": string | null,
+"duration_seconds": number | null,
+"ended_at": string | null,
+"id": string,
+"owner_id": string,
+"paused_at": string | null,
+"paused_seconds": number,
+"source": string,
+"started_at": string,
+"task_id": string | null,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "time_entries"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"start_timer":
+{ Args: { "p_description"?: string,"p_task_id"?: string }; Returns: {
+              "created_at": string,
+"description": string | null,
+"duration_seconds": number | null,
+"ended_at": string | null,
+"id": string,
+"owner_id": string,
+"paused_at": string | null,
+"paused_seconds": number,
+"source": string,
+"started_at": string,
+"task_id": string | null,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "time_entries"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"stop_timer":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,
+"description": string | null,
+"duration_seconds": number | null,
+"ended_at": string | null,
+"id": string,
+"owner_id": string,
+"paused_at": string | null,
+"paused_seconds": number,
+"source": string,
+"started_at": string,
+"task_id": string | null,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "time_entries"
+        isOneToOne: true
+        isSetofReturn: false
+      } }
           }
           Enums: {
             "task_priority": "low"|"medium"|"high"|"urgent","task_status": "not_started"|"in_progress"|"blocked"|"done"|"cancelled","theme_preference": "system"|"light"|"dark"

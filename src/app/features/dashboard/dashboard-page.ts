@@ -1,4 +1,4 @@
-import { Component, computed, inject, type OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, type OnInit, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -13,7 +13,8 @@ import {
   type TaskStatus,
 } from '../tasks/task.model';
 import { OrganizationStore } from '../organization/organization.service';
-import { DashboardService } from './dashboard.service';
+import { formatDuration, totalSeconds } from '../time-tracking/time-calc';
+import { DashboardService, type MetricTimeEntry } from './dashboard.service';
 import {
   applyFilters,
   deliveryBuckets,
@@ -49,6 +50,7 @@ export class DashboardPage implements OnInit {
   protected readonly state = signal<'loading' | 'ready' | 'error'>('loading');
   protected readonly errorMessage = signal('');
   protected readonly tasks = signal<MetricTask[]>([]);
+  protected readonly timeEntries = signal<MetricTimeEntry[]>([]);
   protected readonly preset = signal<PeriodPreset>('30d');
   protected readonly granularity = signal<Granularity>('week');
   protected readonly statusFilter = signal<TaskStatus | ''>('');
@@ -122,6 +124,27 @@ export class DashboardPage implements OnInit {
     };
   });
 
+  /** Time in the period for entries whose task matches the filters (or no task when unfiltered). */
+  protected readonly timeInvested = computed(() => {
+    const filtered = this.hasFilters();
+    const status = this.statusFilter();
+    const priority = this.priorityFilter();
+    const project = this.projectFilter();
+    const category = this.categoryFilter();
+    const entries = this.timeEntries().filter((entry) => {
+      if (!filtered) return true;
+      const task = entry.tasks;
+      if (!task) return false;
+      return (
+        (!status || task.status === status) &&
+        (!priority || task.priority === priority) &&
+        (!project || task.project_id === project) &&
+        (!category || task.category_id === category)
+      );
+    });
+    return entries.length ? formatDuration(totalSeconds(entries)) : null;
+  });
+
   protected readonly hasFilters = computed(
     () =>
       !!this.statusFilter() ||
@@ -129,6 +152,20 @@ export class DashboardPage implements OnInit {
       !!this.projectFilter() ||
       !!this.categoryFilter(),
   );
+
+  constructor() {
+    // Reload time entries whenever the period changes.
+    effect(() => {
+      const period = this.period();
+      const timeZone = this.clock.timeZone();
+      untracked(() => {
+        this.dashboard
+          .timeEntries(period, timeZone)
+          .then((entries) => this.timeEntries.set(entries))
+          .catch(() => this.timeEntries.set([]));
+      });
+    });
+  }
 
   async ngOnInit(): Promise<void> {
     await this.load();

@@ -57,6 +57,20 @@ export class TasksService {
     return { items: data as unknown as TaskWithTags[], total: count ?? 0 };
   }
 
+  /** Open, active tasks for pickers (time entries, focus, planning). */
+  async openOptions(): Promise<Pick<Task, 'id' | 'title'>[]> {
+    const { data, error } = await this.supabase
+      .from('tasks')
+      .select('id,title')
+      .is('deleted_at', null)
+      .is('archived_at', null)
+      .in('status', ['not_started', 'in_progress', 'blocked'])
+      .order('title')
+      .limit(500);
+    if (error) throw error;
+    return data;
+  }
+
   async get(id: string): Promise<TaskWithTags | null> {
     const { data, error } = await this.supabase
       .from('tasks')

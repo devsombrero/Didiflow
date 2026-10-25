@@ -1,4 +1,12 @@
-import { addDays, daysBetween, isValidDate, todayIn } from './dates';
+import {
+  addDays,
+  daysBetween,
+  isValidDate,
+  startOfDayIn,
+  timeIn,
+  todayIn,
+  zonedDateTime,
+} from './dates';
 
 describe('date utils', () => {
   it('computes the calendar date in the user time zone', () => {
@@ -25,5 +33,21 @@ describe('date utils', () => {
     expect(isValidDate('2026-02-30')).toBe(false);
     expect(isValidDate('26-02-01')).toBe(false);
     expect(isValidDate(null)).toBe(false);
+  });
+});
+
+describe('zoned date-times', () => {
+  it('converts wall-clock times in a zone to instants', () => {
+    expect(zonedDateTime('2026-10-25', '09:30', 'America/Sao_Paulo').toISOString()).toBe(
+      '2026-10-25T12:30:00.000Z',
+    );
+    expect(zonedDateTime('2026-07-01', '00:00', 'Europe/Lisbon').toISOString()).toBe(
+      '2026-06-30T23:00:00.000Z',
+    );
+    expect(startOfDayIn('2026-01-15', 'Asia/Tokyo').toISOString()).toBe('2026-01-14T15:00:00.000Z');
+  });
+
+  it('formats the wall-clock time of an instant', () => {
+    expect(timeIn('America/Sao_Paulo', new Date('2026-10-25T12:30:00Z'))).toBe('09:30');
   });
 });

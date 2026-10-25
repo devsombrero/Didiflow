@@ -3,11 +3,13 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from '../../core/profile/profile.service';
 import { OrganizationStore } from '../../features/organization/organization.service';
+import { TimerStore } from '../../features/time-tracking/time.service';
+import { TimerWidget } from '../../features/time-tracking/timer-widget';
 import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-shell-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TimerWidget],
   templateUrl: './shell-layout.html',
   styleUrl: './shell-layout.scss',
 })
@@ -17,6 +19,7 @@ export class ShellLayout implements OnInit {
   private readonly toast = inject(ToastService);
   protected readonly profileService = inject(ProfileService);
   private readonly org = inject(OrganizationStore);
+  private readonly timer = inject(TimerStore);
   protected readonly user = this.auth.user;
 
   constructor() {
@@ -25,6 +28,7 @@ export class ShellLayout implements OnInit {
       if (!this.auth.isAuthenticated()) {
         this.profileService.clear();
         this.org.clear();
+        this.timer.clear();
         void this.router.navigate(['/login']);
       }
     });
@@ -32,7 +36,7 @@ export class ShellLayout implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      await this.profileService.load();
+      await Promise.all([this.profileService.load(), this.timer.refresh()]);
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
     }

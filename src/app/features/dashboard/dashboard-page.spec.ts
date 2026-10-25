@@ -16,7 +16,13 @@ describe('DashboardPage', () => {
         provideRouter([]),
         provideSupabaseMock(),
         provideOrganizationMock(),
-        { provide: DashboardService, useValue: { metricTasks: vi.fn().mockResolvedValue(tasks) } },
+        {
+          provide: DashboardService,
+          useValue: {
+            metricTasks: vi.fn().mockResolvedValue(tasks),
+            timeEntries: vi.fn().mockResolvedValue([]),
+          },
+        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(DashboardPage);
