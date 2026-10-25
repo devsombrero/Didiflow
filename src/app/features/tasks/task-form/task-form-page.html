@@ -46,6 +46,56 @@
       </section>
 
       <section class="card form">
+        <h2>Organização</h2>
+        <div class="form-row">
+          <div class="field">
+            <label for="project_id">Projeto</label>
+            <select id="project_id" class="input" formControlName="project_id">
+              <option value="">Sem projeto</option>
+              @for (project of projectOptions(); track project.id) {
+                <option [value]="project.id">{{ project.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="category_id">Categoria</label>
+            <select id="category_id" class="input" formControlName="category_id">
+              <option value="">Sem categoria</option>
+              @for (category of org.items().categories; track category.id) {
+                <option [value]="category.id">{{ category.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="context_id">Contexto de trabalho</label>
+            <select id="context_id" class="input" formControlName="context_id">
+              <option value="">Sem contexto</option>
+              @for (context of org.items().work_contexts; track context.id) {
+                <option [value]="context.id">{{ context.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <fieldset class="tag-picker">
+          <legend>Tags</legend>
+          @for (tag of org.items().tags; track tag.id) {
+            <button
+              type="button"
+              class="chip"
+              [attr.aria-pressed]="selectedTags().includes(tag.id)"
+              (click)="toggleTag(tag.id)"
+            >
+              {{ tag.name }}
+            </button>
+          } @empty {
+            <span class="field-hint">
+              Nenhuma tag cadastrada. Crie tags em <a routerLink="/organization">Organização</a>.
+            </span>
+          }
+        </fieldset>
+      </section>
+
+      <section class="card form">
         <h2>Solicitação</h2>
         <div class="form-row">
           <div class="field">
@@ -54,7 +104,18 @@
           </div>
           <div class="field">
             <label for="requester_name">Solicitante</label>
-            <input id="requester_name" class="input" formControlName="requester_name" />
+            <input
+              id="requester_name"
+              class="input"
+              formControlName="requester_name"
+              list="requesters"
+              autocomplete="off"
+            />
+            <datalist id="requesters">
+              @for (requester of org.requesters(); track requester.name) {
+                <option [value]="requester.name"></option>
+              }
+            </datalist>
           </div>
         </div>
       </section>

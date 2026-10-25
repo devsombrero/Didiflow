@@ -51,6 +51,7 @@ export function duplicateInput(task: Task): TaskInsert {
     priority: task.priority,
     project_id: task.project_id,
     category_id: task.category_id,
+    context_id: task.context_id,
     estimated_minutes: task.estimated_minutes,
     status: 'not_started',
     progress_percentage: 0,

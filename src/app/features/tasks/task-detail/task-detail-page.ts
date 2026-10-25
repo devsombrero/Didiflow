@@ -9,8 +9,9 @@ import { TaskProgressPanel } from '../components/task-progress-panel';
 import { TaskActivityFeed } from '../components/task-activity-feed';
 import { TaskActions } from '../task-actions.service';
 import { deadlineLabel, deadlineState } from '../task-deadline';
-import type { Task } from '../task.model';
+import type { Task, TaskWithTags } from '../task.model';
 import { canCancel, canReopen } from '../task-rules';
+import { OrganizationStore } from '../../organization/organization.service';
 import { TasksService } from '../tasks.service';
 
 @Component({
@@ -33,6 +34,7 @@ export class TaskDetailPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly clock = inject(UserClock);
   protected readonly actions = inject(TaskActions);
+  private readonly org = inject(OrganizationStore);
 
   readonly id = input.required<string>();
 
@@ -54,17 +56,34 @@ export class TaskDetailPage implements OnInit {
     return rest ? `${hours}h ${rest}min` : `${hours}h`;
   });
 
+  protected readonly tagNames = signal<string[]>([]);
+
+  protected nameOf(id: string | null): string {
+    return id ? (this.org.byId().get(id)?.name ?? '—') : '—';
+  }
+
   protected readonly canCancel = canCancel;
   protected readonly canReopen = canReopen;
 
   async ngOnInit(): Promise<void> {
     try {
-      const task = await this.tasks.get(this.id());
+      const [task] = await Promise.all([
+        this.tasks.get(this.id()),
+        this.org.ensureLoaded().catch(() => undefined),
+      ]);
       this.task.set(task);
+      this.setTagNames(task);
       this.state.set(task ? 'ready' : 'not-found');
     } catch {
       this.state.set('error');
     }
+  }
+
+  private setTagNames(task: TaskWithTags | null): void {
+    const names = (task?.task_tags ?? [])
+      .map((link) => this.org.byId().get(link.tag_id)?.name)
+      .filter((name): name is string => !!name);
+    this.tagNames.set(names);
   }
 
   protected async openLink(url: string | null): Promise<void> {

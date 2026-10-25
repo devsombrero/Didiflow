@@ -9,6 +9,7 @@ import type {
   TaskQuery,
   TaskStatus,
   TaskUpdate,
+  TaskWithTags,
 } from './task.model';
 import { cancelChanges, duplicateInput, reopenChanges, sanitizeSearch } from './task-rules';
 
@@ -20,9 +21,13 @@ export class TasksService {
   private readonly supabase = inject(SUPABASE_CLIENT);
 
   async list(query: TaskQuery): Promise<TaskPage> {
+    // The tag filter uses a second, inner-joined alias so the row still embeds all its tags.
+    const columns = query.tagId
+      ? '*, task_tags(tag_id), tag_filter:task_tags!inner(tag_id)'
+      : '*, task_tags(tag_id)';
     let request = this.supabase
       .from('tasks')
-      .select('*', { count: 'exact' })
+      .select(columns, { count: 'exact' })
       .is('deleted_at', null);
 
     request =
@@ -32,6 +37,11 @@ export class TasksService {
 
     if (query.statuses.length) request = request.in('status', [...query.statuses]);
     if (query.priorities.length) request = request.in('priority', [...query.priorities]);
+    if (query.projectId) request = request.eq('project_id', query.projectId);
+    if (query.categoryId) request = request.eq('category_id', query.categoryId);
+    if (query.contextId) request = request.eq('context_id', query.contextId);
+    if (query.requester) request = request.eq('requester_name', query.requester);
+    if (query.tagId) request = request.eq('tag_filter.tag_id', query.tagId);
 
     const term = sanitizeSearch(query.search);
     if (term) {
@@ -44,18 +54,18 @@ export class TasksService {
       .order('updated_at', { ascending: false })
       .range(from, from + query.pageSize - 1);
     if (error) throw error;
-    return { items: data, total: count ?? 0 };
+    return { items: data as unknown as TaskWithTags[], total: count ?? 0 };
   }
 
-  async get(id: string): Promise<Task | null> {
+  async get(id: string): Promise<TaskWithTags | null> {
     const { data, error } = await this.supabase
       .from('tasks')
-      .select('*')
+      .select('*, task_tags(tag_id)')
       .eq('id', id)
       .is('deleted_at', null)
       .maybeSingle();
     if (error) throw error;
-    return data;
+    return data as unknown as TaskWithTags | null;
   }
 
   async create(input: TaskInsert): Promise<Task> {
@@ -75,8 +85,39 @@ export class TasksService {
     return data;
   }
 
-  duplicate(task: Task): Promise<Task> {
-    return this.create(duplicateInput(task));
+  async duplicate(task: Task): Promise<Task> {
+    const copy = await this.create(duplicateInput(task));
+    const tagIds = (task as Partial<TaskWithTags>).task_tags?.map((t) => t.tag_id) ?? [];
+    if (tagIds.length) await this.setTags(copy.id, tagIds);
+    return copy;
+  }
+
+  /** Replaces the task tags with `tagIds` (only the difference is written). */
+  async setTags(taskId: string, tagIds: readonly string[]): Promise<void> {
+    const { data, error } = await this.supabase
+      .from('task_tags')
+      .select('tag_id')
+      .eq('task_id', taskId);
+    if (error) throw error;
+    const current = new Set(data.map((row) => row.tag_id));
+    const wanted = new Set(tagIds);
+    const removed = [...current].filter((id) => !wanted.has(id));
+    const added = [...wanted].filter((id) => !current.has(id));
+
+    if (removed.length) {
+      const result = await this.supabase
+        .from('task_tags')
+        .delete()
+        .eq('task_id', taskId)
+        .in('tag_id', removed);
+      if (result.error) throw result.error;
+    }
+    if (added.length) {
+      const result = await this.supabase
+        .from('task_tags')
+        .insert(added.map((tag_id) => ({ task_id: taskId, tag_id })));
+      if (result.error) throw result.error;
+    }
   }
 
   cancel(task: Task): Promise<Task> {

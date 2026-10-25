@@ -2,6 +2,8 @@ import type { Enums, Tables, TablesInsert, TablesUpdate } from '../../core/supab
 
 export type Task = Tables<'tasks'>;
 export type TaskStatus = Enums<'task_status'>;
+/** Task row with its tag ids (embedded from task_tags). */
+export type TaskWithTags = Task & { task_tags: { tag_id: string }[] };
 export type TaskPriority = Enums<'task_priority'>;
 export type TaskInsert = Omit<
   TablesInsert<'tasks'>,
@@ -62,6 +64,11 @@ export interface TaskQuery {
   statuses: readonly TaskStatus[];
   priorities: readonly TaskPriority[];
   archive: ArchiveFilter;
+  projectId: string | null;
+  categoryId: string | null;
+  contextId: string | null;
+  tagId: string | null;
+  requester: string | null;
   sort: TaskSort;
   page: number;
   pageSize: number;
@@ -72,13 +79,18 @@ export const DEFAULT_TASK_QUERY: TaskQuery = {
   statuses: [],
   priorities: [],
   archive: 'active',
+  projectId: null,
+  categoryId: null,
+  contextId: null,
+  tagId: null,
+  requester: null,
   sort: SORT_OPTIONS[0].sort,
   page: 1,
   pageSize: 20,
 };
 
 export interface TaskPage {
-  items: Task[];
+  items: TaskWithTags[];
   total: number;
 }
 

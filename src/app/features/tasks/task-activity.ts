@@ -24,6 +24,8 @@ const FIELD_LABELS: Record<string, string> = {
   project_id: 'Projeto',
   category_id: 'Categoria',
   estimated_minutes: 'Estimativa',
+  context_id: 'Contexto',
+  tags: 'Tag',
 };
 
 const ACTION_TITLES: Record<string, string> = {
@@ -78,6 +80,7 @@ export function formatFieldValue(
       return `${value}%`;
     case 'project_id':
     case 'category_id':
+    case 'context_id':
       return 'alterado';
     default: {
       const text = String(value);

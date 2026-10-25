@@ -35,6 +35,57 @@
   </select>
 </section>
 
+<section class="toolbar toolbar--secondary" aria-label="Filtros de organização">
+  <select
+    class="input"
+    aria-label="Projeto"
+    (change)="setFilter('projectId', $any($event.target).value)"
+  >
+    <option value="" [selected]="!query().projectId">Todos os projetos</option>
+    @for (item of org.items().projects; track item.id) {
+      <option [value]="item.id" [selected]="item.id === query().projectId">{{ item.name }}</option>
+    }
+  </select>
+  <select
+    class="input"
+    aria-label="Categoria"
+    (change)="setFilter('categoryId', $any($event.target).value)"
+  >
+    <option value="" [selected]="!query().categoryId">Todas as categorias</option>
+    @for (item of org.items().categories; track item.id) {
+      <option [value]="item.id" [selected]="item.id === query().categoryId">{{ item.name }}</option>
+    }
+  </select>
+  <select
+    class="input"
+    aria-label="Contexto"
+    (change)="setFilter('contextId', $any($event.target).value)"
+  >
+    <option value="" [selected]="!query().contextId">Todos os contextos</option>
+    @for (item of org.items().work_contexts; track item.id) {
+      <option [value]="item.id" [selected]="item.id === query().contextId">{{ item.name }}</option>
+    }
+  </select>
+  <select class="input" aria-label="Tag" (change)="setFilter('tagId', $any($event.target).value)">
+    <option value="" [selected]="!query().tagId">Todas as tags</option>
+    @for (item of org.items().tags; track item.id) {
+      <option [value]="item.id" [selected]="item.id === query().tagId">{{ item.name }}</option>
+    }
+  </select>
+  <select
+    class="input"
+    aria-label="Solicitante"
+    (change)="setFilter('requester', $any($event.target).value)"
+  >
+    <option value="" [selected]="!query().requester">Todos os solicitantes</option>
+    @for (item of org.requesters(); track item.name) {
+      <option [value]="item.name" [selected]="item.name === query().requester">
+        {{ item.name }}
+      </option>
+    }
+  </select>
+</section>
+
 <div class="chips" role="group" aria-label="Filtrar por status">
   @for (status of statuses; track status) {
     <button
@@ -96,6 +147,18 @@
               <tr>
                 <td>
                   <a class="table__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                  @if (task.project_id || task.task_tags.length) {
+                    <div class="table__meta">
+                      @if (nameOf(task.project_id); as project) {
+                        <span>{{ project }}</span>
+                      }
+                      @for (link of task.task_tags; track link.tag_id) {
+                        @if (nameOf(link.tag_id); as tag) {
+                          <span class="tag">{{ tag }}</span>
+                        }
+                      }
+                    </div>
+                  }
                 </td>
                 <td><app-status-badge [status]="task.status" /></td>
                 <td><app-priority-badge [priority]="task.priority" /></td>

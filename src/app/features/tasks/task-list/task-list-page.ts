@@ -31,6 +31,7 @@ import {
   type TaskStatus,
 } from '../task.model';
 import { canCancel, canComplete, canReopen } from '../task-rules';
+import { OrganizationStore } from '../../organization/organization.service';
 import { TasksService } from '../tasks.service';
 
 /** Keeps list filters while navigating to a task and back. */
@@ -51,6 +52,7 @@ export class TaskListPage {
   private readonly router = inject(Router);
   private readonly clock = inject(UserClock);
   protected readonly actions = inject(TaskActions);
+  protected readonly org = inject(OrganizationStore);
 
   protected readonly query = inject(TaskListState).query;
   protected readonly searchTerm = signal(this.query().search);
@@ -69,7 +71,13 @@ export class TaskListPage {
   );
   protected readonly hasFilters = computed(() => {
     const q = this.query();
-    return !!q.search || q.statuses.length > 0 || q.priorities.length > 0 || q.archive !== 'active';
+    return (
+      !!q.search ||
+      q.statuses.length > 0 ||
+      q.priorities.length > 0 ||
+      q.archive !== 'active' ||
+      !!(q.projectId || q.categoryId || q.contextId || q.tagId || q.requester)
+    );
   });
   protected readonly sortIndex = computed(() =>
     SORT_OPTIONS.findIndex(
@@ -82,6 +90,8 @@ export class TaskListPage {
   private requestId = 0;
 
   constructor() {
+    void this.org.ensureLoaded().catch(() => undefined);
+
     effect(() => {
       const query = this.query();
       untracked(() => void this.load(query));
@@ -113,6 +123,17 @@ export class TaskListPage {
 
   protected setPriority(value: string): void {
     this.patch({ priorities: value ? [value as TaskPriority] : [] });
+  }
+
+  protected setFilter(
+    key: 'projectId' | 'categoryId' | 'contextId' | 'tagId' | 'requester',
+    value: string,
+  ): void {
+    this.patch({ [key]: value || null });
+  }
+
+  protected nameOf(id: string | null): string | null {
+    return id ? (this.org.byId().get(id)?.name ?? null) : null;
   }
 
   protected setArchive(value: string): void {
