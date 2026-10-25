@@ -67,10 +67,11 @@ export function registerIpcHandlers({
   handle(IPC_CHANNELS.secureStoreRemove, (key) => store.remove(assertStoreKey(key)));
   handle(IPC_CHANNELS.openExternal, (url) => shell.openExternal(assertExternalUrl(url)));
   handle(IPC_CHANNELS.notify, (payload) => {
-    const { title, body, route } = assertNotification(payload);
+    const { title, body, route, silent } = assertNotification(payload);
     if (!Notification.isSupported()) return false;
 
-    const notification = new Notification({ title, body });
+    // silent: the app plays its own sound effect for the notification.
+    const notification = new Notification({ title, body, silent });
     notification.on('click', () => {
       const window = getWindow();
       if (!window) return;

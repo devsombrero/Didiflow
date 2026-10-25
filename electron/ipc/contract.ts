@@ -32,6 +32,8 @@ export interface DesktopNotification {
   body?: string;
   /** In-app route opened when the notification is clicked, e.g. /tasks/123. */
   route?: string;
+  /** Suppresses the system sound (the app plays its own effect). */
+  silent?: boolean;
 }
 
 export interface SecureStoreApi {

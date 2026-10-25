@@ -97,8 +97,15 @@ describe('assertNotification', () => {
       title: 'Lembrete',
       body: 'Revisar contrato',
       route: '/tasks/abc-123',
+      silent: false,
     });
-    expect(assertNotification({ title: 'Oi' })).toEqual({ title: 'Oi', body: '', route: null });
+    expect(assertNotification({ title: 'Oi', silent: true })).toEqual({
+      title: 'Oi',
+      body: '',
+      route: null,
+      silent: true,
+    });
+    expect(() => assertNotification({ title: 'Oi', silent: 'yes' })).toThrow(IpcValidationError);
   });
 
   it.each([
