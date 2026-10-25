@@ -49,6 +49,10 @@ Regras da RPC:
 - **Histórico:** `task_status_history` e `task_activity_logs` não são restaurados (são somente leitura para o usuário). Os triggers registram a própria restauração. No modo substituir, as exclusões ficam na trilha de auditoria.
 - **Perfil e preferências:** são atualizados quando o backup é mais recente, ou sempre no modo substituir.
 
+## Anexos
+
+Os backups e exportações levam apenas os dados do banco. **Os arquivos anexados não entram no backup:** eles ficam em `%APPDATA%\didiflow\attachments`. Para preservá-los, copie essa pasta junto com os backups. Depois de uma restauração no modo substituir, o app apaga os arquivos cujos anexos deixaram de existir.
+
 ## Exportação não é backup
 
 As exportações servem para portabilidade e análise. Elas **não substituem** backups do PostgreSQL:
