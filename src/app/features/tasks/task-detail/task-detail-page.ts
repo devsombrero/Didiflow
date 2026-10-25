@@ -6,7 +6,7 @@ import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { PriorityBadge, StatusBadge } from '../components/task-badges';
 import { TaskProgressPanel } from '../components/task-progress-panel';
-import { TaskStatusTimeline } from '../components/task-status-timeline';
+import { TaskActivityFeed } from '../components/task-activity-feed';
 import { TaskActions } from '../task-actions.service';
 import { deadlineLabel, deadlineState } from '../task-deadline';
 import type { Task } from '../task.model';
@@ -21,7 +21,7 @@ import { TasksService } from '../tasks.service';
     StatusBadge,
     PriorityBadge,
     TaskProgressPanel,
-    TaskStatusTimeline,
+    TaskActivityFeed,
   ],
   templateUrl: './task-detail-page.html',
   styleUrl: './task-detail-page.scss',

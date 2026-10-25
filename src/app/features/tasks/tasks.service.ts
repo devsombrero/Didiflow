@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
+import type { ActivityEntry } from './task-activity';
 import type {
   StatusHistoryEntry,
   Task,
@@ -111,6 +112,16 @@ export class TasksService {
       .select('*')
       .eq('task_id', taskId)
       .order('changed_at', { ascending: false })
+      .order('id', { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+  async activityLog(taskId: string): Promise<ActivityEntry[]> {
+    const { data, error } = await this.supabase
+      .from('task_activity_logs')
+      .select('*')
+      .eq('task_id', taskId)
       .order('id', { ascending: false });
     if (error) throw error;
     return data;
