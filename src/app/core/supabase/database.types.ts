@@ -143,6 +143,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"task_attachments": {
+                  Row: {
+                    "created_at": string,"file_name": string,"id": string,"mime_type": string | null,"owner_id": string,"sha256": string,"size_bytes": number,"task_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"file_name": string,"id"?: string,"mime_type"?: string | null,"owner_id"?: string,"sha256": string,"size_bytes": number,"task_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"file_name"?: string,"id"?: string,"mime_type"?: string | null,"owner_id"?: string,"sha256"?: string,"size_bytes"?: number,"task_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "task_attachments_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
                 },"task_reminders": {
                   Row: {
                     "created_at": string,"id": string,"note": string | null,"owner_id": string,"remind_at": string,"sent_at": string | null,"task_id": string

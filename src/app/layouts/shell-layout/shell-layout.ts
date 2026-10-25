@@ -22,6 +22,7 @@ import { TimerStore } from '../../features/time-tracking/time.service';
 import { TimerWidget } from '../../features/time-tracking/timer-widget';
 import { NotificationScheduler } from '../../features/notifications/notification-scheduler';
 import { FocusStore } from '../../features/focus/focus.service';
+import { AttachmentsService } from '../../features/attachments/attachments.service';
 import { BackupScheduler } from '../../features/backup/backup-scheduler';
 import { formatClock } from '../../features/time-tracking/time-calc';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -55,6 +56,7 @@ export class ShellLayout implements OnInit {
   private readonly scheduler = inject(NotificationScheduler);
   protected readonly focus = inject(FocusStore);
   private readonly backupScheduler = inject(BackupScheduler);
+  private readonly attachments = inject(AttachmentsService);
   protected readonly focusClock = computed(() =>
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
   );
@@ -94,6 +96,8 @@ export class ShellLayout implements OnInit {
       this.scheduler.start();
       void this.focus.restore().catch(() => undefined);
       this.backupScheduler.start();
+      // Clean up local files of attachments removed elsewhere (best effort).
+      void this.attachments.pruneOrphans().catch(() => undefined);
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
     }

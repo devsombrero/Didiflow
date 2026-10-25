@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createConfirmedUser, launchApp, login, removeDir } from './support';
 
@@ -23,6 +24,7 @@ test('security: renderer is isolated from Node and only exposes the preload API'
       require: 'undefined',
       process: 'undefined',
       api: [
+        'attachments',
         'backups',
         'notify',
         'onNavigate',
@@ -213,5 +215,60 @@ test('backup: automatic and manual backups, restore with replace', async () => {
   } finally {
     await close();
     removeDir(userDataDir);
+  }
+});
+
+test('attachments: stored on this computer, 50 MB per task, removable', async () => {
+  const { app, page, close, userDataDir } = await launchApp();
+  const sources = mkdtempSync(path.join(tmpdir(), 'didiflow-e2e-files-'));
+  const small = path.join(sources, 'proposta comercial.txt');
+  const big = path.join(sources, 'video.bin');
+  writeFileSync(small, 'Proposta para o cliente');
+  writeFileSync(big, Buffer.alloc(51 * 1024 * 1024));
+  // The native file dialog cannot be driven by Playwright: answer it from the main process.
+  const pick = (files: string[]) =>
+    app.evaluate(({ dialog }, chosen) => {
+      dialog.showOpenDialog = (async () => ({ canceled: false, filePaths: chosen })) as never;
+    }, files);
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Tarefa com anexos');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa com anexos');
+
+    await pick([big]);
+    await page.getByRole('button', { name: 'Anexar arquivos' }).click();
+    await expect(page.locator('.toast--error').last()).toContainText('50 MB desta tarefa');
+
+    await pick([small]);
+    await page.getByRole('button', { name: 'Anexar arquivos' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Arquivo anexado');
+    const row = page.locator('app-task-attachments-panel li', {
+      hasText: 'proposta comercial.txt',
+    });
+    await expect(row).toBeVisible();
+    await expect(page.locator('app-task-attachments-panel')).toContainText('de 50 MB usados');
+    await expect(page.locator('app-task-activity-feed')).toContainText('Anexo adicionado');
+
+    const stored = readdirSync(path.join(userDataDir, 'attachments'), { recursive: true }).map(
+      String,
+    );
+    expect(stored.some((file) => file.endsWith('proposta comercial.txt'))).toBe(true);
+
+    await row.getByRole('button', { name: /Ações de/ }).click();
+    await page.getByRole('menuitem', { name: 'Remover' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Remover' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Anexo removido');
+    await expect(page.locator('app-task-attachments-panel')).toContainText('Nenhum anexo.');
+    const left = readdirSync(path.join(userDataDir, 'attachments'), { recursive: true }).map(
+      String,
+    );
+    expect(left.some((file) => file.endsWith('.txt'))).toBe(false);
+  } finally {
+    await close();
+    removeDir(userDataDir);
+    removeDir(sources);
   }
 });

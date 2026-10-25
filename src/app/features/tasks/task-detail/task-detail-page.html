@@ -174,9 +174,21 @@
         </mat-card>
 
         <mat-card appearance="outlined" class="section detail-grid__wide">
+          <mat-card-header><mat-card-title>Anexos</mat-card-title></mat-card-header>
+          <mat-card-content
+            ><app-task-attachments-panel
+              [taskId]="task.id"
+              (changed)="activityVersion.update((v) => v + 1)"
+          /></mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="section detail-grid__wide">
           <mat-card-header><mat-card-title>Atividade</mat-card-title></mat-card-header>
           <mat-card-content>
-            <app-task-activity-feed [taskId]="task.id" [version]="task.updated_at" />
+            <app-task-activity-feed
+              [taskId]="task.id"
+              [version]="task.updated_at + '#' + activityVersion()"
+            />
           </mat-card-content>
         </mat-card>
       </div>

@@ -14,6 +14,15 @@ export const IPC_CHANNELS = {
   backupRead: 'backup:read',
   backupDelete: 'backup:delete',
   backupOpenFolder: 'backup:open-folder',
+  attachmentAdd: 'attachment:add',
+  attachmentOpen: 'attachment:open',
+  attachmentReveal: 'attachment:reveal',
+  attachmentSaveAs: 'attachment:save-as',
+  attachmentRemove: 'attachment:remove',
+  attachmentRemoveTask: 'attachment:remove-task',
+  attachmentExists: 'attachment:exists',
+  attachmentPrune: 'attachment:prune',
+  attachmentUsage: 'attachment:usage',
   /** Main → renderer: navigate to an in-app route (notification click). */
   navigate: 'app:navigate',
 } as const;
@@ -68,6 +77,47 @@ export interface BackupApi {
   openFolder(): Promise<void>;
 }
 
+export interface StoredAttachment {
+  id: string;
+  name: string;
+  size: number;
+  mimeType: string | null;
+  sha256: string;
+}
+
+export type AttachmentAddResult =
+  | { status: 'added'; files: StoredAttachment[] }
+  | { status: 'canceled' }
+  | { status: 'quota'; requestedBytes: number; remainingBytes: number }
+  | { status: 'disk-full'; requestedBytes: number; freeBytes: number }
+  | { status: 'empty-file'; name: string };
+
+export interface AttachmentUsage {
+  freeBytes: number;
+  usedBytes: number;
+}
+
+/**
+ * Task attachment files kept on this computer
+ * (%APPDATA%/didiflow/attachments/<user>/<task>/<attachment>/). The renderer
+ * never receives file paths or contents.
+ */
+export interface AttachmentApi {
+  /** Picks files with the native dialog and copies them when they fit the quota and free space. */
+  add(userId: string, taskId: string, remainingBytes: number): Promise<AttachmentAddResult>;
+  /** Opens with the default app; executables are revealed in the folder instead. */
+  open(userId: string, taskId: string, id: string): Promise<'opened' | 'revealed' | 'missing'>;
+  reveal(userId: string, taskId: string, id: string): Promise<boolean>;
+  /** Copies the file to a location chosen in the native save dialog. */
+  saveAs(userId: string, taskId: string, id: string): Promise<SaveFileResult>;
+  remove(userId: string, taskId: string, id: string): Promise<void>;
+  removeTask(userId: string, taskId: string): Promise<void>;
+  exists(userId: string, taskId: string, ids: string[]): Promise<Record<string, boolean>>;
+  /** Deletes local files whose attachment id is not in the list; returns how many. */
+  prune(userId: string, keepIds: string[]): Promise<number>;
+  usage(userId: string): Promise<AttachmentUsage>;
+}
+
 /** API exposed to the renderer as `window.didiflow`. */
 export interface DidiflowApi {
   readonly platform: string;
@@ -83,4 +133,5 @@ export interface DidiflowApi {
   /** Picks a DidiFlow JSON backup with the native dialog and returns its content. */
   openBackupFile(): Promise<OpenFileResult>;
   readonly backups: BackupApi;
+  readonly attachments: AttachmentApi;
 }

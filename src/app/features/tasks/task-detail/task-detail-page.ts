@@ -18,6 +18,7 @@ import { parseJiraLink, parseSlackLink } from '../../integrations/integrations';
 import { TasksService } from '../tasks.service';
 import { MATERIAL_UI } from '../../../shared/material';
 import { MarkdownView } from '../../../shared/markdown/markdown-view';
+import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
 
 @Component({
   selector: 'app-task-detail-page',
@@ -30,6 +31,7 @@ import { MarkdownView } from '../../../shared/markdown/markdown-view';
     TaskActivityFeed,
     TaskTimePanel,
     TaskRemindersPanel,
+    TaskAttachmentsPanel,
     MarkdownView,
     MATERIAL_UI,
   ],
@@ -48,6 +50,8 @@ export class TaskDetailPage implements OnInit {
   readonly id = input.required<string>();
 
   protected readonly task = signal<Task | null>(null);
+  /** Bumped by panels whose changes add activity without touching the task row. */
+  protected readonly activityVersion = signal(0);
   /** Alias usable inside the template where `task` is shadowed by @if. */
   protected readonly task$ = this.task;
   protected readonly state = signal<'loading' | 'ready' | 'not-found' | 'error'>('loading');

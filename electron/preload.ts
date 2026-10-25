@@ -22,6 +22,24 @@ const api: DidiflowApi = {
     remove: (name) => ipcRenderer.invoke(IPC_CHANNELS.backupDelete, name),
     openFolder: () => ipcRenderer.invoke(IPC_CHANNELS.backupOpenFolder),
   },
+  attachments: {
+    add: (userId, taskId, remainingBytes) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentAdd, userId, taskId, remainingBytes),
+    open: (userId, taskId, id) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentOpen, userId, taskId, id),
+    reveal: (userId, taskId, id) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentReveal, userId, taskId, id),
+    saveAs: (userId, taskId, id) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentSaveAs, userId, taskId, id),
+    remove: (userId, taskId, id) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentRemove, userId, taskId, id),
+    removeTask: (userId, taskId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentRemoveTask, userId, taskId),
+    exists: (userId, taskId, ids) =>
+      ipcRenderer.invoke(IPC_CHANNELS.attachmentExists, userId, taskId, ids),
+    prune: (userId, keepIds) => ipcRenderer.invoke(IPC_CHANNELS.attachmentPrune, userId, keepIds),
+    usage: (userId) => ipcRenderer.invoke(IPC_CHANNELS.attachmentUsage, userId),
+  },
   onNavigate: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, route: unknown) => {
       if (typeof route === 'string') listener(route);
