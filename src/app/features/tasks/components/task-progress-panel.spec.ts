@@ -44,7 +44,9 @@ describe('TaskProgressPanel', () => {
       status: 'in_progress',
       progress_percentage: 40,
     });
-    element.querySelector<HTMLButtonElement>('.btn--primary')!.click();
+    Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((b) => b.textContent?.includes('Marcar como concluída'))!
+      .click();
     await fixture.whenStable();
 
     expect(tasks.setStatus).toHaveBeenCalledWith('t1', 'done');
@@ -58,7 +60,7 @@ describe('TaskProgressPanel', () => {
 
   it('locks the status selector on cancelled tasks', async () => {
     const { element } = await setup({ status: 'cancelled', progress_percentage: 20 });
-    expect(element.querySelector<HTMLSelectElement>('#task-status')!.disabled).toBe(true);
-    expect(element.querySelector('.btn--primary')).toBeNull();
+    expect(element.querySelector('#task-status')!.getAttribute('aria-disabled')).toBe('true');
+    expect(element.textContent).not.toContain('Marcar como concluída');
   });
 });

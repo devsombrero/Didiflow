@@ -4,11 +4,14 @@ import { ToastService } from '../../shared/toast/toast.service';
 import { describeTimeError } from './time-errors';
 import { formatClock } from './time-calc';
 import { TimerStore } from './time.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 /** Compact running-timer control shown in the sidebar. */
 @Component({
   selector: 'app-timer-widget',
-  imports: [RouterLink],
+  imports: [RouterLink, MatIconModule, MatButtonModule, MatTooltipModule],
   template: `
     @if (timer.running()) {
       <div
@@ -17,35 +20,43 @@ import { TimerStore } from './time.service';
         role="group"
         aria-label="Cronômetro"
       >
-        <a class="timer__label" [routerLink]="link()">{{ label() }}</a>
+        <a class="timer__label" [routerLink]="link()">
+          <mat-icon inline>schedule</mat-icon> {{ label() }}
+        </a>
         <span class="timer__clock" aria-live="off">{{ clock() }}</span>
         <div class="timer__actions">
           @if (timer.paused()) {
             <button
+              matIconButton
               type="button"
-              class="btn btn--sm"
+              aria-label="Retomar"
+              matTooltip="Retomar"
               [disabled]="timer.busy()"
               (click)="run('resume')"
             >
-              Retomar
+              <mat-icon>play_arrow</mat-icon>
             </button>
           } @else {
             <button
+              matIconButton
               type="button"
-              class="btn btn--sm"
+              aria-label="Pausar"
+              matTooltip="Pausar"
               [disabled]="timer.busy()"
               (click)="run('pause')"
             >
-              Pausar
+              <mat-icon>pause</mat-icon>
             </button>
           }
           <button
+            matIconButton
             type="button"
-            class="btn btn--sm btn--primary"
+            aria-label="Finalizar"
+            matTooltip="Finalizar"
             [disabled]="timer.busy()"
             (click)="run('stop')"
           >
-            Finalizar
+            <mat-icon>stop</mat-icon>
           </button>
         </div>
       </div>
@@ -53,32 +64,34 @@ import { TimerStore } from './time.service';
   `,
   styles: `
     .timer {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      padding: var(--space-3);
-      border: 1px solid var(--color-primary);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      margin: 0 var(--space-2);
+      padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
       border-radius: var(--radius-md);
+      background: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
     }
     .timer--paused {
-      border-color: var(--color-warning);
+      background: var(--mat-sys-tertiary-container);
+      color: var(--mat-sys-on-tertiary-container);
     }
     .timer__label {
+      grid-column: 1 / -1;
       overflow: hidden;
-      color: var(--color-text);
-      font-size: 12px;
+      color: inherit;
+      font: var(--mat-sys-label-medium);
       text-decoration: none;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .timer__clock {
-      font-size: 20px;
-      font-weight: 700;
+      font: var(--mat-sys-title-large);
       font-variant-numeric: tabular-nums;
     }
     .timer__actions {
       display: flex;
-      gap: var(--space-1);
     }
   `,
 })
