@@ -2,10 +2,11 @@
 
 Implementado por migrations em `supabase/migrations/`. Este documento é atualizado junto com cada migration.
 
-| Migration                           | Conteúdo                                                |
-| ----------------------------------- | ------------------------------------------------------- |
-| `20261025150000_initial_schema.sql` | Enums, tabelas do MVP, constraints, índices e triggers  |
-| `20261025150100_rls_policies.sql`   | RLS, políticas por dono, grants por coluna e revogações |
+| Migration                                 | Conteúdo                                                |
+| ----------------------------------------- | ------------------------------------------------------- |
+| `20261025150000_initial_schema.sql`       | Enums, tabelas do MVP, constraints, índices e triggers  |
+| `20261025150100_rls_policies.sql`         | RLS, políticas por dono, grants por coluna e revogações |
+| `20261025160000_task_status_progress.sql` | Normalização status × progresso e histórico de status   |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 
@@ -90,6 +91,14 @@ Imposta por CHECK constraint e trigger:
 | `cancelled`   | preserva o valor atingido      |
 
 Ao reabrir, `completed_at` é limpo na tarefa, mas o histórico mantém o registro anterior.
+
+O trigger `tasks_normalize_status` (BEFORE INSERT/UPDATE) aplica as regras:
+
+- Uma mudança explícita de status prevalece e ajusta o progresso: `in_progress` vindo de 0% vai para 1%, e vindo de 100% vai para 99%.
+- Uma mudança só de progresso em tarefa não iniciada, em andamento ou concluída deriva o status: 0% → não iniciada, 1–99% → em andamento, 100% → concluída. Em tarefa bloqueada ou cancelada, o status não muda.
+- `completed_at` é preenchido ao concluir e limpo em qualquer outro status. Em uma tarefa já concluída, o usuário pode corrigir a data efetiva.
+
+O trigger `tasks_record_status_history` (AFTER, `security definer`) grava cada transição de status ou progresso em `task_status_history`, com valores anteriores, novos e o usuário responsável.
 
 ### Índices
 
