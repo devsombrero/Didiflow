@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+    env:
+      # Public values of the production Supabase project (repository secrets).
+      DIDIFLOW_SUPABASE_URL: ${{ secrets.DIDIFLOW_SUPABASE_URL }}
+      DIDIFLOW_SUPABASE_ANON_KEY: ${{ secrets.DIDIFLOW_SUPABASE_ANON_KEY }}
+      # Optional Authenticode certificate (base64 .pfx) and password.
+      CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm install -g npm@12.2.0
+      - run: npm ci
+      - name: Check tag matches package version
+        shell: bash
+        run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+      - run: npm run test:ci
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: didiflow-windows
+          path: |
+            release/*.exe
+            release/*.blockmap
+      - name: Draft GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" release/*.exe release/*.blockmap \
+            --draft --title "DidiFlow ${GITHUB_REF_NAME}" --notes-file CHANGELOG.md
