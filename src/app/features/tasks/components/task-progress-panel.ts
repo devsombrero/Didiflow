@@ -47,7 +47,7 @@ import { MATERIAL_FORMS } from '../../../shared/material';
             />
             <output for="task-progress">{{ draft() }}%</output>
           </div>
-          <span class="field-hint">0% volta para "Não iniciado"; 100% conclui a tarefa.</span>
+          <span class="field-hint">Ao iniciar, a tarefa fica em 0%; 100% conclui a tarefa.</span>
         } @else {
           <app-progress-bar [value]="task().progress_percentage" />
           <span class="field-hint">{{ lockedHint() }}</span>
@@ -97,6 +97,8 @@ export class TaskProgressPanel {
   private readonly toast = inject(ToastService);
 
   readonly task = input.required<Task>();
+  /** Active subtasks: progress is calculated from them and cannot be edited. */
+  readonly childrenCount = input(0);
   readonly changed = output<Task>();
 
   protected readonly statuses = SELECTABLE_STATUSES;
@@ -105,9 +107,18 @@ export class TaskProgressPanel {
   protected readonly draft = signal(0);
 
   protected readonly canChangeStatus = computed(() => canChangeStatus(this.task()));
-  protected readonly canEditProgress = computed(() => canEditProgress(this.task()));
+  protected readonly canEditProgress = computed(() =>
+    canEditProgress(this.task(), this.childrenCount() > 0),
+  );
   protected readonly canComplete = computed(() => canComplete(this.task()));
   protected readonly lockedHint = computed(() => {
+    const children = this.childrenCount();
+    if (
+      children > 0 &&
+      (this.task().status === 'not_started' || this.task().status === 'in_progress')
+    ) {
+      return `Calculado automaticamente a partir de ${children} ${children === 1 ? 'item' : 'itens'}.`;
+    }
     switch (this.task().status) {
       case 'blocked':
         return 'Tarefa bloqueada: o progresso alcançado é preservado.';

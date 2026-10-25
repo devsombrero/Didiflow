@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(26);
 
 insert into auth.users (id, email, aud, role) values
   ('11111111-1111-1111-1111-111111111111', 'alice@test.local', 'authenticated', 'authenticated');
@@ -63,8 +63,17 @@ select results_eq('select status, progress from t', $$values ('not_started', 0::
   'not started resets progress to 0%');
 
 update public.tasks set status = 'in_progress' where id = 'a0000000-0000-0000-0000-000000000001';
-select results_eq('select status, progress from t', $$values ('in_progress', 1::smallint)$$,
-  'starting from 0% moves to 1%');
+select results_eq('select status, progress from t', $$values ('in_progress', 0::smallint)$$,
+  'starting a task keeps 0%');
+
+update public.tasks set progress_percentage = 40 where id = 'a0000000-0000-0000-0000-000000000001';
+update public.tasks set progress_percentage = 0 where id = 'a0000000-0000-0000-0000-000000000001';
+select results_eq('select status, progress from t', $$values ('in_progress', 0::smallint)$$,
+  'an in-progress task stays in progress at 0%');
+
+update public.tasks set progress_percentage = 100 where id = 'a0000000-0000-0000-0000-000000000001';
+select results_eq('select status, progress from t', $$values ('done', 100::smallint)$$,
+  'reaching 100% from in progress completes the task');
 
 update public.tasks set status = 'blocked' where id = 'a0000000-0000-0000-0000-000000000001';
 update public.tasks set status = 'in_progress', progress_percentage = 100
@@ -84,7 +93,7 @@ select results_eq(
 select is(
   (select count(*)::int from public.task_status_history
     where task_id = 'a0000000-0000-0000-0000-000000000001'),
-  12, 'every status/progress change is recorded (title/completed_at edits are not)');
+  15, 'every status/progress change is recorded (title/completed_at edits are not)');
 select results_eq(
   $$select from_status::text, to_status::text, from_progress, to_progress
     from public.task_status_history where task_id = 'a0000000-0000-0000-0000-000000000001'

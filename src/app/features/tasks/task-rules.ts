@@ -21,6 +21,7 @@ export function cancelChanges(): TaskUpdate {
 /**
  * Reopening a cancelled task resumes it according to the progress kept:
  * 0% → not started, otherwise in progress (capped at 99%, since 100% means done).
+ * Tasks with subtasks get their progress recomputed by the database.
  */
 export function reopenChanges(task: Pick<Task, 'progress_percentage'>): TaskUpdate {
   const progress = task.progress_percentage;
@@ -53,6 +54,8 @@ export function duplicateInput(task: Task): TaskInsert {
     category_id: task.category_id,
     context_id: task.context_id,
     estimated_minutes: task.estimated_minutes,
+    kind: task.kind,
+    parent_id: task.parent_id,
     status: 'not_started',
     progress_percentage: 0,
   };
@@ -67,9 +70,12 @@ export function sanitizeSearch(term: string): string {
     .slice(0, 100);
 }
 
-/** Progress is adjusted manually only on tasks that are not started or in progress. */
-export function canEditProgress(task: Pick<Task, 'status'>): boolean {
-  return task.status === 'not_started' || task.status === 'in_progress';
+/**
+ * Progress is adjusted manually only on tasks that are not started or in
+ * progress and have no active subtasks (their progress is rolled up).
+ */
+export function canEditProgress(task: Pick<Task, 'status'>, hasChildren = false): boolean {
+  return !hasChildren && (task.status === 'not_started' || task.status === 'in_progress');
 }
 
 /** Status can be changed directly unless the task is cancelled (reopen first). */

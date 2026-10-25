@@ -43,6 +43,30 @@
             label="Descrição"
             inputId="description"
           />
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Tipo</mat-label>
+              <mat-select id="kind" formControlName="kind">
+                <mat-option value="task">Tarefa</mat-option>
+                <mat-option value="epic">Épico (agrupa tarefas)</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Pertence a</mat-label>
+              <mat-select id="parent_id" formControlName="parent_id">
+                <mat-option value="">Nenhum (item principal)</mat-option>
+                @for (option of parentOptions(); track option.id) {
+                  <mat-option [value]="option.id">
+                    {{ option.kind === 'epic' ? 'Épico: ' : option.parent_id ? '— ' : ''
+                    }}{{ option.title }}
+                  </mat-option>
+                }
+              </mat-select>
+              @if (form.controls.kind.value === 'epic') {
+                <mat-hint>Épicos ficam no nível principal.</mat-hint>
+              }
+            </mat-form-field>
+          </div>
           <mat-form-field class="narrow">
             <mat-label>Prioridade</mat-label>
             <mat-select id="priority" formControlName="priority">
