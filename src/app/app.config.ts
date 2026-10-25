@@ -13,6 +13,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { APP_ENVIRONMENT } from './core/config/app-environment';
+import { provideAppMarkdown } from './shared/markdown/markdown.providers';
 import { PtBrPaginatorIntl } from './shared/paginator-intl';
 
 export const appConfig: ApplicationConfig = {
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     // Required by ngx-charts (legacy animation triggers); loaded lazily.
     provideAnimationsAsync(),
+    provideAppMarkdown(),
     { provide: APP_ENVIRONMENT, useValue: environment },
     // Icons come from the bundled Material Symbols font (no network access).
     provideAppInitializer(() => {

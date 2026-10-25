@@ -354,3 +354,89 @@ app-bar-chart .chart--stacked .ngx-charts .bar {
 app-bar-chart .chart--vertical .ngx-charts .gridline-path-vertical {
   display: none;
 }
+
+/* Rendered Markdown (task description and notes). */
+.markdown-body {
+  display: block;
+  font: var(--mat-sys-body-medium);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+
+  > :first-child {
+    margin-top: 0;
+  }
+  > :last-child {
+    margin-bottom: 0;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: var(--space-4) 0 var(--space-2);
+    font: var(--mat-sys-title-medium);
+  }
+  h1 {
+    font: var(--mat-sys-title-large);
+  }
+  p,
+  ul,
+  ol,
+  blockquote,
+  pre,
+  table {
+    margin: 0 0 var(--space-3);
+  }
+  ul,
+  ol {
+    padding-left: var(--space-5, 24px);
+  }
+  li:has(> .md-check) {
+    list-style: none;
+    margin-left: -18px;
+  }
+  .md-check {
+    color: var(--mat-sys-on-surface-variant);
+  }
+  .md-check--done {
+    color: var(--mat-sys-primary);
+  }
+  a {
+    color: var(--mat-sys-primary);
+    cursor: pointer;
+  }
+  blockquote {
+    padding: var(--space-1) var(--space-3);
+    border-left: 3px solid var(--mat-sys-outline-variant);
+    color: var(--mat-sys-on-surface-variant);
+  }
+  code {
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: var(--mat-sys-surface-container-high);
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    padding: var(--space-3);
+    border-radius: 8px;
+    background: var(--mat-sys-surface-container-high);
+    overflow-x: auto;
+
+    code {
+      padding: 0;
+      background: none;
+    }
+  }
+  table {
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--mat-sys-outline-variant);
+  }
+  hr {
+    border: none;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+  }
+}

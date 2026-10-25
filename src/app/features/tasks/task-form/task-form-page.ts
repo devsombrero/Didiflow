@@ -17,12 +17,20 @@ import { TasksService } from '../tasks.service';
 import { dueAfterStart, linkRequiredWhen } from './task-form.validators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../../shared/material';
+import { MarkdownEditor } from '../../../shared/markdown/markdown-editor';
 
 const blankToNull = (value: string): string | null => (value.trim() === '' ? null : value.trim());
 
 @Component({
   selector: 'app-task-form-page',
-  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS, MATERIAL_UI, MatAutocompleteModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    MATERIAL_FORMS,
+    MATERIAL_UI,
+    MatAutocompleteModule,
+    MarkdownEditor,
+  ],
   styleUrl: './task-form-page.scss',
   templateUrl: './task-form-page.html',
 })
