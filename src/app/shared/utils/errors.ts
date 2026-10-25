@@ -13,7 +13,10 @@ export function describeError(
   fallback = 'Não foi possível concluir a operação.',
 ): string {
   if (typeof error === 'object' && error !== null) {
-    const { code, message } = error as { code?: unknown; message?: unknown };
+    const { code, message, hint } = error as { code?: unknown; message?: unknown; hint?: unknown };
+    if (hint === 'attachment_quota') {
+      return 'Os anexos desta tarefa ultrapassariam o limite de 50 MB.';
+    }
     if (typeof code === 'string' && POSTGRES_MESSAGES[code]) {
       return POSTGRES_MESSAGES[code];
     }

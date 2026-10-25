@@ -9,9 +9,9 @@
         <mat-icon>view_kanban</mat-icon>
       </mat-button-toggle>
     </mat-button-toggle-group>
-    <a matButton="filled" routerLink="/tasks/new" matTooltip="Atalho: N">
+    <button matButton="filled" type="button" (click)="taskDialogs.create()" matTooltip="Atalho: N">
       <mat-icon>add</mat-icon> Nova tarefa
-    </a>
+    </button>
   </div>
 </header>
 
@@ -163,7 +163,9 @@
           } @else {
             <mat-icon class="empty-state__icon">checklist</mat-icon>
             <p>Você ainda não cadastrou nenhuma demanda.</p>
-            <a matButton="filled" routerLink="/tasks/new">Cadastrar a primeira tarefa</a>
+            <button matButton="filled" type="button" (click)="taskDialogs.create()">
+              Cadastrar a primeira tarefa
+            </button>
           }
         </mat-card-content>
       </mat-card>
@@ -191,7 +193,7 @@
             <tbody>
               @for (task of result().items; track task.id) {
                 @let deadline = deadlineOf(task);
-                <tr>
+                <tr animate.enter="enter-fade-up" [style.--stagger]="$index">
                   <td>
                     <a class="table__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
                     @if (task.project_id || task.task_tags.length) {
@@ -231,9 +233,9 @@
                       <mat-icon>more_vert</mat-icon>
                     </button>
                     <mat-menu #rowMenu="matMenu">
-                      <a mat-menu-item [routerLink]="['/tasks', task.id, 'edit']">
+                      <button mat-menu-item (click)="act(taskDialogs.edit(task.id))">
                         <mat-icon>edit</mat-icon><span>Editar</span>
-                      </a>
+                      </button>
                       @if (canComplete(task)) {
                         <button mat-menu-item (click)="act(actions.complete(task))">
                           <mat-icon>task_alt</mat-icon><span>Concluir</span>

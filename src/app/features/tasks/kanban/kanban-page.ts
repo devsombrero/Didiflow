@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { UserClock } from '../../../core/profile/user-clock';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../../shared/material';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
+import { MotionService } from '../../../core/feedback/motion.service';
 import { ToastService } from '../../../shared/toast/toast.service';
 import { addDays } from '../../../shared/utils/dates';
 import { describeError } from '../../../shared/utils/errors';
@@ -21,6 +22,7 @@ import {
 } from '../task.model';
 import { TasksService } from '../tasks.service';
 import { BOARD_COLUMNS, boardMove, groupByStatus } from './kanban';
+import { TaskFormDialogs } from '../task-form/task-form-dialog';
 
 const COLUMN_ICONS: Record<TaskStatus, string> = {
   not_started: 'radio_button_unchecked',
@@ -48,6 +50,10 @@ const RECENT_DAYS = 14;
   styleUrl: './kanban-page.scss',
 })
 export class KanbanPage {
+  private readonly motion = inject(MotionService);
+  /** Where the last card was dropped, origin of the completion confetti. */
+  private lastDrop: { x: number; y: number } | null = null;
+  protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly tasksService = inject(TasksService);
   private readonly actions = inject(TaskActions);
   private readonly toast = inject(ToastService);
@@ -103,6 +109,7 @@ export class KanbanPage {
   /** Drag & drop handler: the target column id is the status. */
   protected async drop(event: CdkDragDrop<TaskStatus, TaskStatus, TaskWithTags>): Promise<void> {
     if (event.previousContainer === event.container) return;
+    this.lastDrop = event.dropPoint;
     await this.moveTo(event.item.data, event.container.data);
   }
 
@@ -127,7 +134,12 @@ export class KanbanPage {
           result = await this.tasksService.setStatus(task.id, target);
         }
         updated = { ...task, ...result };
-        this.toast.success(`"${task.title}" movida para ${STATUS_LABELS[target]}.`);
+        const finished = target === 'done';
+        this.toast.success(
+          `"${task.title}" movida para ${STATUS_LABELS[target]}.`,
+          finished ? 'complete' : 'tick',
+        );
+        if (finished) this.motion.celebrate(this.lastDrop ?? undefined);
       }
       this.replace(updated);
     } catch (error) {

@@ -123,7 +123,7 @@
         } @else {
           <ul class="files">
             @for (file of files(); track file.name) {
-              <li>
+              <li animate.enter="enter-fade-up" [style.--stagger]="$index">
                 <mat-icon class="files__icon">{{
                   file.kind === 'auto' ? 'schedule' : file.kind === 'manual' ? 'save' : 'shield'
                 }}</mat-icon>

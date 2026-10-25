@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, type OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, type OnInit, output, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import type { HasPendingChanges } from '../../../shared/guards/pending-changes.guard';
@@ -7,6 +7,7 @@ import { isValidDate } from '../../../shared/utils/dates';
 import { describeError } from '../../../shared/utils/errors';
 import {
   PRIORITY_LABELS,
+  type Task,
   type TaskInsert,
   type TaskWithTags,
   TASK_PRIORITIES,
@@ -17,12 +18,20 @@ import { TasksService } from '../tasks.service';
 import { dueAfterStart, linkRequiredWhen } from './task-form.validators';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../../shared/material';
+import { MarkdownEditor } from '../../../shared/markdown/markdown-editor';
 
 const blankToNull = (value: string): string | null => (value.trim() === '' ? null : value.trim());
 
 @Component({
   selector: 'app-task-form-page',
-  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS, MATERIAL_UI, MatAutocompleteModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    MATERIAL_FORMS,
+    MATERIAL_UI,
+    MatAutocompleteModule,
+    MarkdownEditor,
+  ],
   styleUrl: './task-form-page.scss',
   templateUrl: './task-form-page.html',
 })
@@ -37,12 +46,16 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
   readonly id = input<string>();
   /** ?due=YYYY-MM-DD prefills the due date when planning from the calendar. */
   readonly due = input<string>();
+  /** Inside a dialog: no page header, and saving/cancelling emit instead of navigating. */
+  readonly embedded = input(false);
+  readonly saved = output<Task>();
+  readonly cancelled = output<void>();
 
   protected readonly priorities = TASK_PRIORITIES;
   protected readonly priorityLabels = PRIORITY_LABELS;
   protected readonly state = signal<'loading' | 'ready' | 'not-found' | 'error'>('ready');
   protected readonly saving = signal(false);
-  private saved = false;
+  private done = false;
   /** Project of the task being edited, kept selectable even when archived. */
   private readonly currentProjectId = signal<string | null>(null);
   protected readonly selectedTags = signal<readonly string[]>([]);
@@ -105,7 +118,7 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
   }
 
   hasPendingChanges(): boolean {
-    return this.form.dirty && !this.saved;
+    return this.form.dirty && !this.done;
   }
 
   async submit(): Promise<void> {
@@ -121,14 +134,27 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
       const task = id ? await this.tasks.update(id, input) : await this.tasks.create(input);
       await this.tasks.setTags(task.id, this.selectedTags());
       void this.org.loadRequesters().catch(() => undefined);
-      this.saved = true;
+      this.done = true;
       this.toast.success(id ? 'Tarefa atualizada.' : 'Tarefa criada.');
-      await this.router.navigate(['/tasks', task.id]);
+      if (this.embedded()) {
+        this.saved.emit(task);
+      } else {
+        await this.router.navigate(['/tasks', task.id]);
+      }
     } catch (error) {
       this.toast.error(describeError(error, 'Não foi possível salvar a tarefa.'));
     } finally {
       this.saving.set(false);
     }
+  }
+
+  protected cancel(): void {
+    if (this.embedded()) {
+      this.cancelled.emit();
+      return;
+    }
+    const id = this.id();
+    void this.router.navigate(id ? ['/tasks', id] : ['/tasks']);
   }
 
   protected toggleTag(tagId: string): void {

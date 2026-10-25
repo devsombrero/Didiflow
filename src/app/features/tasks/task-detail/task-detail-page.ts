@@ -17,6 +17,9 @@ import { OrganizationStore } from '../../organization/organization.service';
 import { parseJiraLink, parseSlackLink } from '../../integrations/integrations';
 import { TasksService } from '../tasks.service';
 import { MATERIAL_UI } from '../../../shared/material';
+import { MarkdownView } from '../../../shared/markdown/markdown-view';
+import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
+import { TaskFormDialogs } from '../task-form/task-form-dialog';
 
 @Component({
   selector: 'app-task-detail-page',
@@ -29,12 +32,15 @@ import { MATERIAL_UI } from '../../../shared/material';
     TaskActivityFeed,
     TaskTimePanel,
     TaskRemindersPanel,
+    TaskAttachmentsPanel,
+    MarkdownView,
     MATERIAL_UI,
   ],
   templateUrl: './task-detail-page.html',
   styleUrl: './task-detail-page.scss',
 })
 export class TaskDetailPage implements OnInit {
+  protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly tasks = inject(TasksService);
   private readonly router = inject(Router);
   private readonly bridge = inject(DesktopBridge);
@@ -46,6 +52,8 @@ export class TaskDetailPage implements OnInit {
   readonly id = input.required<string>();
 
   protected readonly task = signal<Task | null>(null);
+  /** Bumped by panels whose changes add activity without touching the task row. */
+  protected readonly activityVersion = signal(0);
   /** Alias usable inside the template where `task` is shadowed by @if. */
   protected readonly task$ = this.task;
   protected readonly state = signal<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -82,6 +90,14 @@ export class TaskDetailPage implements OnInit {
   protected readonly canReopen = canReopen;
 
   async ngOnInit(): Promise<void> {
+    await this.load();
+  }
+
+  protected async edit(id: string): Promise<void> {
+    if (await this.taskDialogs.edit(id)) await this.load();
+  }
+
+  private async load(): Promise<void> {
     try {
       const [task] = await Promise.all([
         this.tasks.get(this.id()),

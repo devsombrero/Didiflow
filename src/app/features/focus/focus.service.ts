@@ -4,6 +4,7 @@ import type { Tables } from '../../core/supabase/database.types';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
 import type { SuggestionTask } from './focus-logic';
 import { remainingSeconds } from './focus-logic';
+import { AppNotifier } from '../notifications/notification-center';
 
 export type PriorityRow = Tables<'daily_priorities'> & { tasks: SuggestionTask | null };
 export type FocusSession = Tables<'focus_sessions'>;
@@ -127,6 +128,7 @@ export interface ActiveFocus {
 export class FocusStore {
   private readonly service = inject(FocusService);
   private readonly bridge = inject(DesktopBridge);
+  private readonly notifier = inject(AppNotifier);
   private readonly now = signal(Date.now());
   private timer: ReturnType<typeof setInterval> | null = null;
 
@@ -196,10 +198,12 @@ export class FocusStore {
     }
     this.finished.set({ taskTitle: active.taskTitle, completed });
     if (completed) {
-      await this.bridge.notify({
+      await this.notifier.notify({
+        kind: 'focus',
         title: 'Sessão de foco concluída',
         body: active.taskTitle ? `Bom trabalho em "${active.taskTitle}".` : 'Hora de uma pausa.',
         route: '/focus',
+        sound: 'chime',
       });
     }
   }

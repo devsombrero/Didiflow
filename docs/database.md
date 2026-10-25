@@ -17,6 +17,9 @@ Implementado por migrations em `supabase/migrations/`. Este documento é atualiz
 | `20261025230000_search_tasks.sql`                   | Busca textual (`search_tasks`: português, unaccent e prefixo)           |
 | `20261026090000_backup_restore.sql`                 | Preferências de backup e `restore_backup`                               |
 | `20261026090100_restore_backup_lint.sql`            | `restore_backup` compatível com o `plpgsql_check`                       |
+| `20261026100000_task_attachments.sql`               | Metadados de anexos, cota de 50 MB por tarefa e auditoria               |
+| `20261026110000_feedback_preferences.sql`           | Preferências de animações, sons e volume                                |
+| `20261026120000_custom_notifications.sql`           | Notificações personalizadas (agenda, som, limite de 100 por usuário)    |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 
@@ -52,24 +55,26 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 
 ## Entidades
 
-| Tabela                | Finalidade                                                                       |
-| --------------------- | -------------------------------------------------------------------------------- |
-| `profiles`            | 1:1 com `auth.users`; nome de exibição. Criado por trigger no cadastro.          |
-| `user_preferences`    | Tema, fuso horário, formato de data, preferências de notificação.                |
-| `projects`            | Agrupamento de tarefas.                                                          |
-| `categories`          | Tipo de demanda.                                                                 |
-| `tags` / `task_tags`  | Tags N:N com tarefas. Inclusão e remoção entram na auditoria.                    |
-| `work_contexts`       | Contextos de trabalho (ex.: Remoto, Reunião).                                    |
-| `task_requesters`     | View (`security_invoker`) com solicitantes distintos e quantidade de tarefas.    |
-| `time_entries`        | Registros de tempo (manuais e cronômetro).                                       |
-| `personal_goals`      | Metas SMART.                                                                     |
-| `skill_achievements`  | Cursos, certificações e habilidades.                                             |
-| `task_reminders`      | Lembretes por tarefa.                                                            |
-| `daily_priorities`    | Lista ordenada de prioridades por dia.                                           |
-| `focus_sessions`      | Sessões de foco registradas.                                                     |
-| `tasks`               | Demanda (campos abaixo).                                                         |
-| `task_status_history` | Transições de status e progresso. Append-only.                                   |
-| `task_activity_logs`  | Auditoria de criação, alteração de campos, arquivamento e exclusão. Append-only. |
+| Tabela                 | Finalidade                                                                                                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `profiles`             | 1:1 com `auth.users`; nome de exibição. Criado por trigger no cadastro.                                                                                         |
+| `user_preferences`     | Tema, fuso horário, formato de data, preferências de notificação.                                                                                               |
+| `projects`             | Agrupamento de tarefas.                                                                                                                                         |
+| `categories`           | Tipo de demanda.                                                                                                                                                |
+| `tags` / `task_tags`   | Tags N:N com tarefas. Inclusão e remoção entram na auditoria.                                                                                                   |
+| `work_contexts`        | Contextos de trabalho (ex.: Remoto, Reunião).                                                                                                                   |
+| `task_requesters`      | View (`security_invoker`) com solicitantes distintos e quantidade de tarefas.                                                                                   |
+| `time_entries`         | Registros de tempo (manuais e cronômetro).                                                                                                                      |
+| `personal_goals`       | Metas SMART.                                                                                                                                                    |
+| `skill_achievements`   | Cursos, certificações e habilidades.                                                                                                                            |
+| `task_reminders`       | Lembretes por tarefa.                                                                                                                                           |
+| `custom_notifications` | Avisos criados pelo usuário: agenda (`once`, `daily`, `weekdays`, `weekly`, `interval` com janela opcional), som, ativo e `last_fired_at`. Até 100 por usuário. |
+| `task_attachments`     | Metadados dos anexos (nome, tipo, tamanho, SHA-256). Os arquivos ficam no computador do usuário.                                                                |
+| `daily_priorities`     | Lista ordenada de prioridades por dia.                                                                                                                          |
+| `focus_sessions`       | Sessões de foco registradas.                                                                                                                                    |
+| `tasks`                | Demanda (campos abaixo).                                                                                                                                        |
+| `task_status_history`  | Transições de status e progresso. Append-only.                                                                                                                  |
+| `task_activity_logs`   | Auditoria de criação, alteração de campos, arquivamento e exclusão. Append-only.                                                                                |
 
 ### `tasks`
 
@@ -123,6 +128,15 @@ O trigger `tasks_record_status_history` (AFTER, `security definer`) grava cada t
 ### Índices
 
 `(owner_id, status)`, `(owner_id, due_date)`, `(owner_id, priority)`, `(owner_id, updated_at desc)`, além de índices nas FKs (`project_id`, `category_id`, `task_tags.tag_id`).
+
+## Anexos
+
+`task_attachments` guarda só metadados; o conteúdo dos arquivos nunca vai para o banco:
+
+- Cada linha pertence à tarefa do mesmo dono (FK composta, `on delete cascade`).
+- Os metadados são imutáveis: não há `update` (para trocar um arquivo, remova e anexe de novo).
+- Cota de **50 MB por tarefa** (soma de `size_bytes`), aplicada pelo trigger `task_attachments_quota` com lock na linha da tarefa. Assim, inserções simultâneas não ultrapassam o limite. O erro usa o código `23514` com `hint = attachment_quota`.
+- Inclusão e remoção geram `attachment_added` e `attachment_removed` em `task_activity_logs` (nome e tamanho). Remoções em cascata, por exclusão definitiva da tarefa ou da conta, não são registradas.
 
 ## Registro de tempo
 

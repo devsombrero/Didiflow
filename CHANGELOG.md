@@ -4,6 +4,20 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.3.0] - 2026-10-25
+
+### Adicionado
+
+- Notificações personalizadas (uma vez, diária, dias úteis, semanal ou por intervalo com horário ativo), central de notificações com contador de não lidas e cartões de aviso com ação "Abrir".
+- Animações (transição de páginas, entrada de listas, confete ao concluir) e efeitos sonoros sintetizados, com preferências de ativação e volume.
+- Descrição e observações das tarefas em Markdown, com barra de formatação, atalhos e pré-visualização.
+- Anexos nas tarefas, guardados no próprio computador: até 50 MB por tarefa, conferência de espaço livre em disco, registro na atividade e ações de abrir, mostrar na pasta, salvar cópia e remover.
+
+### Alterado
+
+- Formulários de tarefa, metas, desenvolvimento e apontamento de tempo em modais flutuantes; a tarefa pede confirmação antes de descartar alterações.
+- Gráficos do dashboard e dos KPIs migrados para ngx-charts, com animação de entrada, tooltips e cores do tema.
+
 ## [0.2.0] - 2026-10-25
 
 ### Adicionado

@@ -12,7 +12,7 @@
 .inline-form {
   display: grid;
   grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
-  gap: 0 var(--space-2);
+  gap: var(--space-3) var(--space-2);
   align-items: start;
 
   button {

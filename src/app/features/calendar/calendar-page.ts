@@ -22,6 +22,7 @@ import {
   visibleRange,
   WEEKDAYS,
 } from './calendar';
+import { TaskFormDialogs } from '../tasks/task-form/task-form-dialog';
 
 const COLUMNS = 'id,title,status,priority,start_date,due_date,progress_percentage';
 
@@ -32,6 +33,7 @@ const COLUMNS = 'id,title,status,priority,start_date,due_date,progress_percentag
   styleUrl: './calendar-page.scss',
 })
 export class CalendarPage {
+  protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly supabase = inject(SUPABASE_CLIENT);
   private readonly clock = inject(UserClock);
 

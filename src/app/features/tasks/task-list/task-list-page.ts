@@ -35,6 +35,8 @@ import {
 import { canCancel, canComplete, canReopen } from '../task-rules';
 import { OrganizationStore } from '../../organization/organization.service';
 import { TasksService } from '../tasks.service';
+import { TaskFormDialogs } from '../task-form/task-form-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 /** Keeps list filters while navigating to a task and back. */
 @Injectable({ providedIn: 'root' })
@@ -59,6 +61,8 @@ export class TaskListState {
   host: { '(document:keydown)': 'onShortcut($event)' },
 })
 export class TaskListPage {
+  protected readonly taskDialogs = inject(TaskFormDialogs);
+  private readonly dialog = inject(MatDialog);
   private readonly tasksService = inject(TasksService);
   private readonly router = inject(Router);
   private readonly clock = inject(UserClock);
@@ -191,13 +195,14 @@ export class TaskListPage {
     const target = event.target as HTMLElement | null;
     const typing = target?.closest('input, textarea, select, [contenteditable="true"], dialog');
     if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (this.dialog.openDialogs.length > 0) return;
 
     if (event.key === '/') {
       event.preventDefault();
       this.searchInput()?.nativeElement.focus();
     } else if (event.key === 'n') {
       event.preventDefault();
-      void this.router.navigate(['/tasks/new']);
+      void this.taskDialogs.create();
     }
   }
 

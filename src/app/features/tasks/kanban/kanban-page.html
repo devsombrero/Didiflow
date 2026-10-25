@@ -9,7 +9,9 @@
         <mat-icon>view_kanban</mat-icon>
       </mat-button-toggle>
     </mat-button-toggle-group>
-    <a matButton="filled" routerLink="/tasks/new"><mat-icon>add</mat-icon> Nova tarefa</a>
+    <button matButton="filled" type="button" (click)="taskDialogs.create()">
+      <mat-icon>add</mat-icon> Nova tarefa
+    </button>
   </div>
 </header>
 
@@ -67,6 +69,7 @@
           @for (task of groups()[column]; track task.id) {
             @let deadline = deadlineOf(task);
             <article
+              animate.enter="enter-pop"
               class="card"
               cdkDrag
               [cdkDragData]="task"

@@ -3,7 +3,8 @@
     <div class="sidebar__inner">
       <div class="sidebar__brand">
         <mat-icon class="sidebar__logo">task_alt</mat-icon>
-        <span>DidiFlow</span>
+        <span class="sidebar__title">DidiFlow</span>
+        <app-notification-bell />
       </div>
 
       <form class="sidebar__search" role="search" (submit)="search($event)">
@@ -78,7 +79,7 @@
   </mat-sidenav>
 
   <mat-sidenav-content class="content">
-    <main class="content__inner">
+    <main class="content__inner page-transition">
       <router-outlet />
     </main>
   </mat-sidenav-content>

@@ -1,6 +1,8 @@
 <header class="page-header">
   <h1>Calendário</h1>
-  <a matButton="filled" routerLink="/tasks/new"><mat-icon>add</mat-icon> Nova tarefa</a>
+  <button matButton="filled" type="button" (click)="taskDialogs.create()">
+    <mat-icon>add</mat-icon> Nova tarefa
+  </button>
 </header>
 
 <section class="toolbar" aria-label="Navegação do calendário">
@@ -94,13 +96,14 @@
           <button type="button" class="cell__date" (click)="openDay(day.date)">
             {{ view() === 'day' ? (day.date | appDate) : day.date.slice(8) }}
           </button>
-          <a
+          <button
+            type="button"
             class="cell__add"
-            routerLink="/tasks/new"
-            [queryParams]="{ due: day.date }"
+            (click)="taskDialogs.create(day.date)"
             [attr.aria-label]="'Planejar tarefa para ' + (day.date | appDate)"
-            ><mat-icon>add</mat-icon></a
           >
+            <mat-icon>add</mat-icon>
+          </button>
         </header>
         <ul class="events">
           @for (event of day.events; track event.task.id + event.kind) {

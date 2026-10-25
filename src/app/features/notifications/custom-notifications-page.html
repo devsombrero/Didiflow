@@ -1,0 +1,242 @@
+<header class="page-header">
+  <h1>Notificações personalizadas</h1>
+  <button matButton="filled" type="button" (click)="create()">
+    <mat-icon>add_alert</mat-icon> Nova notificação
+  </button>
+</header>
+
+<p class="muted intro">
+  Crie seus próprios avisos: uma vez, todo dia, em dias úteis, em dias da semana ou a cada
+  intervalo. Eles aparecem enquanto o DidiFlow estiver aberto (inclusive minimizado), com o som que
+  você escolher.
+</p>
+
+@switch (state()) {
+  @case ('loading') {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  @case ('error') {
+    <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>Não foi possível carregar as notificações.
+    </div>
+  }
+  @default {
+    @if (rules().length === 0) {
+      <mat-card appearance="outlined" class="empty-state">
+        <mat-card-content>
+          <mat-icon class="empty-state__icon">campaign</mat-icon>
+          <p>Nenhuma notificação personalizada ainda.</p>
+          <p class="muted">
+            Exemplos: "Planejar o dia" em dias úteis às 09:00, ou "Beber água" a cada hora.
+          </p>
+          <button matButton="filled" type="button" (click)="create()">Criar a primeira</button>
+        </mat-card-content>
+      </mat-card>
+    } @else {
+      <div class="rules">
+        @for (rule of rules(); track rule.id) {
+          <mat-card
+            appearance="outlined"
+            class="rule"
+            [class.rule--inactive]="!rule.active"
+            animate.enter="enter-fade-up"
+            [style.--stagger]="$index"
+          >
+            <mat-card-content class="rule__body">
+              <mat-icon class="rule__icon">{{
+                rule.active ? 'campaign' : 'notifications_paused'
+              }}</mat-icon>
+              <div class="rule__info">
+                <strong class="rule__title">{{ rule.title }}</strong>
+                @if (rule.message) {
+                  <span class="rule__message">{{ rule.message }}</span>
+                }
+                <span class="rule__meta">
+                  <mat-icon inline>schedule</mat-icon> {{ summary(rule) }} ·
+                  <mat-icon inline>{{
+                    rule.sound === 'none' ? 'volume_off' : 'volume_up'
+                  }}</mat-icon>
+                  {{ soundLabel(rule.sound) }}
+                </span>
+                @if (next(rule); as when) {
+                  <span class="rule__next">Próxima: {{ when }}</span>
+                } @else if (!rule.active) {
+                  <span class="rule__next muted">Pausada</span>
+                }
+              </div>
+              <mat-slide-toggle
+                [checked]="rule.active"
+                (change)="setActive(rule, $event.checked)"
+                [attr.aria-label]="(rule.active ? 'Pausar ' : 'Ativar ') + rule.title"
+              />
+              <button
+                matIconButton
+                type="button"
+                [matMenuTriggerFor]="menu"
+                [attr.aria-label]="'Ações de ' + rule.title"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item type="button" (click)="test(rule)">
+                  <mat-icon>play_circle</mat-icon>Testar agora
+                </button>
+                <button mat-menu-item type="button" (click)="edit(rule)">
+                  <mat-icon>edit</mat-icon>Editar
+                </button>
+                <button mat-menu-item type="button" (click)="remove(rule)">
+                  <mat-icon>delete</mat-icon>Excluir
+                </button>
+              </mat-menu>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+  }
+}
+
+<ng-template #editor>
+  <h2 mat-dialog-title>{{ editingId() ? 'Editar notificação' : 'Nova notificação' }}</h2>
+  <mat-dialog-content>
+    <form
+      id="custom-notification-form"
+      class="form dialog-form"
+      [formGroup]="form"
+      (ngSubmit)="save()"
+      novalidate
+    >
+      <mat-form-field>
+        <mat-label>Título</mat-label>
+        <input matInput id="cn-title" formControlName="title" maxlength="120" />
+        <mat-error>Informe um título de até 120 caracteres.</mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Mensagem (opcional)</mat-label>
+        <textarea
+          matInput
+          id="cn-message"
+          rows="2"
+          formControlName="message"
+          maxlength="500"
+        ></textarea>
+      </mat-form-field>
+
+      <span class="field-label">Quando</span>
+      <mat-button-toggle-group
+        formControlName="schedule"
+        aria-label="Frequência"
+        class="schedule-toggle"
+      >
+        @for (option of schedules; track option.value) {
+          <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+
+      @switch (form.controls.schedule.value) {
+        @case ('once') {
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Data</mat-label>
+              <input matInput id="cn-date" type="date" formControlName="date" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Hora</mat-label>
+              <input matInput id="cn-time" type="time" formControlName="time" />
+            </mat-form-field>
+          </div>
+        }
+        @case ('interval') {
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Repetir a cada</mat-label>
+              <mat-select id="cn-interval" formControlName="interval_minutes">
+                @for (minutes of intervals; track minutes) {
+                  <mat-option [value]="minutes">
+                    {{ minutes < 60 ? minutes + ' min' : minutes / 60 + ' h' }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <mat-slide-toggle formControlName="use_window">Somente em um horário</mat-slide-toggle>
+          @if (form.controls.use_window.value) {
+            <div class="form-row">
+              <mat-form-field>
+                <mat-label>Das</mat-label>
+                <input matInput id="cn-window-start" type="time" formControlName="window_start" />
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Até</mat-label>
+                <input matInput id="cn-window-end" type="time" formControlName="window_end" />
+              </mat-form-field>
+            </div>
+          }
+        }
+        @default {
+          @if (form.controls.schedule.value === 'weekly') {
+            <div class="weekdays" role="group" aria-label="Dias da semana">
+              @for (label of weekdayLabels; track $index) {
+                <button
+                  type="button"
+                  class="weekday"
+                  [class.weekday--on]="form.controls.weekdays.value.includes($index)"
+                  [attr.aria-pressed]="form.controls.weekdays.value.includes($index)"
+                  (click)="toggleWeekday($index)"
+                >
+                  {{ label }}
+                </button>
+              }
+            </div>
+          }
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Hora</mat-label>
+              <input matInput id="cn-time" type="time" formControlName="time" />
+            </mat-form-field>
+          </div>
+        }
+      }
+
+      <div class="sound-row">
+        <mat-form-field>
+          <mat-label>Som</mat-label>
+          <mat-select id="cn-sound" formControlName="sound">
+            @for (sound of ruleSounds; track sound) {
+              <mat-option [value]="sound">{{ soundLabel(sound) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button
+          matIconButton
+          type="button"
+          aria-label="Ouvir som"
+          [disabled]="form.controls.sound.value === 'none'"
+          (click)="previewSound()"
+        >
+          <mat-icon>volume_up</mat-icon>
+        </button>
+        <mat-slide-toggle formControlName="active">Ativa</mat-slide-toggle>
+      </div>
+
+      @if (scheduleError(); as message) {
+        <span class="hint-error">{{ message }}</span>
+      } @else if (preview(); as p) {
+        <p class="preview">
+          <mat-icon inline>event</mat-icon> {{ p.summary }}
+          @if (p.next) {
+            · próxima {{ p.next }}
+          } @else {
+            · <span class="hint-error">esse horário já passou</span>
+          }
+        </p>
+      }
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Cancelar</button>
+    <button matButton="filled" type="submit" form="custom-notification-form" [disabled]="saving()">
+      Salvar
+    </button>
+  </mat-dialog-actions>
+</ng-template>

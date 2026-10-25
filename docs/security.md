@@ -34,15 +34,19 @@
 ## Electron
 
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
-- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`, `notify`, `onNavigate`, `saveFile`, `openBackupFile`, `backups`); não expõe `ipcRenderer` nem módulos do Node.
+- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`, `notify`, `onNavigate`, `saveFile`, `openBackupFile`, `backups`, `attachments`); não expõe `ipcRenderer` nem módulos do Node.
 - Todo payload IPC é validado no processo principal (`electron/ipc/validation.ts`):
   - chaves do secure store: `[A-Za-z0-9._:-]{1,128}`; valores: string de até 64 KiB;
   - `openExternal`: apenas `https://`, sem credenciais na URL, até 2048 caracteres;
-  - `notify`: título de 1 a 120 caracteres, corpo de até 500 e rota interna opcional (`/caminho` com caracteres seguros, sem `//`). O clique na notificação só envia ao renderer essa rota já validada;
-  - `saveFile`: nome-base seguro (`[A-Za-z0-9._-]`, sem caminho) com a extensão do tipo (`csv`/`json`), até 50 MB. O destino é escolhido pelo usuário no diálogo nativo e a gravação acontece no processo principal.
+  - `notify`: título de 1 a 120 caracteres, corpo de até 500, `silent` booleano opcional e rota interna opcional (`/caminho` com caracteres seguros, sem `//`). O clique na notificação só envia ao renderer essa rota já validada;
+  - `saveFile`: nome-base seguro (`[A-Za-z0-9._-]`, sem caminho) com a extensão do tipo (`csv`/`json`), até 50 MB. O destino é escolhido pelo usuário no diálogo nativo e a gravação acontece no processo principal;
+  - `backups.*`: nomes de arquivo restritos a `didiflow-backup-<data>-<auto|manual|prerestore>.json` dentro da pasta de backups; conteúdo precisa ser JSON com `format: didiflow-backup` e até 50 MB; retenção entre 1 e 100;
+  - `openBackupFile`: diálogo nativo, apenas `.json` de até 50 MB com formato DidiFlow;
+  - `attachments.*`: ids de usuário, tarefa e anexo precisam ser UUIDs, e só com eles o caminho é montado (`attachments/<usuário>/<tarefa>/<anexo>/<arquivo>`). Assim não há path traversal. Os arquivos a anexar vêm do diálogo nativo, nunca de caminhos enviados pelo renderer. O renderer não recebe caminhos nem conteúdo. O main recusa arquivos que ultrapassem a cota restante da tarefa (até 50 MB) ou que deixariam menos de 200 MB livres no disco. Executáveis (`.exe`, `.bat`, `.ps1`, `.lnk`...) não são abertos: o app mostra o arquivo na pasta. A limpeza de órfãos só roda quando a lista completa de ids foi lida.
 - Handlers IPC rejeitam chamadas de frames fora das origens confiáveis (`app://didiflow` e, só em builds não empacotados, o dev server).
 - `DIDIFLOW_DEV_SERVER_URL` é ignorada em builds empacotados.
 - Navegação para origens externas, `window.open` e `<webview>` são bloqueados. Links `https://` abertos via `window.open` vão para o navegador padrão.
+- Markdown de descrições e observações (ngx-markdown + marked) passa pelo sanitizador de HTML do Angular: scripts, handlers `on*`, `<input>` e URLs `javascript:` são removidos. Cliques em links são interceptados; só `http(s)://` segue para `window.open` (e daí para o navegador padrão, só `https://`).
 - Todas as requisições de permissão (câmera, geolocalização, notificações...) são negadas até que uma feature precise delas.
 - O protocolo `app://` impede path traversal e serve as respostas com Content Security Policy:
   - `script-src 'self'` (sem scripts inline). Por isso o inlining de CSS crítico do Angular está desativado (`optimization.styles.inlineCritical: false`), já que ele usa handlers `onload` inline.

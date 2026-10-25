@@ -49,3 +49,23 @@ h3 {
     color: var(--color-success);
   }
 }
+
+.sound-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sound-row__label {
+  font: var(--mat-sys-body-medium);
+}
+
+.sound-row__slider {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+.sound-row__select {
+  width: 200px;
+}

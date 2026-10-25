@@ -50,13 +50,14 @@ export interface ValidNotification {
   title: string;
   body: string;
   route: string | null;
+  silent: boolean;
 }
 
 export function assertNotification(value: unknown): ValidNotification {
   if (typeof value !== 'object' || value === null) {
     throw new IpcValidationError('Invalid notification');
   }
-  const { title, body, route } = value as Record<string, unknown>;
+  const { title, body, route, silent } = value as Record<string, unknown>;
   if (typeof title !== 'string' || title.trim() === '' || title.length > 120) {
     throw new IpcValidationError('Invalid notification title');
   }
@@ -66,7 +67,10 @@ export function assertNotification(value: unknown): ValidNotification {
   if (route !== undefined && !isAppRoute(route)) {
     throw new IpcValidationError('Invalid notification route');
   }
-  return { title: title.trim(), body: body ?? '', route: route ?? null };
+  if (silent !== undefined && typeof silent !== 'boolean') {
+    throw new IpcValidationError('Invalid notification silent flag');
+  }
+  return { title: title.trim(), body: body ?? '', route: route ?? null, silent: silent ?? false };
 }
 
 export const MAX_SAVE_BYTES = 50 * 1024 * 1024;

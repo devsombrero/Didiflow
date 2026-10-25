@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createConfirmedUser, launchApp, login, removeDir } from './support';
 
@@ -23,6 +24,7 @@ test('security: renderer is isolated from Node and only exposes the preload API'
       require: 'undefined',
       process: 'undefined',
       api: [
+        'attachments',
         'backups',
         'notify',
         'onNavigate',
@@ -77,7 +79,18 @@ test('task lifecycle: create, progress, complete, search and export', async () =
     await login(page, email);
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    // Unsaved changes in the floating form ask before closing.
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Rascunho descartado');
+    await page.keyboard.press('Escape');
+    await page
+      .getByRole('dialog', { name: 'Descartar alterações?' })
+      .getByRole('button', { name: 'Descartar' })
+      .click();
+    await expect(page.locator('app-task-form-dialog')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
     await page.locator('#title').fill('Relatório trimestral E2E');
     await page.locator('#requester_name').fill('Marina');
     await page.getByLabel('Possui card no Jira').check();
@@ -89,6 +102,13 @@ test('task lifecycle: create, progress, complete, search and export', async () =
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Relatório trimestral E2E');
     await expect(page.getByRole('button', { name: /DF-1/ })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await expect(page.getByRole('dialog', { name: 'Editar tarefa' })).toBeVisible();
+    await page.locator('#requester_name').fill('Marina Souza');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.locator('app-task-form-dialog')).toHaveCount(0);
+    await expect(page.locator('.detail-grid')).toContainText('Marina Souza');
 
     await page.getByLabel('Progresso').fill('40');
     await page.getByLabel('Progresso').dispatchEvent('change');
@@ -131,7 +151,7 @@ test('kanban: drag a card between columns and keep it after reload', async () =>
   try {
     await login(page, email);
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
     await page.locator('#title').fill('Card do quadro E2E');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Card do quadro E2E');
@@ -173,7 +193,7 @@ test('backup: automatic and manual backups, restore with replace', async () => {
     await login(page, email);
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
     await page.locator('#title').fill('Tarefa protegida por backup');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa protegida por backup');
@@ -210,6 +230,96 @@ test('backup: automatic and manual backups, restore with replace', async () => {
 
     await page.goto(page.url().replace(/\/backup$/, '/tasks'));
     await expect(page.locator('tr', { hasText: 'Tarefa protegida por backup' })).toBeVisible();
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('attachments: stored on this computer, 50 MB per task, removable', async () => {
+  const { app, page, close, userDataDir } = await launchApp();
+  const sources = mkdtempSync(path.join(tmpdir(), 'didiflow-e2e-files-'));
+  const small = path.join(sources, 'proposta comercial.txt');
+  const big = path.join(sources, 'video.bin');
+  writeFileSync(small, 'Proposta para o cliente');
+  writeFileSync(big, Buffer.alloc(51 * 1024 * 1024));
+  // The native file dialog cannot be driven by Playwright: answer it from the main process.
+  const pick = (files: string[]) =>
+    app.evaluate(({ dialog }, chosen) => {
+      dialog.showOpenDialog = (async () => ({ canceled: false, filePaths: chosen })) as never;
+    }, files);
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Tarefa com anexos');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa com anexos');
+
+    await pick([big]);
+    await page.getByRole('button', { name: 'Anexar arquivos' }).click();
+    await expect(page.locator('.toast--error').last()).toContainText('50 MB desta tarefa');
+
+    await pick([small]);
+    await page.getByRole('button', { name: 'Anexar arquivos' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Arquivo anexado');
+    const row = page.locator('app-task-attachments-panel li', {
+      hasText: 'proposta comercial.txt',
+    });
+    await expect(row).toBeVisible();
+    await expect(page.locator('app-task-attachments-panel')).toContainText('de 50 MB usados');
+    await expect(page.locator('app-task-activity-feed')).toContainText('Anexo adicionado');
+
+    const stored = readdirSync(path.join(userDataDir, 'attachments'), { recursive: true }).map(
+      String,
+    );
+    expect(stored.some((file) => file.endsWith('proposta comercial.txt'))).toBe(true);
+
+    await row.getByRole('button', { name: /Ações de/ }).click();
+    await page.getByRole('menuitem', { name: 'Remover' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Remover' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Anexo removido');
+    await expect(page.locator('app-task-attachments-panel')).toContainText('Nenhum anexo.');
+    const left = readdirSync(path.join(userDataDir, 'attachments'), { recursive: true }).map(
+      String,
+    );
+    expect(left.some((file) => file.endsWith('.txt'))).toBe(false);
+  } finally {
+    await close();
+    removeDir(userDataDir);
+    removeDir(sources);
+  }
+});
+
+test('custom notifications: create in a dialog, test and see it in the bell', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Notificações' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Notificações personalizadas');
+
+    await page.getByRole('button', { name: 'Nova notificação' }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Nova notificação' });
+    await dialog.locator('#cn-title').fill('Beber água');
+    await dialog.locator('#cn-message').fill('Uma pausa rápida');
+    await dialog.getByRole('radio', { name: 'Intervalo' }).click();
+    await expect(dialog.locator('.preview')).toContainText('A cada 1 h, das 09:00 às 18:00');
+    await dialog.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Notificação criada');
+
+    const rule = page.locator('.rule', { hasText: 'Beber água' });
+    await expect(rule).toContainText('A cada 1 h, das 09:00 às 18:00');
+    await rule.getByRole('button', { name: /Ações de/ }).click();
+    await page.getByRole('menuitem', { name: 'Testar agora' }).click();
+    await expect(page.locator('.toast--notification').last()).toContainText('Beber água');
+
+    await page.getByRole('button', { name: /notificações não lidas/ }).click();
+    await expect(page.locator('.panel__list')).toContainText('Uma pausa rápida');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Notificações', exact: true })).toBeVisible();
+
+    await rule.getByRole('switch').click();
+    await expect(rule).toContainText('Pausada');
   } finally {
     await close();
     removeDir(userDataDir);

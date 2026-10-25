@@ -17,6 +17,7 @@ import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
 import { HighlightedText } from '../../shared/components/highlighted-text';
 import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { describeError } from '../../shared/utils/errors';
+import { markdownToPlainText } from '../../shared/markdown/markdown-format';
 import { excerpt, searchTerms } from '../../shared/utils/highlight';
 import { PriorityBadge, StatusBadge } from '../tasks/components/task-badges';
 import { deadlineLabel, deadlineState } from '../tasks/task-deadline';
@@ -100,7 +101,10 @@ export class SearchPage {
   }
 
   protected snippet(row: SearchRow): string {
-    const text = [row.description, row.notes].filter(Boolean).join(' · ');
+    const text = [row.description, row.notes]
+      .filter((part): part is string => !!part)
+      .map(markdownToPlainText)
+      .join(' · ');
     return excerpt(text, this.terms());
   }
 

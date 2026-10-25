@@ -1,4 +1,5 @@
 import type { Tables } from '../../core/supabase/database.types';
+import { formatBytes } from '../attachments/attachment-logic';
 import { PRIORITY_LABELS, STATUS_LABELS, type TaskPriority, type TaskStatus } from './task.model';
 
 export type ActivityEntry = Tables<'task_activity_logs'>;
@@ -40,6 +41,8 @@ const ACTION_TITLES: Record<string, string> = {
   unarchived: 'Tarefa desarquivada',
   deleted: 'Tarefa excluída',
   restored: 'Tarefa restaurada',
+  attachment_added: 'Anexo adicionado',
+  attachment_removed: 'Anexo removido',
 };
 
 interface Change {
@@ -114,6 +117,14 @@ export function describeActivity(
       return `${label}: ${from} → ${to}`;
     });
 
+  if (typeof changes['file_name'] === 'string') {
+    const size = Number(changes['size_bytes']);
+    details.push(
+      Number.isFinite(size) && size > 0
+        ? `“${changes['file_name']}” (${formatBytes(size)})`
+        : `“${changes['file_name']}”`,
+    );
+  }
   if (changes['hard_delete'] === true) {
     details.push('Exclusão definitiva');
   }
