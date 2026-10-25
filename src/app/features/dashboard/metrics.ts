@@ -21,6 +21,7 @@ export type MetricTask = Pick<
   | 'archived_at'
   | 'category_id'
   | 'project_id'
+  | 'estimated_minutes'
 >;
 
 /** Inclusive range of calendar dates (YYYY-MM-DD) in the user's time zone. */

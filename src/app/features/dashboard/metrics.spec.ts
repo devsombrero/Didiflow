@@ -23,6 +23,7 @@ const task = (overrides: Partial<MetricTask>): MetricTask => ({
   archived_at: null,
   category_id: null,
   project_id: null,
+  estimated_minutes: null,
   ...overrides,
 });
 
