@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideSupabaseMock } from '../../../testing/supabase.mock';
+import { provideOrganizationMock } from '../../../testing/organization.mock';
 import { DashboardPage } from './dashboard-page';
 import { DashboardService } from './dashboard.service';
 import type { MetricTask } from './metrics';
@@ -14,10 +15,13 @@ describe('DashboardPage', () => {
       providers: [
         provideRouter([]),
         provideSupabaseMock(),
+        provideOrganizationMock(),
         { provide: DashboardService, useValue: { metricTasks: vi.fn().mockResolvedValue(tasks) } },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(DashboardPage);
+    // ngOnInit loads asynchronously (not tracked by whenStable in zoneless mode).
+    await new Promise((resolve) => setTimeout(resolve));
     await fixture.whenStable();
     return fixture.nativeElement as HTMLElement;
   }

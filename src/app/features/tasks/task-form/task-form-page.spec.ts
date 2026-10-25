@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideSupabaseMock } from '../../../../testing/supabase.mock';
+import { provideOrganizationMock } from '../../../../testing/organization.mock';
 import { TasksService } from '../tasks.service';
 import { TaskFormPage } from './task-form-page';
 
@@ -9,6 +10,7 @@ describe('TaskFormPage', () => {
     const tasks = {
       create: vi.fn().mockResolvedValue({ id: 'new-id' }),
       update: vi.fn(),
+      setTags: vi.fn().mockResolvedValue(undefined),
       get: vi.fn(),
     };
     await TestBed.configureTestingModule({
@@ -16,6 +18,7 @@ describe('TaskFormPage', () => {
       providers: [
         provideRouter([]),
         provideSupabaseMock(),
+        provideOrganizationMock(),
         { provide: TasksService, useValue: tasks },
       ],
     }).compileComponents();
@@ -60,8 +63,11 @@ describe('TaskFormPage', () => {
         due_date: '2026-10-05',
         estimated_minutes: 90,
         priority: 'medium',
+        project_id: null,
+        context_id: null,
       }),
     );
+    expect(tasks.setTags).toHaveBeenCalledWith('new-id', []);
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/tasks', 'new-id']);
   });
 

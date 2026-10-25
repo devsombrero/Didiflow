@@ -72,6 +72,14 @@
         <section class="card">
           <h2>Solicitação</h2>
           <dl class="facts">
+            <dt>Projeto</dt>
+            <dd>{{ nameOf(task.project_id) }}</dd>
+            <dt>Categoria</dt>
+            <dd>{{ nameOf(task.category_id) }}</dd>
+            <dt>Contexto</dt>
+            <dd>{{ nameOf(task.context_id) }}</dd>
+            <dt>Tags</dt>
+            <dd>{{ tagNames().length ? tagNames().join(', ') : '—' }}</dd>
             <dt>Solicitante</dt>
             <dd>{{ task.requester_name || '—' }}</dd>
             <dt>Solicitada em</dt>

@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideSupabaseMock } from '../../../../testing/supabase.mock';
-import { DEFAULT_TASK_QUERY, type Task, type TaskQuery } from '../task.model';
+import { provideOrganizationMock } from '../../../../testing/organization.mock';
+import { DEFAULT_TASK_QUERY, type TaskQuery, type TaskWithTags } from '../task.model';
 import { TasksService } from '../tasks.service';
 import { TaskListPage, TaskListState } from './task-list-page';
 
-const task = (overrides: Partial<Task>): Task =>
+const task = (overrides: Partial<TaskWithTags>): TaskWithTags =>
   ({
     id: 't1',
     title: 'Relatório',
@@ -15,11 +16,13 @@ const task = (overrides: Partial<Task>): Task =>
     due_date: '2000-01-01',
     requester_name: 'Ana',
     archived_at: null,
+    project_id: null,
+    task_tags: [],
     ...overrides,
-  }) as Task;
+  }) as TaskWithTags;
 
 describe('TaskListPage', () => {
-  async function setup(items: Task[]) {
+  async function setup(items: TaskWithTags[]) {
     const list = vi.fn((query: TaskQuery) => {
       void query;
       return Promise.resolve({ items, total: items.length });
@@ -29,6 +32,7 @@ describe('TaskListPage', () => {
       providers: [
         provideRouter([]),
         provideSupabaseMock(),
+        provideOrganizationMock(),
         { provide: TasksService, useValue: { list } },
       ],
     }).compileComponents();

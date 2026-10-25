@@ -49,7 +49,9 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 | `user_preferences`    | Tema, fuso horário, formato de data, preferências de notificação.                |
 | `projects`            | Agrupamento de tarefas.                                                          |
 | `categories`          | Tipo de demanda.                                                                 |
-| `tags` / `task_tags`  | Tags N:N com tarefas.                                                            |
+| `tags` / `task_tags`  | Tags N:N com tarefas. Inclusão e remoção entram na auditoria.                    |
+| `work_contexts`       | Contextos de trabalho (ex.: Remoto, Reunião).                                    |
+| `task_requesters`     | View (`security_invoker`) com solicitantes distintos e quantidade de tarefas.    |
 | `tasks`               | Demanda (campos abaixo).                                                         |
 | `task_status_history` | Transições de status e progresso. Append-only.                                   |
 | `task_activity_logs`  | Auditoria de criação, alteração de campos, arquivamento e exclusão. Append-only. |

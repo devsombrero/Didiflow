@@ -56,6 +56,30 @@
             </option>
           }
         </select>
+        <select
+          class="input"
+          aria-label="Projeto"
+          (change)="projectFilter.set($any($event.target).value)"
+        >
+          <option value="" [selected]="!projectFilter()">Todos os projetos</option>
+          @for (item of org.items().projects; track item.id) {
+            <option [value]="item.id" [selected]="item.id === projectFilter()">
+              {{ item.name }}
+            </option>
+          }
+        </select>
+        <select
+          class="input"
+          aria-label="Categoria"
+          (change)="categoryFilter.set($any($event.target).value)"
+        >
+          <option value="" [selected]="!categoryFilter()">Todas as categorias</option>
+          @for (item of org.items().categories; track item.id) {
+            <option [value]="item.id" [selected]="item.id === categoryFilter()">
+              {{ item.name }}
+            </option>
+          }
+        </select>
         @if (hasFilters()) {
           <button type="button" class="btn btn--link" (click)="clearFilters()">
             Limpar filtros
