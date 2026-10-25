@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24.21.0'
+  NPM_VERSION: '12.2.0'
+  # Public values of the local Supabase stack started by the jobs below.
+  DIDIFLOW_SUPABASE_URL: http://127.0.0.1:54321
+
+jobs:
+  quality:
+    name: Format, lint, unit tests and builds
+    runs-on: ubuntu-latest
+    env:
+      # write-env only needs a syntactically valid public key to build.
+      DIDIFLOW_SUPABASE_ANON_KEY: sb_publishable_ci_build_only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm install -g npm@${{ env.NPM_VERSION }}
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck:electron
+      - run: npm run test:ci
+      - run: npm run test:electron
+      - run: npm run build
+      - run: npm run electron:build
+
+  database:
+    name: Migrations, pgTAP and integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm install -g npm@${{ env.NPM_VERSION }}
+      - run: npm ci
+      - name: Start local Supabase (applies every migration from scratch)
+        run: npx supabase start
+      - name: Export local keys
+        run: |
+          npx supabase status -o env \
+            | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/DIDIFLOW_SUPABASE_ANON_KEY=\1/p' >> "$GITHUB_ENV"
+      - run: npm run db:lint
+      - run: npm run db:test
+      - name: Generated types are up to date
+        run: |
+          npm run db:types
+          git diff --exit-code -- src/app/core/supabase/database.types.ts
+      - run: npm run test:integration
+      - if: always()
+        run: npx supabase stop --no-backup
+
+  e2e:
+    name: Electron end-to-end tests
+    runs-on: ubuntu-latest
+    needs: [quality]
+    env:
+      # GitHub runners cannot use the SUID Chromium sandbox; app code still runs
+      # with contextIsolation and without Node in the renderer.
+      ELECTRON_DISABLE_SANDBOX: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm install -g npm@${{ env.NPM_VERSION }}
+      - run: npm ci
+      - name: Download the Electron binary
+        run: npx electron --version
+      - run: npx supabase start
+      - name: Export local keys
+        run: |
+          npx supabase status -o env \
+            | sed -n 's/^PUBLISHABLE_KEY="\(.*\)"$/DIDIFLOW_SUPABASE_ANON_KEY=\1/p' >> "$GITHUB_ENV"
+      - name: Run Playwright against the built app (virtual display)
+        run: xvfb-run --auto-servernum npm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+      - if: always()
+        run: npx supabase stop --no-backup
