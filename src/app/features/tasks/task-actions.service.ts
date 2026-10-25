@@ -1,4 +1,6 @@
 import { inject, Injectable } from '@angular/core';
+import { MotionService } from '../../core/feedback/motion.service';
+import type { SoundName } from '../../core/feedback/sounds';
 import { ConfirmService } from '../../shared/confirm/confirm.service';
 import { ToastService } from '../../shared/toast/toast.service';
 import { describeError } from '../../shared/utils/errors';
@@ -15,6 +17,7 @@ export class TaskActions {
   private readonly tasks = inject(TasksService);
   private readonly confirm = inject(ConfirmService);
   private readonly toast = inject(ToastService);
+  private readonly motion = inject(MotionService);
 
   async duplicate(task: Task): Promise<Task | undefined> {
     return this.run(() => this.tasks.duplicate(task), 'Tarefa duplicada.');
@@ -32,7 +35,13 @@ export class TaskActions {
   }
 
   async complete(task: Task): Promise<Task | undefined> {
-    return this.run(() => this.tasks.setStatus(task.id, 'done'), 'Tarefa concluída.');
+    const done = await this.run(
+      () => this.tasks.setStatus(task.id, 'done'),
+      'Tarefa concluída.',
+      'complete',
+    );
+    if (done) this.motion.celebrate();
+    return done;
   }
 
   async reopen(task: Task): Promise<Task | undefined> {
@@ -62,10 +71,14 @@ export class TaskActions {
     return done ? null : undefined;
   }
 
-  private async run<T>(action: () => Promise<T>, success: string): Promise<T | undefined> {
+  private async run<T>(
+    action: () => Promise<T>,
+    success: string,
+    sound: SoundName = 'success',
+  ): Promise<T | undefined> {
     try {
       const result = await action();
-      this.toast.success(success);
+      this.toast.success(success, sound);
       return result;
     } catch (error) {
       this.toast.error(describeError(error));

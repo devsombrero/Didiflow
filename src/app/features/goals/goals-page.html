@@ -23,7 +23,7 @@
         </mat-card-header>
         <mat-card-content>
           @for (row of evaluated(); track row.goal.id) {
-            <article class="goal">
+            <article animate.enter="enter-fade-up" [style.--stagger]="$index" class="goal">
               <header class="goal__header">
                 <h3>{{ row.goal.title }}</h3>
                 <span class="goal__status" [attr.data-status]="row.evaluation.status">
@@ -85,7 +85,7 @@
         <mat-card-content>
           <ul class="achievements">
             @for (item of achievements(); track item.id) {
-              <li>
+              <li animate.enter="enter-fade-up" [style.--stagger]="$index">
                 <mat-icon class="achievements__icon">{{
                   item.kind === 'certification' ? 'workspace_premium' : 'school'
                 }}</mat-icon>

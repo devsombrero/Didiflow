@@ -6,6 +6,7 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Adicionado
 
+- Animações (transição de páginas, entrada de listas, confete ao concluir) e efeitos sonoros sintetizados, com preferências de ativação e volume.
 - Descrição e observações das tarefas em Markdown, com barra de formatação, atalhos e pré-visualização.
 - Anexos nas tarefas, guardados no próprio computador: até 50 MB por tarefa, conferência de espaço livre em disco, registro na atividade e ações de abrir, mostrar na pasta, salvar cópia e remover.
 

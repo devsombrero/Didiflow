@@ -69,6 +69,35 @@
             </mat-form-field>
           </div>
 
+          <h3>Animações e sons</h3>
+          <mat-slide-toggle id="animations_enabled" formControlName="animations_enabled">
+            Animações na interface
+          </mat-slide-toggle>
+          <mat-slide-toggle id="sounds_enabled" formControlName="sounds_enabled">
+            Efeitos sonoros
+          </mat-slide-toggle>
+          <div class="sound-row">
+            <label class="sound-row__label" for="sound_volume">Volume</label>
+            <mat-slider class="sound-row__slider" min="0" max="100" step="5" discrete>
+              <input matSliderThumb id="sound_volume" formControlName="sound_volume" />
+            </mat-slider>
+            <mat-form-field class="sound-row__select" subscriptSizing="fixed">
+              <mat-label>Som</mat-label>
+              <mat-select [value]="previewName()" (valueChange)="previewName.set($event)">
+                @for (sound of soundOptions; track sound.value) {
+                  <mat-option [value]="sound.value">{{ sound.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button matButton="outlined" type="button" (click)="previewSound()">
+              <mat-icon>volume_up</mat-icon> Ouvir
+            </button>
+          </div>
+          <p class="field-hint">
+            As animações também são reduzidas quando o Windows está configurado para mostrar menos
+            animações.
+          </p>
+
           <h3>Notificações</h3>
           <mat-slide-toggle id="notifications_enabled" formControlName="notifications_enabled">
             Ativar notificações
