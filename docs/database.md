@@ -2,24 +2,28 @@
 
 Implementado por migrations em `supabase/migrations/`. Este documento é atualizado junto com cada migration.
 
-| Migration                                           | Conteúdo                                                                |
-| --------------------------------------------------- | ----------------------------------------------------------------------- |
-| `20261025150000_initial_schema.sql`                 | Enums, tabelas do MVP, constraints, índices e triggers                  |
-| `20261025150100_rls_policies.sql`                   | RLS, políticas por dono, grants por coluna e revogações                 |
-| `20261025160000_task_status_progress.sql`           | Normalização status × progresso e histórico de status                   |
-| `20261025170000_task_activity_log.sql`              | Trilha de auditoria de tarefas (`task_activity_logs`)                   |
-| `20261025175900_activity_skip_account_deletion.sql` | Exclusão de conta com tarefas (guarda no trigger de auditoria)          |
-| `20261025180000_organization.sql`                   | Contextos de trabalho, view de solicitantes e auditoria de tags         |
-| `20261025190000_time_entries.sql`                   | Registros de tempo e ações de cronômetro no servidor                    |
-| `20261025200000_goals_achievements.sql`             | Metas SMART (`personal_goals`) e desenvolvimento (`skill_achievements`) |
-| `20261025210000_task_reminders.sql`                 | Lembretes por tarefa                                                    |
-| `20261025220000_focus.sql`                          | Prioridades do dia e sessões de foco (no máximo uma ativa)              |
-| `20261025230000_search_tasks.sql`                   | Busca textual (`search_tasks`: português, unaccent e prefixo)           |
-| `20261026090000_backup_restore.sql`                 | Preferências de backup e `restore_backup`                               |
-| `20261026090100_restore_backup_lint.sql`            | `restore_backup` compatível com o `plpgsql_check`                       |
-| `20261026100000_task_attachments.sql`               | Metadados de anexos, cota de 50 MB por tarefa e auditoria               |
-| `20261026110000_feedback_preferences.sql`           | Preferências de animações, sons e volume                                |
-| `20261026120000_custom_notifications.sql`           | Notificações personalizadas (agenda, som, limite de 100 por usuário)    |
+| Migration                                           | Conteúdo                                                                            |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `20261025150000_initial_schema.sql`                 | Enums, tabelas do MVP, constraints, índices e triggers                              |
+| `20261025150100_rls_policies.sql`                   | RLS, políticas por dono, grants por coluna e revogações                             |
+| `20261025160000_task_status_progress.sql`           | Normalização status × progresso e histórico de status                               |
+| `20261025170000_task_activity_log.sql`              | Trilha de auditoria de tarefas (`task_activity_logs`)                               |
+| `20261025175900_activity_skip_account_deletion.sql` | Exclusão de conta com tarefas (guarda no trigger de auditoria)                      |
+| `20261025180000_organization.sql`                   | Contextos de trabalho, view de solicitantes e auditoria de tags                     |
+| `20261025190000_time_entries.sql`                   | Registros de tempo e ações de cronômetro no servidor                                |
+| `20261025200000_goals_achievements.sql`             | Metas SMART (`personal_goals`) e desenvolvimento (`skill_achievements`)             |
+| `20261025210000_task_reminders.sql`                 | Lembretes por tarefa                                                                |
+| `20261025220000_focus.sql`                          | Prioridades do dia e sessões de foco (no máximo uma ativa)                          |
+| `20261025230000_search_tasks.sql`                   | Busca textual (`search_tasks`: português, unaccent e prefixo)                       |
+| `20261026090000_backup_restore.sql`                 | Preferências de backup e `restore_backup`                                           |
+| `20261026090100_restore_backup_lint.sql`            | `restore_backup` compatível com o `plpgsql_check`                                   |
+| `20261026100000_task_attachments.sql`               | Metadados de anexos, cota de 50 MB por tarefa e auditoria                           |
+| `20261026110000_feedback_preferences.sql`           | Preferências de animações, sons e volume                                            |
+| `20261026120000_custom_notifications.sql`           | Notificações personalizadas (agenda, som, limite de 100 por usuário)                |
+| `20261026130000_task_hierarchy_progress.sql`        | Épicos/subtarefas, progresso e horas automáticos, novo fluxo de status, meta diária |
+| `20261026130100_restore_task_hierarchy.sql`         | Restauração com hierarquia e meta diária                                            |
+| `20261026140000_task_links.sql`                     | Links externos das tarefas (https, até 50 por tarefa) e auditoria                   |
+| `20261026140100_restore_task_links.sql`             | Restauração com os links das tarefas                                                |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 
@@ -69,6 +73,7 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 | `skill_achievements`   | Cursos, certificações e habilidades.                                                                                                                            |
 | `task_reminders`       | Lembretes por tarefa.                                                                                                                                           |
 | `custom_notifications` | Avisos criados pelo usuário: agenda (`once`, `daily`, `weekdays`, `weekly`, `interval` com janela opcional), som, ativo e `last_fired_at`. Até 100 por usuário. |
+| `task_links`           | Recursos externos da tarefa: URL `https://` (CHECK), título opcional, único por tarefa, até 50. Inclusão e remoção entram na auditoria.                         |
 | `task_attachments`     | Metadados dos anexos (nome, tipo, tamanho, SHA-256). Os arquivos ficam no computador do usuário.                                                                |
 | `daily_priorities`     | Lista ordenada de prioridades por dia.                                                                                                                          |
 | `focus_sessions`       | Sessões de foco registradas.                                                                                                                                    |
@@ -110,7 +115,7 @@ Imposta por CHECK constraint e trigger:
 | Status        | Progresso                      |
 | ------------- | ------------------------------ |
 | `not_started` | 0                              |
-| `in_progress` | 1–99                           |
+| `in_progress` | 0–99                           |
 | `blocked`     | preserva o valor atual         |
 | `done`        | 100; `completed_at` preenchido |
 | `cancelled`   | preserva o valor atingido      |
@@ -119,11 +124,25 @@ Ao reabrir, `completed_at` é limpo na tarefa, mas o histórico mantém o regist
 
 O trigger `tasks_normalize_status` (BEFORE INSERT/UPDATE) aplica as regras:
 
-- Uma mudança explícita de status prevalece e ajusta o progresso: `in_progress` vindo de 0% vai para 1%, e vindo de 100% vai para 99%.
-- Uma mudança só de progresso em tarefa não iniciada, em andamento ou concluída deriva o status: 0% → não iniciada, 1–99% → em andamento, 100% → concluída. Em tarefa bloqueada ou cancelada, o status não muda.
+- Uma mudança explícita de status prevalece e ajusta o progresso: iniciar (`in_progress`) mantém 0%; vindo de 100%, vai para 99%.
+- Uma mudança só de progresso deriva o status: em tarefa não iniciada, acima de 0% → em andamento; 100% → concluída; abaixo de 100% em tarefa concluída → em andamento. Uma tarefa em andamento continua em andamento em 0%. Em tarefa bloqueada ou cancelada, o status não muda.
+- Em tarefa com filhos ativos (não excluídos nem cancelados), o progresso vem deles: edições manuais de progresso são substituídas pelo cálculo; mudanças explícitas de status continuam valendo.
 - `completed_at` é preenchido ao concluir e limpo em qualquer outro status. Em uma tarefa já concluída, o usuário pode corrigir a data efetiva.
 
 O trigger `tasks_record_status_history` (AFTER, `security definer`) grava cada transição de status ou progresso em `task_status_history`, com valores anteriores, novos e o usuário responsável.
+
+### Épicos e subtarefas
+
+- `kind` (`epic` | `task`) e `parent_id` (FK composta com o dono, `on delete set null (parent_id)`) formam a hierarquia épico › tarefa › subtarefa.
+- O trigger `tasks_validate_parent` garante: épicos só no nível principal, no máximo três níveis e nenhum ciclo (erro `23514`, `hint = task_hierarchy`).
+- `task_children_progress(id)` calcula o progresso dos filhos ativos: média ponderada pela estimativa quando todos têm estimativa; caso contrário, média simples.
+- O trigger `tasks_rollup_parents` recalcula o pai a cada mudança de progresso, status, pai, estimativa ou exclusão de um filho. O avô acompanha, porque o pai também dispara o trigger.
+
+### Horas
+
+- `task_time_rollup(id)` (security invoker) devolve as horas da tarefa, da subárvore e de hoje, as estimativas e a contagem de filhos (total e concluídos).
+- `daily_hours(de, até, tarefa?)` devolve os segundos por dia no fuso do usuário. Registros que passam da meia-noite são divididos entre os dias, e as pausas são distribuídas proporcionalmente.
+- `user_preferences.daily_hours_target` (0,5–24, padrão 8) é a meta de horas por dia.
 
 ### Índices
 

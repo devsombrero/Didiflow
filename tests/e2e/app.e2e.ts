@@ -81,6 +81,7 @@ test('task lifecycle: create, progress, complete, search and export', async () =
     await page.getByRole('link', { name: 'Tarefas' }).click();
     // Unsaved changes in the floating form ask before closing.
     await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
     await page.locator('#title').fill('Rascunho descartado');
     await page.keyboard.press('Escape');
     await page
@@ -152,6 +153,7 @@ test('kanban: drag a card between columns and keep it after reload', async () =>
     await login(page, email);
     await page.getByRole('link', { name: 'Tarefas' }).click();
     await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
     await page.locator('#title').fill('Card do quadro E2E');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Card do quadro E2E');
@@ -194,6 +196,7 @@ test('backup: automatic and manual backups, restore with replace', async () => {
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
     await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
     await page.locator('#title').fill('Tarefa protegida por backup');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa protegida por backup');
@@ -252,6 +255,7 @@ test('attachments: stored on this computer, 50 MB per task, removable', async ()
     await login(page, email);
     await page.getByRole('link', { name: 'Tarefas' }).click();
     await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
     await page.locator('#title').fill('Tarefa com anexos');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa com anexos');
@@ -315,11 +319,103 @@ test('custom notifications: create in a dialog, test and see it in the bell', as
 
     await page.getByRole('button', { name: /notificações não lidas/ }).click();
     await expect(page.locator('.panel__list')).toContainText('Uma pausa rápida');
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('button', { name: 'Notificações', exact: true })).toBeVisible();
+    await page.locator('.cdk-overlay-backdrop').last().click({ force: true });
+    // Closing the menu marks them as read (a scheduler digest may still arrive meanwhile).
+    await expect(page.locator('.panel__list')).toBeHidden();
 
     await rule.getByRole('switch').click();
     await expect(rule).toContainText('Pausada');
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('epics: subtasks roll up progress; starting a task keeps 0%', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
+    await page.locator('#title').fill('Lançamento do site');
+    await page.locator('#kind').click();
+    await page.getByRole('option', { name: /Épico/ }).click();
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Lançamento do site');
+
+    const panel = page.locator('app-task-children-panel');
+    for (const title of ['Landing page', 'E-mail marketing']) {
+      await panel.locator('#child-title').fill(title);
+      await panel.getByRole('button', { name: 'Adicionar' }).click();
+      await expect(panel.locator('.child', { hasText: title })).toBeVisible();
+    }
+    const progress = page.locator('app-task-progress-panel');
+    await expect(progress).toContainText('Calculado automaticamente a partir de 2 itens');
+
+    await panel.getByRole('button', { name: 'Concluir Landing page' }).click();
+    await expect(panel).toContainText('1 de 2 concluídas');
+    await expect(progress.locator('.progress__value')).toHaveText('50%');
+    await expect(page.locator('app-status-badge').first()).toContainText('Em andamento');
+
+    await panel.getByRole('button', { name: 'Concluir E-mail marketing' }).click();
+    await expect(page.locator('app-status-badge').first()).toContainText('Concluído');
+
+    // A subtask: starting it keeps 0%.
+    await panel.locator('#child-title').fill('Revisão final');
+    await panel.getByRole('button', { name: 'Adicionar' }).click();
+    await panel.locator('.child__title', { hasText: 'Revisão final' }).click();
+    await expect(page.locator('.breadcrumb')).toContainText('Lançamento do site');
+    await expect(page.locator('app-status-badge').first()).toContainText('Não iniciado');
+    await page.locator('#task-status').click();
+    await page.getByRole('option', { name: 'Em andamento' }).click();
+    await expect(page.locator('app-status-badge').first()).toContainText('Em andamento');
+    await expect(page.locator('output[for="task-progress"]')).toHaveText('0%');
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('resources: attach external links in the Recursos tab', async () => {
+  const { app, page, close, userDataDir } = await launchApp();
+  try {
+    await app.evaluate(({ shell }) => {
+      const opened: string[] = [];
+      (globalThis as unknown as { opened: string[] }).opened = opened;
+      shell.openExternal = (async (url: string) => {
+        opened.push(url);
+      }) as typeof shell.openExternal;
+    });
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
+    await page.locator('#title').fill('Tarefa com recursos');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Tarefa com recursos');
+
+    await page.getByRole('tab', { name: /Recursos/ }).click();
+    const panel = page.locator('app-task-links-panel');
+    await panel.locator('#link-url').fill('http://inseguro.com/doc');
+    await panel.getByRole('button', { name: 'Adicionar link' }).click();
+    await expect(panel).toContainText('Use um link começando com https://.');
+
+    await panel.locator('#link-url').fill('www.figma.com/file/abc');
+    await panel.locator('#link-title').fill('Protótipo');
+    await panel.getByRole('button', { name: 'Adicionar link' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Link adicionado');
+    await expect(page.getByRole('tab', { name: /Recursos/ })).toContainText('1');
+    await expect(page.locator('app-task-activity-feed')).toContainText('Link adicionado');
+
+    await panel.getByRole('button', { name: 'Abrir Protótipo' }).click();
+    await expect
+      .poll(() => app.evaluate(() => (globalThis as unknown as { opened: string[] }).opened))
+      .toEqual(['https://www.figma.com/file/abc']);
+
+    await panel.getByRole('button', { name: 'Remover Protótipo' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Remover' }).click();
+    await expect(panel).toContainText('Nenhum recurso');
   } finally {
     await close();
     removeDir(userDataDir);

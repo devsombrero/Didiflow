@@ -681,3 +681,18 @@ a.tile:hover,
     padding: 0;
   }
 }
+
+/* Task kind markers (epic / subtask) next to titles. */
+.kind-icon {
+  margin-right: 4px;
+  vertical-align: -2px;
+  color: var(--mat-sys-tertiary);
+}
+.kind-icon--sub {
+  color: var(--color-text-muted);
+}
+
+/* Task attachments tabs: content never scrolls sideways. */
+.attach-tabs .mat-mdc-tab-body-content {
+  overflow-x: hidden;
+}

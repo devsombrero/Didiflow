@@ -12,16 +12,18 @@ import { MATERIAL_FORMS } from '../../shared/material';
   selector: 'app-task-time-panel',
   imports: [RouterLink, MATERIAL_FORMS],
   template: `
-    <dl class="facts">
-      <dt>Registrado</dt>
-      <dd>{{ spentLabel() }}</dd>
-      <dt>Estimado</dt>
-      <dd>{{ estimateLabel() }}</dd>
-      @if (comparison(); as text) {
-        <dt>Comparação</dt>
-        <dd>{{ text }}</dd>
-      }
-    </dl>
+    @if (!compact()) {
+      <dl class="facts">
+        <dt>Registrado</dt>
+        <dd>{{ spentLabel() }}</dd>
+        <dt>Estimado</dt>
+        <dd>{{ estimateLabel() }}</dd>
+        @if (comparison(); as text) {
+          <dt>Comparação</dt>
+          <dd>{{ text }}</dd>
+        }
+      </dl>
+    }
     <div class="actions">
       @if (runningHere()) {
         <button matButton="filled" type="button" [disabled]="timer.busy()" (click)="stop()">
@@ -58,6 +60,8 @@ export class TaskTimePanel {
   protected readonly timer = inject(TimerStore);
 
   readonly task = input.required<Task>();
+  /** Only the timer actions (the hours panel shows the totals). */
+  readonly compact = input(false);
 
   private readonly entries = signal<TimeEntry[]>([]);
   protected readonly runningHere = computed(

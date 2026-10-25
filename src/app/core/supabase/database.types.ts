@@ -177,6 +177,26 @@ isOneToOne: false
       referencedColumns: ["id","owner_id"]
     }
                   ]
+                },"task_links": {
+                  Row: {
+                    "created_at": string,"id": string,"owner_id": string,"task_id": string,"title": string | null,"url": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"task_id": string,"title"?: string | null,"url": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"task_id"?: string,"title"?: string | null,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "task_links_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
                 },"task_reminders": {
                   Row: {
                     "created_at": string,"id": string,"note": string | null,"owner_id": string,"remind_at": string,"sent_at": string | null,"task_id": string
@@ -245,14 +265,14 @@ isOneToOne: false
                   ]
                 },"tasks": {
                   Row: {
-                    "archived_at": string | null,"category_id": string | null,"completed_at": string | null,"context_id": string | null,"created_at": string,"deleted_at": string | null,"description": string | null,"due_date": string | null,"estimated_minutes": number | null,"has_jira_card": boolean,"has_slack_thread": boolean,"id": string,"jira_url": string | null,"notes": string | null,"owner_id": string,"priority": Database["public"]['Enums']["task_priority"],"progress_percentage": number,"project_id": string | null,"requested_at": string | null,"requester_name": string | null,"slack_thread_url": string | null,"start_date": string | null,"status": Database["public"]['Enums']["task_status"],"title": string,"updated_at": string
+                    "archived_at": string | null,"category_id": string | null,"completed_at": string | null,"context_id": string | null,"created_at": string,"deleted_at": string | null,"description": string | null,"due_date": string | null,"estimated_minutes": number | null,"has_jira_card": boolean,"has_slack_thread": boolean,"id": string,"jira_url": string | null,"kind": string,"notes": string | null,"owner_id": string,"parent_id": string | null,"priority": Database["public"]['Enums']["task_priority"],"progress_percentage": number,"project_id": string | null,"requested_at": string | null,"requester_name": string | null,"slack_thread_url": string | null,"start_date": string | null,"status": Database["public"]['Enums']["task_status"],"title": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "archived_at"?: string | null,"category_id"?: string | null,"completed_at"?: string | null,"context_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"due_date"?: string | null,"estimated_minutes"?: number | null,"has_jira_card"?: boolean,"has_slack_thread"?: boolean,"id"?: string,"jira_url"?: string | null,"notes"?: string | null,"owner_id"?: string,"priority"?: Database["public"]['Enums']["task_priority"],"progress_percentage"?: number,"project_id"?: string | null,"requested_at"?: string | null,"requester_name"?: string | null,"slack_thread_url"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["task_status"],"title": string,"updated_at"?: string
+                    "archived_at"?: string | null,"category_id"?: string | null,"completed_at"?: string | null,"context_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"due_date"?: string | null,"estimated_minutes"?: number | null,"has_jira_card"?: boolean,"has_slack_thread"?: boolean,"id"?: string,"jira_url"?: string | null,"kind"?: string,"notes"?: string | null,"owner_id"?: string,"parent_id"?: string | null,"priority"?: Database["public"]['Enums']["task_priority"],"progress_percentage"?: number,"project_id"?: string | null,"requested_at"?: string | null,"requester_name"?: string | null,"slack_thread_url"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["task_status"],"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "archived_at"?: string | null,"category_id"?: string | null,"completed_at"?: string | null,"context_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"due_date"?: string | null,"estimated_minutes"?: number | null,"has_jira_card"?: boolean,"has_slack_thread"?: boolean,"id"?: string,"jira_url"?: string | null,"notes"?: string | null,"owner_id"?: string,"priority"?: Database["public"]['Enums']["task_priority"],"progress_percentage"?: number,"project_id"?: string | null,"requested_at"?: string | null,"requester_name"?: string | null,"slack_thread_url"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["task_status"],"title"?: string,"updated_at"?: string
+                    "archived_at"?: string | null,"category_id"?: string | null,"completed_at"?: string | null,"context_id"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"description"?: string | null,"due_date"?: string | null,"estimated_minutes"?: number | null,"has_jira_card"?: boolean,"has_slack_thread"?: boolean,"id"?: string,"jira_url"?: string | null,"kind"?: string,"notes"?: string | null,"owner_id"?: string,"parent_id"?: string | null,"priority"?: Database["public"]['Enums']["task_priority"],"progress_percentage"?: number,"project_id"?: string | null,"requested_at"?: string | null,"requester_name"?: string | null,"slack_thread_url"?: string | null,"start_date"?: string | null,"status"?: Database["public"]['Enums']["task_status"],"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -266,6 +286,12 @@ isOneToOne: false
       columns: ["context_id","owner_id"]
 isOneToOne: false
       referencedRelation: "work_contexts"
+      referencedColumns: ["id","owner_id"]
+    },{
+      foreignKeyName: "tasks_parent_fkey"
+      columns: ["parent_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
       referencedColumns: ["id","owner_id"]
     },{
       foreignKeyName: "tasks_project_id_owner_id_fkey"
@@ -297,14 +323,14 @@ isOneToOne: false
                   ]
                 },"user_preferences": {
                   Row: {
-                    "animations_enabled": boolean,"auto_backup_enabled": boolean,"auto_backup_interval_hours": number,"backup_retention": number,"created_at": string,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"sound_volume": number,"sounds_enabled": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
+                    "animations_enabled": boolean,"auto_backup_enabled": boolean,"auto_backup_interval_hours": number,"backup_retention": number,"created_at": string,"daily_hours_target": number,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"sound_volume": number,"sounds_enabled": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "animations_enabled"?: boolean,"auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"sound_volume"?: number,"sounds_enabled"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id": string
+                    "animations_enabled"?: boolean,"auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"daily_hours_target"?: number,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"sound_volume"?: number,"sounds_enabled"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "animations_enabled"?: boolean,"auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"sound_volume"?: number,"sounds_enabled"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id"?: string
+                    "animations_enabled"?: boolean,"auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"daily_hours_target"?: number,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"sound_volume"?: number,"sounds_enabled"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -337,7 +363,12 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "pause_timer":
+            "daily_hours":
+{ Args: { "p_from": string,"p_task_id"?: string,"p_to": string }; Returns: {
+              "day": string,"seconds": number
+            }[]
+                           },
+"pause_timer":
 { Args: Record<PropertyKey, never>; Returns: {
               "created_at": string,
 "description": string | null,
@@ -428,7 +459,15 @@ isOneToOne: false
         to: "time_entries"
         isOneToOne: true
         isSetofReturn: false
-      } }
+      } },
+"task_children_progress":
+{ Args: { "p_task_id": string }; Returns: number
+                           },
+"task_time_rollup":
+{ Args: { "p_task_id": string }; Returns: {
+              "children_done": number,"children_total": number,"own_estimate_minutes": number,"own_seconds": number,"today_seconds": number,"tree_estimate_minutes": number,"tree_seconds": number
+            }[]
+                           }
           }
           Enums: {
             "kpi_metric": "deliveries"|"on_time_rate"|"late_rate"|"lead_time"|"cycle_time"|"predictability"|"rework_rate"|"time_invested"|"learning","task_priority": "low"|"medium"|"high"|"urgent","task_status": "not_started"|"in_progress"|"blocked"|"done"|"cancelled","theme_preference": "system"|"light"|"dark"

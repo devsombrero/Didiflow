@@ -73,3 +73,44 @@
   margin: var(--space-5, 24px) 0 var(--space-2);
   font: var(--mat-sys-title-small);
 }
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.breadcrumb__sep {
+  color: var(--color-text-muted);
+}
+
+.kind-icon {
+  vertical-align: middle;
+  color: var(--mat-sys-tertiary);
+}
+
+.time-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tab-icon {
+  margin-right: var(--space-2);
+}
+
+.tab-count {
+  margin-left: var(--space-2);
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  font: var(--mat-sys-label-small);
+  line-height: 20px;
+  text-align: center;
+}
+
+.tab-body {
+  padding-top: var(--space-4);
+}

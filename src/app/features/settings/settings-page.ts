@@ -59,6 +59,7 @@ export class SettingsPage {
     animations_enabled: [true],
     sounds_enabled: [true],
     sound_volume: [60, [Validators.min(0), Validators.max(100)]],
+    daily_hours_target: [8, [Validators.required, Validators.min(0.5), Validators.max(24)]],
   });
 
   protected readonly soundOptions = (Object.keys(SOUND_LABELS) as SoundName[]).map((value) => ({

@@ -1,6 +1,7 @@
 /** Tables shown in the restore preview, in a friendly order. */
 const TABLE_LABELS: [string, string][] = [
   ['tasks', 'Tarefas'],
+  ['task_links', 'Links das tarefas'],
   ['projects', 'Projetos'],
   ['categories', 'Categorias'],
   ['tags', 'Tags'],

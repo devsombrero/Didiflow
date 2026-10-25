@@ -8,6 +8,9 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Adicionado
 
+- Aba "Recursos" no card de anexos para links externos (https), com abrir, copiar, remover e registro na atividade.
+- Épicos e subtarefas (até três níveis), com progresso calculado automaticamente a partir dos itens.
+- Cálculo automático de horas: totais da tarefa com subtarefas, horas de hoje, ritmo necessário por dia útil até a entrega, gráfico diário e meta de horas por dia.
 - Notificações personalizadas (uma vez, diária, dias úteis, semanal ou por intervalo com horário ativo), central de notificações com contador de não lidas e cartões de aviso com ação "Abrir".
 - Animações (transição de páginas, entrada de listas, confete ao concluir) e efeitos sonoros sintetizados, com preferências de ativação e volume.
 - Descrição e observações das tarefas em Markdown, com barra de formatação, atalhos e pré-visualização.
@@ -15,6 +18,7 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Alterado
 
+- Iniciar uma tarefa mantém 0% (antes ia para 1%); 100% conclui a tarefa, e uma tarefa em andamento não volta a "Não iniciado" ao zerar o progresso.
 - Formulários de tarefa, metas, desenvolvimento e apontamento de tempo em modais flutuantes; a tarefa pede confirmação antes de descartar alterações.
 - Gráficos do dashboard e dos KPIs migrados para ngx-charts, com animação de entrada, tooltips e cores do tema.
 

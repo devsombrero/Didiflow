@@ -47,6 +47,7 @@
 - `DIDIFLOW_DEV_SERVER_URL` é ignorada em builds empacotados.
 - Navegação para origens externas, `window.open` e `<webview>` são bloqueados. Links `https://` abertos via `window.open` vão para o navegador padrão.
 - Markdown de descrições e observações (ngx-markdown + marked) passa pelo sanitizador de HTML do Angular: scripts, handlers `on*`, `<input>` e URLs `javascript:` são removidos. Cliques em links são interceptados; só `http(s)://` segue para `window.open` (e daí para o navegador padrão, só `https://`).
+- Links de recursos das tarefas (`task_links`) só aceitam `https://` sem credenciais, validados no app e por CHECK no banco, e abrem pelo `openExternal`.
 - Todas as requisições de permissão (câmera, geolocalização, notificações...) são negadas até que uma feature precise delas.
 - O protocolo `app://` impede path traversal e serve as respostas com Content Security Policy:
   - `script-src 'self'` (sem scripts inline). Por isso o inlining de CSS crítico do Angular está desativado (`optimization.styles.inlineCritical: false`), já que ele usa handlers `onload` inline.

@@ -49,7 +49,11 @@ Os formulários de **tarefa**, **meta**, **registro de desenvolvimento** e **apo
 
 A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, **negrito**, _itálico_, listas, checklists (`- [ ]`), citações, código e links. Use a barra de formatação (atalhos `Ctrl+B`, `Ctrl+I` e `Ctrl+K`) e a aba **Visualizar** para conferir antes de salvar. Links abrem no navegador padrão.
 
-**Anexos** (detalhe da tarefa, aplicativo desktop):
+**Anexos** (detalhe da tarefa): o card tem duas abas.
+
+**Recursos** (aba ao lado de Arquivos): links externos da tarefa (protótipos, documentos, cards, vídeos). Aceita endereços `https://` (ou sem o prefixo, que é completado), com título opcional; até 50 por tarefa. Cada link abre no navegador padrão, pode ser copiado ou removido, e as inclusões e remoções aparecem na atividade. Os links entram no backup.
+
+**Arquivos** (aplicativo desktop):
 
 - **Limite:** até 50 MB por tarefa, somando todos os arquivos.
 - **Onde ficam:** os arquivos são copiados para `%APPDATA%\didiflow\attachments`, no próprio computador; o Supabase guarda só nome, tipo, tamanho e checksum.
@@ -59,7 +63,15 @@ A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, *
 
 ### Status e progresso
 
-- Não iniciado = 0%; Em andamento = 1–99%; Concluído = 100%.
+- Não iniciado = 0%; Em andamento = 0–99% (iniciar mantém 0%); Concluído = 100%.
+- Levar o progresso a 100% conclui a tarefa; concluir sempre marca 100%.
+- **Épicos e subtarefas:** no formulário, escolha o **Tipo** (Tarefa ou Épico) e a quem a tarefa **pertence**. São até três níveis: épico › tarefa › subtarefa. No detalhe, o painel **Subtarefas** (ou **Tarefas do épico**) permite adicionar e concluir itens. O progresso do item pai é calculado automaticamente (ponderado pela estimativa quando todos os itens têm estimativa). Itens cancelados ficam de fora.
+- **Horas automáticas:** o card **Tempo** do detalhe mostra:
+  - horas registradas (somando as subtarefas) e horas de hoje;
+  - estimativa (a própria ou a soma dos itens) e quanto dela já foi usado;
+  - ritmo necessário em horas por dia útil até a data de entrega;
+  - gráfico dos últimos 14 dias.
+- **Horas por dia:** na tela **Tempo**, o cartão mostra as horas de hoje contra a meta diária (Configurações → Tempo), a média por dia trabalhado e os dias na meta.
 - Bloqueado e Cancelado preservam o progresso.
 - Mover o controle de progresso ajusta o status automaticamente.
 - Concluir registra a data efetiva de conclusão.

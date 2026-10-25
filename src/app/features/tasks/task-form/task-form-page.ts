@@ -16,6 +16,7 @@ import {
 import { OrganizationStore } from '../../organization/organization.service';
 import { TasksService } from '../tasks.service';
 import { dueAfterStart, linkRequiredWhen } from './task-form.validators';
+import { type HierarchyTask, parentCandidates, type TaskKind } from '../task-hierarchy';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../../shared/material';
 import { MarkdownEditor } from '../../../shared/markdown/markdown-editor';
@@ -46,6 +47,8 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
   readonly id = input<string>();
   /** ?due=YYYY-MM-DD prefills the due date when planning from the calendar. */
   readonly due = input<string>();
+  /** Prefills "Pertence a" (adding a subtask from a parent). */
+  readonly parent = input<string>();
   /** Inside a dialog: no page header, and saving/cancelling emit instead of navigating. */
   readonly embedded = input(false);
   readonly saved = output<Task>();
@@ -59,6 +62,20 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
   /** Project of the task being edited, kept selectable even when archived. */
   private readonly currentProjectId = signal<string | null>(null);
   protected readonly selectedTags = signal<readonly string[]>([]);
+  private readonly hierarchy = signal<HierarchyTask[]>([]);
+  private readonly kindValue = signal<TaskKind>('task');
+  /** Epics and tasks this one can belong to (at most epic › task › subtask). */
+  protected readonly parentOptions = computed(() => {
+    const all = this.hierarchy();
+    const id = this.id() ?? null;
+    const children = all.filter((t) => t.parent_id === id && id !== null);
+    const grandchildren = all.some((t) => children.some((c) => c.id === t.parent_id));
+    return parentCandidates(all, {
+      id,
+      kind: this.kindValue(),
+      subtreeHeight: grandchildren ? 2 : children.length ? 1 : 0,
+    });
+  });
   protected readonly projectOptions = computed(() =>
     this.org.items().projects.filter((p) => !p.archived_at || p.id === this.currentProjectId()),
   );
@@ -68,6 +85,8 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
       title: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/\S/)]],
       description: ['', Validators.maxLength(10000)],
       priority: this.fb.control<TaskPriority>('medium'),
+      kind: this.fb.control<TaskKind>('task'),
+      parent_id: [''],
       requested_at: [''],
       requester_name: ['', Validators.maxLength(120)],
       has_jira_card: [false],
@@ -94,8 +113,23 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
     },
   );
 
+  constructor() {
+    this.form.controls.kind.valueChanges.subscribe((kind) => {
+      this.kindValue.set(kind);
+      if (kind === 'epic') this.form.controls.parent_id.setValue('');
+      if (kind === 'epic') this.form.controls.parent_id.disable();
+      else this.form.controls.parent_id.enable();
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     void this.org.ensureLoaded().catch(() => undefined);
+    void this.tasks
+      .hierarchyOptions()
+      .then((options) => this.hierarchy.set(options))
+      .catch(() => undefined);
+    const parent = this.parent();
+    if (!this.id() && parent) this.form.controls.parent_id.setValue(parent);
     const id = this.id();
     if (!id) {
       const due = this.due();
@@ -171,6 +205,8 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
       title: task.title,
       description: task.description ?? '',
       priority: task.priority,
+      kind: task.kind as TaskKind,
+      parent_id: task.parent_id ?? '',
       requested_at: task.requested_at ?? '',
       requester_name: task.requester_name ?? '',
       has_jira_card: task.has_jira_card,
@@ -196,6 +232,8 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
       title: v.title.trim(),
       description: blankToNull(v.description),
       priority: v.priority,
+      kind: v.kind,
+      parent_id: v.kind === 'epic' ? null : v.parent_id || null,
       requested_at: v.requested_at || null,
       requester_name: blankToNull(v.requester_name),
       has_jira_card: v.has_jira_card,

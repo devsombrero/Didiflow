@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, type OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, signal, effect, untracked } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DesktopBridge } from '../../../core/platform/desktop-bridge';
 import { UserClock } from '../../../core/profile/user-clock';
@@ -19,6 +19,10 @@ import { TasksService } from '../tasks.service';
 import { MATERIAL_UI } from '../../../shared/material';
 import { MarkdownView } from '../../../shared/markdown/markdown-view';
 import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
+import { TaskChildrenPanel } from '../components/task-children-panel';
+import { TaskHoursPanel } from '../components/task-hours-panel';
+import { TaskLinksPanel } from '../components/task-links-panel';
+import { MatTabsModule } from '@angular/material/tabs';
 import { TaskFormDialogs } from '../task-form/task-form-dialog';
 
 @Component({
@@ -32,6 +36,10 @@ import { TaskFormDialogs } from '../task-form/task-form-dialog';
     TaskActivityFeed,
     TaskTimePanel,
     TaskRemindersPanel,
+    TaskChildrenPanel,
+    TaskHoursPanel,
+    TaskLinksPanel,
+    MatTabsModule,
     TaskAttachmentsPanel,
     MarkdownView,
     MATERIAL_UI,
@@ -39,7 +47,7 @@ import { TaskFormDialogs } from '../task-form/task-form-dialog';
   templateUrl: './task-detail-page.html',
   styleUrl: './task-detail-page.scss',
 })
-export class TaskDetailPage implements OnInit {
+export class TaskDetailPage {
   protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly tasks = inject(TasksService);
   private readonly router = inject(Router);
@@ -54,6 +62,13 @@ export class TaskDetailPage implements OnInit {
   protected readonly task = signal<Task | null>(null);
   /** Bumped by panels whose changes add activity without touching the task row. */
   protected readonly activityVersion = signal(0);
+  /** Parent chain (epic › task) shown in the breadcrumb. */
+  protected readonly ancestors = signal<Pick<Task, 'id' | 'title' | 'kind'>[]>([]);
+  /** Active children reported by the subtasks panel. */
+  protected readonly childrenCount = signal(0);
+  protected readonly hoursVersion = signal(0);
+  /** Links of the task, for the "Recursos" tab label. */
+  protected readonly linkCount = signal(0);
   /** Alias usable inside the template where `task` is shadowed by @if. */
   protected readonly task$ = this.task;
   protected readonly state = signal<'loading' | 'ready' | 'not-found' | 'error'>('loading');
@@ -89,8 +104,21 @@ export class TaskDetailPage implements OnInit {
   protected readonly canComplete = canComplete;
   protected readonly canReopen = canReopen;
 
-  async ngOnInit(): Promise<void> {
-    await this.load();
+  constructor() {
+    // The route reuses this component when moving between tasks (breadcrumb,
+    // subtasks): reload whenever the id changes.
+    effect(() => {
+      this.id();
+      untracked(() => void this.load());
+    });
+  }
+
+  /** Subtasks changed: the database recomputed this task's progress. */
+  protected async refresh(): Promise<void> {
+    const task = await this.tasks.get(this.id()).catch(() => null);
+    if (task) this.task.set(task);
+    this.hoursVersion.update((v) => v + 1);
+    this.activityVersion.update((v) => v + 1);
   }
 
   protected async edit(id: string): Promise<void> {
@@ -105,6 +133,7 @@ export class TaskDetailPage implements OnInit {
       ]);
       this.task.set(task);
       this.setTagNames(task);
+      this.ancestors.set(task ? await this.tasks.ancestors(task).catch(() => []) : []);
       this.state.set(task ? 'ready' : 'not-found');
     } catch {
       this.state.set('error');

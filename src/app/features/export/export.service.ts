@@ -37,6 +37,7 @@ const BACKUP_TABLES = [
   'work_contexts',
   'tasks',
   'task_tags',
+  'task_links',
   'task_status_history',
   'task_activity_logs',
   'time_entries',
