@@ -1,0 +1,174 @@
+<header class="page-header">
+  <h1>{{ greeting() }}</h1>
+  <a class="btn btn--primary" routerLink="/tasks/new">Nova tarefa</a>
+</header>
+
+@switch (state()) {
+  @case ('loading') {
+    <p class="muted" role="status">Carregando indicadores…</p>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">
+      {{ errorMessage() }}
+      <button type="button" class="btn btn--link" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+  @default {
+    @if (tasks().length === 0) {
+      <section class="card empty-state">
+        <h2>Comece cadastrando suas demandas</h2>
+        <p class="muted">
+          Os indicadores são calculados a partir das suas tarefas reais. Cadastre a primeira demanda
+          com data de entrega para acompanhar prazos, progresso e entregas aqui.
+        </p>
+        <a class="btn btn--primary" routerLink="/tasks/new">Cadastrar tarefa</a>
+      </section>
+    } @else {
+      <section class="filters" aria-label="Filtros do dashboard">
+        <select class="input" aria-label="Período" (change)="preset.set($any($event.target).value)">
+          @for (option of presets; track option.value) {
+            <option [value]="option.value" [selected]="option.value === preset()">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+        <select
+          class="input"
+          aria-label="Status"
+          (change)="statusFilter.set($any($event.target).value)"
+        >
+          <option value="" [selected]="!statusFilter()">Todos os status</option>
+          @for (status of statuses; track status) {
+            <option [value]="status" [selected]="status === statusFilter()">
+              {{ statusLabels[status] }}
+            </option>
+          }
+        </select>
+        <select
+          class="input"
+          aria-label="Prioridade"
+          (change)="priorityFilter.set($any($event.target).value)"
+        >
+          <option value="" [selected]="!priorityFilter()">Todas as prioridades</option>
+          @for (priority of priorities; track priority) {
+            <option [value]="priority" [selected]="priority === priorityFilter()">
+              {{ priorityLabels[priority] }}
+            </option>
+          }
+        </select>
+        @if (hasFilters()) {
+          <button type="button" class="btn btn--link" (click)="clearFilters()">
+            Limpar filtros
+          </button>
+        }
+      </section>
+
+      @let s = summary();
+      <section class="tiles" aria-label="Resumo">
+        <a class="tile" routerLink="/tasks">
+          <span class="tile__label">Abertas</span>
+          <span class="tile__value">{{ s.open }}</span>
+        </a>
+        <div class="tile">
+          <span class="tile__label">Em andamento</span>
+          <span class="tile__value">{{ s.inProgress }}</span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Bloqueadas</span>
+          <span class="tile__value">{{ s.blocked }}</span>
+        </div>
+        <div class="tile" [class.tile--alert]="s.overdue > 0">
+          <span class="tile__label">Atrasadas</span>
+          <span class="tile__value">
+            @if (s.overdue > 0) {
+              <span aria-hidden="true">⚠ </span>
+            }
+            {{ s.overdue }}
+          </span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Vencendo em até {{ dueSoonDays() }} dias</span>
+          <span class="tile__value">{{ s.dueSoon }}</span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Concluídas no período</span>
+          <span class="tile__value">{{ s.completedInPeriod }}</span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Entregas no prazo</span>
+          <span class="tile__value">{{ formatPercent(s.onTimeRate) }}</span>
+          <span class="tile__hint">
+            {{
+              s.onTimeEligible ? s.onTimeEligible + ' entregas com prazo' : 'Sem entregas com prazo'
+            }}
+          </span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Conclusão das entregas do período</span>
+          <span class="tile__value">{{ formatPercent(s.completionRate) }}</span>
+          <span class="tile__hint">Tarefas com entrega prevista no período</span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Progresso médio das abertas</span>
+          <span class="tile__value">{{ formatPercent(s.averageProgress) }}</span>
+        </div>
+        <div class="tile">
+          <span class="tile__label">Tempo investido</span>
+          <span class="tile__value">—</span>
+          <span class="tile__hint">Sem registros de tempo</span>
+        </div>
+      </section>
+
+      <section class="charts">
+        <article class="card charts__wide">
+          <header class="chart-header">
+            <h2>Histórico de entregas</h2>
+            <div class="segmented" role="group" aria-label="Agrupar por">
+              <button
+                type="button"
+                [attr.aria-pressed]="granularity() === 'week'"
+                (click)="granularity.set('week')"
+              >
+                Semanal
+              </button>
+              <button
+                type="button"
+                [attr.aria-pressed]="granularity() === 'month'"
+                (click)="granularity.set('month')"
+              >
+                Mensal
+              </button>
+            </div>
+          </header>
+          <app-bar-chart
+            [data]="deliveries()"
+            [stacked]="true"
+            [height]="240"
+            [categoryLabel]="granularity() === 'week' ? 'Semana' : 'Mês'"
+            ariaLabel="Tarefas concluídas por período, separadas entre no prazo, com atraso e sem prazo"
+          />
+        </article>
+
+        <article class="card">
+          <h2>Distribuição por status</h2>
+          <app-bar-chart
+            [data]="byStatus()"
+            [horizontal]="true"
+            categoryLabel="Status"
+            ariaLabel="Quantidade de tarefas não arquivadas por status"
+          />
+        </article>
+
+        <article class="card">
+          <h2>Tarefas abertas por prioridade</h2>
+          <app-bar-chart
+            [data]="byPriority()"
+            [horizontal]="true"
+            categoryLabel="Prioridade"
+            ariaLabel="Quantidade de tarefas abertas por prioridade"
+          />
+        </article>
+      </section>
+    }
+  }
+}
