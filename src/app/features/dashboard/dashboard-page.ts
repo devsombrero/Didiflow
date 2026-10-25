@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, type OnInit, signal, untracked } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -31,7 +32,7 @@ import {
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [RouterLink, BarChart],
+  imports: [RouterLink, BarChart, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })

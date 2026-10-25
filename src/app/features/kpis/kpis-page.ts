@@ -1,4 +1,5 @@
 import { Component, computed, inject, type OnInit, signal } from '@angular/core';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { RouterLink } from '@angular/router';
 import { UserClock } from '../../core/profile/user-clock';
 import { type BarChartData, BarChart } from '../../shared/charts/bar-chart';
@@ -26,7 +27,7 @@ interface KpiCard {
 
 @Component({
   selector: 'app-kpis-page',
-  imports: [RouterLink, BarChart],
+  imports: [RouterLink, BarChart, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './kpis-page.html',
   styleUrl: './kpis-page.scss',
 })
