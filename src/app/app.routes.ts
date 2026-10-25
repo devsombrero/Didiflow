@@ -13,7 +13,8 @@ export const routes: Routes = [
         path: '',
         pathMatch: 'full',
         title: 'DidiFlow',
-        loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
+        loadComponent: () =>
+          import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),
       },
       {
         path: 'tasks',

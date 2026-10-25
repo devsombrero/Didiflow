@@ -25,6 +25,27 @@ Convenções:
 
 "Abertas" significa `status in (not_started, in_progress, blocked)`.
 
+## Indicadores do dashboard
+
+Calculados em `src/app/features/dashboard/metrics.ts` (funções puras, com testes) sobre as tarefas não excluídas, depois dos filtros de status, prioridade e categoria:
+
+| Indicador                         | Definição                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------- |
+| Abertas                           | `status in (not_started, in_progress, blocked)` e não arquivadas                            |
+| Em andamento / Bloqueadas         | Abertas com o status correspondente                                                         |
+| Atrasadas                         | Abertas com `due_date < hoje`                                                               |
+| Vencendo em até N dias            | Abertas com `hoje <= due_date <= hoje + N` (N vem das preferências)                         |
+| Concluídas no período             | Indicador 1, incluindo tarefas arquivadas depois de concluídas                              |
+| Entregas no prazo                 | Indicador 2                                                                                 |
+| Conclusão das entregas do período | `count(done) ÷ count(não canceladas com due_date no período) × 100`                         |
+| Progresso médio das abertas       | Média de `progress_percentage` das abertas                                                  |
+| Tempo investido                   | Soma de `time_entries`; exibe "Sem registros de tempo" até existirem apontamentos           |
+| Histórico de entregas             | Concluídas por semana (segunda-feira) ou mês, separadas em no prazo, com atraso e sem prazo |
+| Distribuição por status           | Tarefas não arquivadas por status                                                           |
+| Abertas por prioridade            | Abertas por prioridade                                                                      |
+
+"Hoje" e a data de conclusão são calculados no fuso horário do usuário.
+
 ## Exibição
 
 Cada indicador mostra nome, descrição, fórmula, período, valor atual, comparação com o período anterior (quando há dados nos dois), meta opcional, histórico e o estado sem dados.
