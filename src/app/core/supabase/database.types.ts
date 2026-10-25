@@ -19,6 +19,46 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"daily_priorities": {
+                  Row: {
+                    "created_at": string,"id": string,"owner_id": string,"position": number,"priority_date": string,"task_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"position"?: number,"priority_date": string,"task_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"position"?: number,"priority_date"?: string,"task_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "daily_priorities_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
+                },"focus_sessions": {
+                  Row: {
+                    "completed": boolean,"created_at": string,"ended_at": string | null,"id": string,"notes": string | null,"owner_id": string,"planned_minutes": number,"started_at": string,"task_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "completed"?: boolean,"created_at"?: string,"ended_at"?: string | null,"id"?: string,"notes"?: string | null,"owner_id"?: string,"planned_minutes": number,"started_at"?: string,"task_id"?: string | null
+                  }
+                  Update: {
+                    "completed"?: boolean,"created_at"?: string,"ended_at"?: string | null,"id"?: string,"notes"?: string | null,"owner_id"?: string,"planned_minutes"?: number,"started_at"?: string,"task_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "focus_sessions_task_id_owner_id_fkey"
+      columns: ["task_id","owner_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id","owner_id"]
+    }
+                  ]
                 },"personal_goals": {
                   Row: {
                     "achievability": string | null,"comparison": string,"created_at": string,"end_date": string,"id": string,"metric": Database["public"]['Enums']["kpi_metric"],"owner_id": string,"relevance": string | null,"start_date": string,"target_value": number,"title": string,"updated_at": string
