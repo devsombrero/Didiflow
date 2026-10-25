@@ -1,5 +1,8 @@
 <header class="page-header">
   <h1>Registro de tempo</h1>
+  <button matButton="filled" type="button" (click)="newEntry()">
+    <mat-icon>more_time</mat-icon> Registrar manualmente
+  </button>
 </header>
 
 <p class="muted intro">
@@ -34,53 +37,6 @@
         </mat-card-content>
       </mat-card>
     }
-
-    <mat-card appearance="outlined" class="section">
-      <mat-card-header>
-        <mat-card-title>{{
-          editingId() ? 'Editar registro' : 'Registrar manualmente'
-        }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <form class="form" [formGroup]="entryForm" (ngSubmit)="saveEntry()" novalidate>
-          <div class="form-row">
-            <mat-form-field>
-              <mat-label>Tarefa</mat-label>
-              <mat-select id="entry-task" formControlName="task_id">
-                <mat-option value="">Sem tarefa</mat-option>
-                @for (task of taskOptions(); track task.id) {
-                  <mat-option [value]="task.id">{{ task.title }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Data</mat-label>
-              <input matInput id="entry-date" type="date" formControlName="date" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Início</mat-label>
-              <input matInput id="entry-start" type="time" formControlName="start" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Fim</mat-label>
-              <input matInput id="entry-end" type="time" formControlName="end" />
-            </mat-form-field>
-          </div>
-          <mat-form-field>
-            <mat-label>Descrição do trabalho realizado</mat-label>
-            <input matInput id="entry-description" formControlName="description" />
-          </mat-form-field>
-          <div class="actions">
-            <button matButton="filled" type="submit" [disabled]="saving()">
-              {{ editingId() ? 'Salvar' : 'Registrar' }}
-            </button>
-            @if (editingId()) {
-              <button matButton type="button" (click)="cancelEdit()">Cancelar</button>
-            }
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
 
     <mat-card appearance="outlined" class="section">
       <mat-card-header class="week-nav">
@@ -198,3 +154,50 @@
     </mat-card>
   </aside>
 </div>
+
+<ng-template #entryDialog>
+  <h2 mat-dialog-title>{{ editingId() ? 'Editar registro' : 'Registrar tempo manualmente' }}</h2>
+  <mat-dialog-content>
+    <form
+      id="entry-form"
+      class="form dialog-form"
+      [formGroup]="entryForm"
+      (ngSubmit)="saveEntry()"
+      novalidate
+    >
+      <mat-form-field>
+        <mat-label>Tarefa</mat-label>
+        <mat-select id="entry-task" formControlName="task_id">
+          <mat-option value="">Sem tarefa</mat-option>
+          @for (task of taskOptions(); track task.id) {
+            <mat-option [value]="task.id">{{ task.title }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Data</mat-label>
+          <input matInput id="entry-date" type="date" formControlName="date" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Início</mat-label>
+          <input matInput id="entry-start" type="time" formControlName="start" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Fim</mat-label>
+          <input matInput id="entry-end" type="time" formControlName="end" />
+        </mat-form-field>
+      </div>
+      <mat-form-field>
+        <mat-label>Descrição do trabalho realizado</mat-label>
+        <input matInput id="entry-description" formControlName="description" />
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Cancelar</button>
+    <button matButton="filled" type="submit" form="entry-form" [disabled]="saving()">
+      {{ editingId() ? 'Salvar' : 'Registrar' }}
+    </button>
+  </mat-dialog-actions>
+</ng-template>

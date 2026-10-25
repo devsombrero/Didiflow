@@ -1,6 +1,8 @@
 <header class="page-header">
   <h1>{{ greeting() }}</h1>
-  <a matButton="filled" routerLink="/tasks/new"><mat-icon>add</mat-icon> Nova tarefa</a>
+  <button matButton="filled" type="button" (click)="taskDialogs.create()">
+    <mat-icon>add</mat-icon> Nova tarefa
+  </button>
 </header>
 
 @switch (state()) {
@@ -24,7 +26,9 @@
             Os indicadores são calculados a partir das suas tarefas reais. Cadastre a primeira
             demanda com data de entrega para acompanhar prazos, progresso e entregas aqui.
           </p>
-          <a matButton="filled" routerLink="/tasks/new">Cadastrar tarefa</a>
+          <button matButton="filled" type="button" (click)="taskDialogs.create()">
+            Cadastrar tarefa
+          </button>
         </mat-card-content>
       </mat-card>
     } @else {

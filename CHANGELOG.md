@@ -11,6 +11,7 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Alterado
 
+- Formulários de tarefa, metas, desenvolvimento e apontamento de tempo em modais flutuantes; a tarefa pede confirmação antes de descartar alterações.
 - Gráficos do dashboard e dos KPIs migrados para ngx-charts, com animação de entrada, tooltips e cores do tema.
 
 ## [0.2.0] - 2026-10-25

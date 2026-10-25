@@ -32,9 +32,9 @@
           </div>
         </div>
         <div class="page-actions">
-          <a matButton="filled" [routerLink]="['/tasks', task.id, 'edit']">
+          <button matButton="filled" type="button" (click)="edit(task.id)">
             <mat-icon>edit</mat-icon> Editar
-          </a>
+          </button>
           @if (canComplete(task)) {
             <a matButton="tonal" routerLink="/focus" [queryParams]="{ task: task.id }">
               <mat-icon>timer</mat-icon> Focar

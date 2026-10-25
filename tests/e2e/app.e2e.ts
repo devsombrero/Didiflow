@@ -79,7 +79,18 @@ test('task lifecycle: create, progress, complete, search and export', async () =
     await login(page, email);
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    // Unsaved changes in the floating form ask before closing.
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Rascunho descartado');
+    await page.keyboard.press('Escape');
+    await page
+      .getByRole('dialog', { name: 'Descartar alterações?' })
+      .getByRole('button', { name: 'Descartar' })
+      .click();
+    await expect(page.locator('app-task-form-dialog')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await expect(page.getByRole('dialog', { name: 'Nova tarefa' })).toBeVisible();
     await page.locator('#title').fill('Relatório trimestral E2E');
     await page.locator('#requester_name').fill('Marina');
     await page.getByLabel('Possui card no Jira').check();
@@ -91,6 +102,13 @@ test('task lifecycle: create, progress, complete, search and export', async () =
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Relatório trimestral E2E');
     await expect(page.getByRole('button', { name: /DF-1/ })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Editar' }).click();
+    await expect(page.getByRole('dialog', { name: 'Editar tarefa' })).toBeVisible();
+    await page.locator('#requester_name').fill('Marina Souza');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.locator('app-task-form-dialog')).toHaveCount(0);
+    await expect(page.locator('.detail-grid')).toContainText('Marina Souza');
 
     await page.getByLabel('Progresso').fill('40');
     await page.getByLabel('Progresso').dispatchEvent('change');
@@ -133,7 +151,7 @@ test('kanban: drag a card between columns and keep it after reload', async () =>
   try {
     await login(page, email);
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
     await page.locator('#title').fill('Card do quadro E2E');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Card do quadro E2E');
@@ -175,7 +193,7 @@ test('backup: automatic and manual backups, restore with replace', async () => {
     await login(page, email);
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
     await page.locator('#title').fill('Tarefa protegida por backup');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa protegida por backup');
@@ -233,7 +251,7 @@ test('attachments: stored on this computer, 50 MB per task, removable', async ()
   try {
     await login(page, email);
     await page.getByRole('link', { name: 'Tarefas' }).click();
-    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
     await page.locator('#title').fill('Tarefa com anexos');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa com anexos');

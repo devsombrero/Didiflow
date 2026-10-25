@@ -29,6 +29,7 @@ import {
   statusDistribution,
   summarize,
 } from './metrics';
+import { TaskFormDialogs } from '../tasks/task-form/task-form-dialog';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -37,6 +38,7 @@ import {
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage implements OnInit {
+  protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly dashboard = inject(DashboardService);
   private readonly clock = inject(UserClock);
   private readonly profile = inject(ProfileService).profile;

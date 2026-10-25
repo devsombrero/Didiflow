@@ -19,6 +19,7 @@ import { TasksService } from '../tasks.service';
 import { MATERIAL_UI } from '../../../shared/material';
 import { MarkdownView } from '../../../shared/markdown/markdown-view';
 import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
+import { TaskFormDialogs } from '../task-form/task-form-dialog';
 
 @Component({
   selector: 'app-task-detail-page',
@@ -39,6 +40,7 @@ import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
   styleUrl: './task-detail-page.scss',
 })
 export class TaskDetailPage implements OnInit {
+  protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly tasks = inject(TasksService);
   private readonly router = inject(Router);
   private readonly bridge = inject(DesktopBridge);
@@ -88,6 +90,14 @@ export class TaskDetailPage implements OnInit {
   protected readonly canReopen = canReopen;
 
   async ngOnInit(): Promise<void> {
+    await this.load();
+  }
+
+  protected async edit(id: string): Promise<void> {
+    if (await this.taskDialogs.edit(id)) await this.load();
+  }
+
+  private async load(): Promise<void> {
     try {
       const [task] = await Promise.all([
         this.tasks.get(this.id()),

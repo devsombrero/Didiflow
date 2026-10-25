@@ -1,4 +1,13 @@
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  TemplateRef,
+  viewChild,
+} from '@angular/core';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,6 +23,8 @@ import { TasksService } from '../tasks/tasks.service';
 import { formatDuration, sumBy, totalSeconds, workedSeconds } from './time-calc';
 import { describeTimeError } from './time-errors';
 import { TimerStore, TimeService, type TimeEntryWithTask } from './time.service';
+import { MatDialog, type MatDialogRef } from '@angular/material/dialog';
+import { FORM_DIALOG, formDialogConfig } from '../../shared/dialog/form-dialog';
 
 interface DayGroup {
   date: string;
@@ -23,11 +34,28 @@ interface DayGroup {
 
 @Component({
   selector: 'app-time-page',
-  imports: [ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
+  imports: [FORM_DIALOG, ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './time-page.html',
   styleUrl: './time-page.scss',
 })
 export class TimePage {
+  private readonly dialog = inject(MatDialog);
+  private readonly entryDialog = viewChild.required<TemplateRef<unknown>>('entryDialog');
+  private entryRef: MatDialogRef<unknown> | null = null;
+
+  protected newEntry(): void {
+    this.cancelEdit();
+    this.openEntryDialog();
+  }
+
+  private openEntryDialog(): void {
+    this.entryRef = this.dialog.open(this.entryDialog(), formDialogConfig(720));
+    this.entryRef.afterClosed().subscribe(() => {
+      this.entryRef = null;
+      this.cancelEdit();
+    });
+  }
+
   private readonly time = inject(TimeService);
   private readonly tasksService = inject(TasksService);
   private readonly clock = inject(UserClock);
@@ -134,6 +162,7 @@ export class TimePage {
       end: timeIn(tz, new Date(entry.ended_at)),
       description: entry.description ?? '',
     });
+    this.openEntryDialog();
   }
 
   protected cancelEdit(): void {
@@ -172,6 +201,7 @@ export class TimePage {
       else await this.time.createManual(input);
       this.toast.success(id ? 'Registro atualizado.' : 'Tempo registrado.');
       this.cancelEdit();
+      this.entryRef?.close();
       await this.load(this.week());
     } catch (error) {
       this.toast.error(describeTimeError(error));
