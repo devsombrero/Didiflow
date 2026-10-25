@@ -116,6 +116,11 @@
                     </summary>
                     <div class="menu__items">
                       <a [routerLink]="['/tasks', task.id, 'edit']">Editar</a>
+                      @if (canComplete(task)) {
+                        <button type="button" (click)="act(actions.complete(task))">
+                          Concluir
+                        </button>
+                      }
                       <button type="button" (click)="act(actions.duplicate(task))">Duplicar</button>
                       @if (canReopen(task)) {
                         <button type="button" (click)="act(actions.reopen(task))">Reabrir</button>

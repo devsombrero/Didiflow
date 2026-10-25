@@ -48,8 +48,8 @@
 
       <div class="detail-grid">
         <section class="card">
-          <h2>Progresso</h2>
-          <app-progress-bar [value]="task.progress_percentage" />
+          <h2>Status e progresso</h2>
+          <app-task-progress-panel [task]="task" (changed)="task$.set($event)" />
           <dl class="facts">
             <dt>Entrega prevista</dt>
             <dd>
@@ -108,6 +108,10 @@
           <p class="prose">{{ task.description || 'Sem descrição.' }}</p>
           <h2>Observações</h2>
           <p class="prose">{{ task.notes || 'Sem observações.' }}</p>
+        </section>
+        <section class="card detail-grid__wide">
+          <h2>Histórico de status</h2>
+          <app-task-status-timeline [taskId]="task.id" [version]="task.updated_at" />
         </section>
       </div>
 
