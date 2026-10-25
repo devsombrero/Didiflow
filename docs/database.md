@@ -7,6 +7,7 @@ Implementado por migrations em `supabase/migrations/`. Este documento é atualiz
 | `20261025150000_initial_schema.sql`       | Enums, tabelas do MVP, constraints, índices e triggers  |
 | `20261025150100_rls_policies.sql`         | RLS, políticas por dono, grants por coluna e revogações |
 | `20261025160000_task_status_progress.sql` | Normalização status × progresso e histórico de status   |
+| `20261025170000_task_activity_log.sql`    | Trilha de auditoria de tarefas (`task_activity_logs`)   |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 
@@ -23,7 +24,9 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 - O padrão é exclusão lógica (`deleted_at`) e arquivamento (`archived_at`): o histórico fica intacto.
 - `task_status_history` é removido junto com a tarefa em exclusão definitiva (`on delete cascade`).
 - `task_activity_logs` **não** tem FK para `tasks`, então o evento de exclusão sobrevive à exclusão definitiva. Ele só é removido quando a conta do usuário é excluída.
-- Nenhum usuário consegue inserir, alterar ou apagar histórico: não há políticas nem grants de escrita. A escrita acontece só por triggers `security definer` (a partir de `feature/task-history`).
+- Nenhum usuário consegue inserir, alterar ou apagar histórico: não há políticas nem grants de escrita. A escrita acontece só por triggers `security definer`:
+  - `tasks_record_status_history` grava em `task_status_history`;
+  - `tasks_record_activity` grava em `task_activity_logs` os eventos `created`, `updated` (com valores anteriores e novos por campo), `status_changed`, `progress_changed`, `completed`, `reopened`, `cancelled`, `archived`, `unarchived`, `deleted` e `restored`.
 
 ## Convenções
 

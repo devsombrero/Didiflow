@@ -110,8 +110,8 @@
           <p class="prose">{{ task.notes || 'Sem observações.' }}</p>
         </section>
         <section class="card detail-grid__wide">
-          <h2>Histórico de status</h2>
-          <app-task-status-timeline [taskId]="task.id" [version]="task.updated_at" />
+          <h2>Atividade</h2>
+          <app-task-activity-feed [taskId]="task.id" [version]="task.updated_at" />
         </section>
       </div>
 
