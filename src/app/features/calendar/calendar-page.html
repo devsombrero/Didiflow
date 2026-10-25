@@ -1,24 +1,27 @@
 <header class="page-header">
   <h1>Calendário</h1>
-  <a class="btn btn--primary" routerLink="/tasks/new">Nova tarefa</a>
+  <a matButton="filled" routerLink="/tasks/new"><mat-icon>add</mat-icon> Nova tarefa</a>
 </header>
 
 <section class="toolbar" aria-label="Navegação do calendário">
-  <div class="segmented" role="group" aria-label="Visão">
-    <button type="button" [attr.aria-pressed]="view() === 'day'" (click)="setView('day')">
-      Dia
-    </button>
-    <button type="button" [attr.aria-pressed]="view() === 'week'" (click)="setView('week')">
-      Semana
-    </button>
-    <button type="button" [attr.aria-pressed]="view() === 'month'" (click)="setView('month')">
-      Mês
-    </button>
-  </div>
+  <mat-button-toggle-group
+    hideSingleSelectionIndicator
+    aria-label="Visão"
+    [value]="view()"
+    (change)="setView($event.value)"
+  >
+    <mat-button-toggle value="day">Dia</mat-button-toggle>
+    <mat-button-toggle value="week">Semana</mat-button-toggle>
+    <mat-button-toggle value="month">Mês</mat-button-toggle>
+  </mat-button-toggle-group>
   <div class="nav">
-    <button type="button" class="btn btn--sm" aria-label="Anterior" (click)="move(-1)">‹</button>
-    <button type="button" class="btn btn--sm" (click)="goToday()">Hoje</button>
-    <button type="button" class="btn btn--sm" aria-label="Próximo" (click)="move(1)">›</button>
+    <button matIconButton type="button" aria-label="Anterior" (click)="move(-1)">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button matButton="outlined" type="button" (click)="goToday()">Hoje</button>
+    <button matIconButton type="button" aria-label="Próximo" (click)="move(1)">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
     <h2 class="nav__title">
       @if (title(); as t) {
         {{ t }}
@@ -30,22 +33,24 @@
     </h2>
   </div>
   <div class="filters">
-    <select
-      class="input"
-      aria-label="Prioridade"
-      (change)="priority.set($any($event.target).value)"
-    >
-      <option value="">Todas as prioridades</option>
-      @for (p of priorities; track p) {
-        <option [value]="p" [selected]="p === priority()">{{ priorityLabels[p] }}</option>
-      }
-    </select>
-    <select class="input" aria-label="Status" (change)="status.set($any($event.target).value)">
-      <option value="">Todos os status</option>
-      @for (s of statuses; track s) {
-        <option [value]="s" [selected]="s === status()">{{ statusLabels[s] }}</option>
-      }
-    </select>
+    <mat-form-field>
+      <mat-label>Prioridade</mat-label>
+      <mat-select [value]="priority()" (selectionChange)="priority.set($event.value)">
+        <mat-option value="">Todas</mat-option>
+        @for (p of priorities; track p) {
+          <mat-option [value]="p">{{ priorityLabels[p] }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Status</mat-label>
+      <mat-select [value]="status()" (selectionChange)="status.set($event.value)">
+        <mat-option value="">Todos</mat-option>
+        @for (s of statuses; track s) {
+          <mat-option [value]="s">{{ statusLabels[s] }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   </div>
 </section>
 
@@ -58,10 +63,14 @@
 
 @if (state() === 'error') {
   <div class="alert" role="alert">
+    <mat-icon>error</mat-icon>
     {{ errorMessage() }}
-    <button type="button" class="btn btn--link" (click)="load(range())">Tentar novamente</button>
+    <button matButton type="button" (click)="load(range())">Tentar novamente</button>
   </div>
 } @else {
+  @if (state() === 'loading') {
+    <mat-progress-bar mode="indeterminate" />
+  }
   <div
     class="grid"
     [class.grid--month]="view() === 'month'"
@@ -90,7 +99,7 @@
             routerLink="/tasks/new"
             [queryParams]="{ due: day.date }"
             [attr.aria-label]="'Planejar tarefa para ' + (day.date | appDate)"
-            >+</a
+            ><mat-icon>add</mat-icon></a
           >
         </header>
         <ul class="events">
@@ -103,7 +112,7 @@
                 [class.ev--overdue]="event.overdue"
                 [class.ev--done]="event.task.status === 'done' || event.task.status === 'cancelled'"
                 [routerLink]="['/tasks', event.task.id]"
-                [title]="
+                [matTooltip]="
                   eventLabel(event.kind) +
                   ': ' +
                   event.task.title +

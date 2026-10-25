@@ -1,14 +1,17 @@
 <header class="page-header">
   <h1>KPIs pessoais</h1>
-  <div class="actions">
-    <select class="input" aria-label="Período" (change)="preset.set($any($event.target).value)">
-      @for (option of presets; track option.value) {
-        <option [value]="option.value" [selected]="option.value === preset()">
-          {{ option.label }}
-        </option>
-      }
-    </select>
-    <a class="btn" routerLink="/goals">Metas e desenvolvimento</a>
+  <div class="page-actions">
+    <mat-form-field class="period">
+      <mat-label>Período</mat-label>
+      <mat-select [value]="preset()" (selectionChange)="preset.set($event.value)">
+        @for (option of presets; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <a matButton="outlined" routerLink="/goals"
+      ><mat-icon>flag</mat-icon> Metas e desenvolvimento</a
+    >
   </div>
 </header>
 
@@ -19,66 +22,81 @@
 
 @switch (state()) {
   @case ('loading') {
-    <p class="muted" role="status">Calculando indicadores…</p>
+    <mat-progress-bar mode="indeterminate" aria-label="Calculando indicadores" />
   }
   @case ('error') {
     <div class="alert" role="alert">
+      <mat-icon>error</mat-icon>
       Não foi possível carregar os indicadores.
-      <button type="button" class="btn btn--link" (click)="load()">Tentar novamente</button>
+      <button matButton type="button" (click)="load()">Tentar novamente</button>
     </div>
   }
   @default {
     <div class="kpis">
       @for (card of cards(); track card.kpi.id) {
-        <article class="card kpi" [class.kpi--expanded]="expanded() === card.kpi.id">
-          <header class="kpi__header">
-            <h2>{{ card.kpi.name }}</h2>
+        <mat-card
+          appearance="outlined"
+          class="kpi"
+          [class.kpi--expanded]="expanded() === card.kpi.id"
+        >
+          <mat-card-header class="kpi__header">
+            <mat-card-title>{{ card.kpi.name }}</mat-card-title>
             <button
+              matIconButton
               type="button"
-              class="btn btn--link btn--sm"
+              [matTooltip]="expanded() === card.kpi.id ? 'Ocultar histórico' : 'Histórico'"
+              [attr.aria-label]="expanded() === card.kpi.id ? 'Ocultar histórico' : 'Histórico'"
               [attr.aria-expanded]="expanded() === card.kpi.id"
               (click)="toggle(card.kpi.id)"
             >
-              {{ expanded() === card.kpi.id ? 'Ocultar histórico' : 'Histórico' }}
+              <mat-icon>{{ expanded() === card.kpi.id ? 'expand_less' : 'bar_chart' }}</mat-icon>
             </button>
-          </header>
-          <p class="kpi__value">{{ card.result.display }}</p>
-          @if (card.result.insufficient) {
-            <p class="kpi__insufficient">{{ card.result.insufficient }}</p>
-          }
-          @if (card.result.detail) {
-            <p class="muted kpi__detail">{{ card.result.detail }}</p>
-          }
-          @if (card.comparison; as comparison) {
-            <p class="kpi__comparison" [attr.data-tone]="comparison.tone">{{ comparison.text }}</p>
-          }
-          @if (card.result.breakdown?.length) {
-            <ul class="kpi__breakdown">
-              @for (row of card.result.breakdown; track row.label) {
-                <li>
-                  <span>{{ row.label }}</span
-                  ><span>{{ row.display }}</span>
-                </li>
-              }
-            </ul>
-          }
-          @for (goal of card.goals; track goal.title) {
-            <p class="kpi__goal">Meta: {{ goal.title }} · {{ goal.status }}</p>
-          }
-          <p class="muted kpi__description">{{ card.kpi.description }}</p>
-          <details class="kpi__formula">
-            <summary>Fórmula</summary>
-            <code>{{ card.kpi.formula }}</code>
-          </details>
-          @if (expanded() === card.kpi.id && history(); as chart) {
-            <app-bar-chart
-              [data]="chart"
-              [height]="180"
-              categoryLabel="Período"
-              [ariaLabel]="'Histórico de ' + card.kpi.name + ' nos últimos 6 períodos'"
-            />
-          }
-        </article>
+          </mat-card-header>
+          <mat-card-content class="kpi__body">
+            <p class="kpi__value">{{ card.result.display }}</p>
+            @if (card.result.insufficient) {
+              <p class="kpi__insufficient">
+                <mat-icon inline>info</mat-icon> {{ card.result.insufficient }}
+              </p>
+            }
+            @if (card.result.detail) {
+              <p class="muted kpi__detail">{{ card.result.detail }}</p>
+            }
+            @if (card.comparison; as comparison) {
+              <p class="kpi__comparison" [attr.data-tone]="comparison.tone">
+                {{ comparison.text }}
+              </p>
+            }
+            @if (card.result.breakdown?.length) {
+              <ul class="kpi__breakdown">
+                @for (row of card.result.breakdown; track row.label) {
+                  <li>
+                    <span>{{ row.label }}</span
+                    ><span>{{ row.display }}</span>
+                  </li>
+                }
+              </ul>
+            }
+            @for (goal of card.goals; track goal.title) {
+              <p class="kpi__goal">
+                <mat-icon inline>flag</mat-icon> {{ goal.title }} · {{ goal.status }}
+              </p>
+            }
+            <p class="muted kpi__description">{{ card.kpi.description }}</p>
+            <details class="kpi__formula">
+              <summary>Fórmula</summary>
+              <code>{{ card.kpi.formula }}</code>
+            </details>
+            @if (expanded() === card.kpi.id && history(); as chart) {
+              <app-bar-chart
+                [data]="chart"
+                [height]="180"
+                categoryLabel="Período"
+                [ariaLabel]="'Histórico de ' + card.kpi.name + ' nos últimos 6 períodos'"
+              />
+            }
+          </mat-card-content>
+        </mat-card>
       }
     </div>
   }

@@ -2,6 +2,16 @@
 
 Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o projeto usa versionamento semântico.
 
+## [Não lançado]
+
+## [0.2.0] - 2026-10-25
+
+### Adicionado
+
+- Interface com Angular Material (M3), com temas claro e escuro e ícones locais.
+- Quadro Kanban com arrastar e soltar, alternativa por menu e atualização otimista.
+- Backups locais automáticos e manuais, e restauração pelo aplicativo (mesclar ou substituir) com backup de segurança.
+
 ## [0.1.0] - 2026-10-25
 
 Primeira versão funcional (MVP e recursos da fase 2).

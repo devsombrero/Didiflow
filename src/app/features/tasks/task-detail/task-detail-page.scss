@@ -1,21 +1,17 @@
 .breadcrumb {
-  margin-bottom: var(--space-2);
+  margin: calc(-1 * var(--space-3)) 0 var(--space-2) calc(-1 * var(--space-3));
 }
 
 .meta {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-}
-
-.badge-archived {
-  font-size: 12px;
-  color: var(--color-text-muted);
+  margin-top: var(--space-2);
 }
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: var(--space-4);
 }
 
@@ -28,25 +24,39 @@
   grid-template-columns: max-content 1fr;
   gap: var(--space-2) var(--space-4);
   margin: var(--space-4) 0 0;
+  align-items: center;
 
   dt {
-    color: var(--color-text-muted);
+    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-label-large);
   }
 
   dd {
     margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
   }
 }
 
+.link-button {
+  margin-left: calc(-1 * var(--space-3));
+}
+
 .deadline {
-  margin-left: var(--space-2);
-  font-size: 12px;
+  font: var(--mat-sys-body-small);
   color: var(--color-warning);
 
   &[data-kind='overdue'] {
-    color: var(--color-danger);
+    color: var(--mat-sys-error);
     font-weight: 600;
   }
+}
+
+.danger-item {
+  --mat-menu-item-label-text-color: var(--mat-sys-error);
+  --mat-menu-item-icon-color: var(--mat-sys-error);
 }
 
 .prose {
@@ -56,5 +66,5 @@
 
 .footnote {
   margin-top: var(--space-4);
-  font-size: 12px;
+  font: var(--mat-sys-body-small);
 }

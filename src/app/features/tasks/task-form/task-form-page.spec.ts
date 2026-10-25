@@ -34,7 +34,8 @@ describe('TaskFormPage', () => {
       input.dispatchEvent(new Event('input'));
     };
     const check = async (id: string) => {
-      element.querySelector<HTMLInputElement>(`#${id}`)!.click();
+      // mat-checkbox renders the native input as <id>-input.
+      element.querySelector<HTMLInputElement>(`#${id}-input`)!.click();
       await fixture.whenStable();
     };
     const submit = async () => {

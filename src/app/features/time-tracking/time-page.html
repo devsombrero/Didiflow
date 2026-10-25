@@ -8,179 +8,193 @@
 </p>
 
 <div class="layout">
-  <div class="main">
+  <div class="stack">
     @if (!timer.running()) {
-      <section class="card">
-        <h2>Iniciar cronômetro</h2>
-        <form class="inline-form" [formGroup]="timerForm" (ngSubmit)="startTimer()">
-          <label class="sr-only" for="timer-task">Tarefa</label>
-          <select id="timer-task" class="input" formControlName="task_id">
-            <option value="">Sem tarefa</option>
-            @for (task of taskOptions(); track task.id) {
-              <option [value]="task.id">{{ task.title }}</option>
-            }
-          </select>
-          <label class="sr-only" for="timer-description">Descrição</label>
-          <input
-            id="timer-description"
-            class="input"
-            formControlName="description"
-            placeholder="O que você vai fazer?"
-          />
-          <button class="btn btn--primary" type="submit" [disabled]="timer.busy()">Iniciar</button>
-        </form>
-      </section>
+      <mat-card appearance="outlined" class="section">
+        <mat-card-header><mat-card-title>Iniciar cronômetro</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <form class="inline-form" [formGroup]="timerForm" (ngSubmit)="startTimer()">
+            <mat-form-field>
+              <mat-label>Tarefa</mat-label>
+              <mat-select id="timer-task" formControlName="task_id">
+                <mat-option value="">Sem tarefa</mat-option>
+                @for (task of taskOptions(); track task.id) {
+                  <mat-option [value]="task.id">{{ task.title }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>O que você vai fazer?</mat-label>
+              <input matInput id="timer-description" formControlName="description" />
+            </mat-form-field>
+            <button matButton="filled" type="submit" [disabled]="timer.busy()">
+              <mat-icon>play_arrow</mat-icon> Iniciar
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
     }
 
-    <section class="card">
-      <h2>{{ editingId() ? 'Editar registro' : 'Registrar manualmente' }}</h2>
-      <form class="form" [formGroup]="entryForm" (ngSubmit)="saveEntry()" novalidate>
-        <div class="form-row">
-          <div class="field">
-            <label for="entry-task">Tarefa</label>
-            <select id="entry-task" class="input" formControlName="task_id">
-              <option value="">Sem tarefa</option>
-              @for (task of taskOptions(); track task.id) {
-                <option [value]="task.id">{{ task.title }}</option>
-              }
-            </select>
+    <mat-card appearance="outlined" class="section">
+      <mat-card-header>
+        <mat-card-title>{{
+          editingId() ? 'Editar registro' : 'Registrar manualmente'
+        }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form class="form" [formGroup]="entryForm" (ngSubmit)="saveEntry()" novalidate>
+          <div class="form-row">
+            <mat-form-field>
+              <mat-label>Tarefa</mat-label>
+              <mat-select id="entry-task" formControlName="task_id">
+                <mat-option value="">Sem tarefa</mat-option>
+                @for (task of taskOptions(); track task.id) {
+                  <mat-option [value]="task.id">{{ task.title }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Data</mat-label>
+              <input matInput id="entry-date" type="date" formControlName="date" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Início</mat-label>
+              <input matInput id="entry-start" type="time" formControlName="start" />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Fim</mat-label>
+              <input matInput id="entry-end" type="time" formControlName="end" />
+            </mat-form-field>
           </div>
-          <div class="field">
-            <label for="entry-date">Data</label>
-            <input id="entry-date" class="input" type="date" formControlName="date" />
+          <mat-form-field>
+            <mat-label>Descrição do trabalho realizado</mat-label>
+            <input matInput id="entry-description" formControlName="description" />
+          </mat-form-field>
+          <div class="actions">
+            <button matButton="filled" type="submit" [disabled]="saving()">
+              {{ editingId() ? 'Salvar' : 'Registrar' }}
+            </button>
+            @if (editingId()) {
+              <button matButton type="button" (click)="cancelEdit()">Cancelar</button>
+            }
           </div>
-          <div class="field">
-            <label for="entry-start">Início</label>
-            <input id="entry-start" class="input" type="time" formControlName="start" />
-          </div>
-          <div class="field">
-            <label for="entry-end">Fim</label>
-            <input id="entry-end" class="input" type="time" formControlName="end" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="entry-description">Descrição do trabalho realizado</label>
-          <input id="entry-description" class="input" formControlName="description" />
-        </div>
-        <div class="actions">
-          <button class="btn btn--primary" type="submit" [disabled]="saving()">
-            {{ editingId() ? 'Salvar' : 'Registrar' }}
-          </button>
-          @if (editingId()) {
-            <button class="btn" type="button" (click)="cancelEdit()">Cancelar</button>
-          }
-        </div>
-      </form>
-    </section>
+        </form>
+      </mat-card-content>
+    </mat-card>
 
-    <section class="card">
-      <header class="week-nav">
-        <button
-          type="button"
-          class="btn btn--sm"
-          (click)="shiftWeek(-7)"
-          aria-label="Semana anterior"
-        >
-          ‹
+    <mat-card appearance="outlined" class="section">
+      <mat-card-header class="week-nav">
+        <button matIconButton type="button" aria-label="Semana anterior" (click)="shiftWeek(-7)">
+          <mat-icon>chevron_left</mat-icon>
         </button>
-        <h2>{{ week() | appDate }} – {{ weekEnd() | appDate }}</h2>
-        <button
-          type="button"
-          class="btn btn--sm"
-          (click)="shiftWeek(7)"
-          aria-label="Próxima semana"
-        >
-          ›
+        <mat-card-title>{{ week() | appDate }} – {{ weekEnd() | appDate }}</mat-card-title>
+        <button matIconButton type="button" aria-label="Próxima semana" (click)="shiftWeek(7)">
+          <mat-icon>chevron_right</mat-icon>
         </button>
         @if (!isCurrentWeek()) {
-          <button type="button" class="btn btn--link btn--sm" (click)="goToCurrentWeek()">
-            Semana atual
-          </button>
+          <button matButton type="button" (click)="goToCurrentWeek()">Semana atual</button>
         }
-      </header>
-
-      @switch (state()) {
-        @case ('loading') {
-          <p class="muted" role="status">Carregando…</p>
-        }
-        @case ('error') {
-          <p class="alert" role="alert">Não foi possível carregar os registros.</p>
-        }
-        @default {
-          @for (day of days(); track day.date) {
-            <div class="day">
-              <h3>
-                <span>{{ day.date | appDate }}</span>
-                <span>{{ formatDuration(day.total) }}</span>
-              </h3>
-              <ul class="entries">
-                @for (entry of day.entries; track entry.id) {
-                  <li>
-                    <span class="entries__time">{{ timeRange(entry) }}</span>
-                    <span class="entries__what">
-                      @if (entry.task_id && entry.tasks) {
-                        <a [routerLink]="['/tasks', entry.task_id]">{{ entry.tasks.title }}</a>
-                      } @else {
-                        <span class="muted">Sem tarefa</span>
-                      }
-                      @if (entry.description) {
-                        <span class="muted"> · {{ entry.description }}</span>
-                      }
-                    </span>
-                    <strong>{{ formatDuration(entrySeconds(entry)) }}</strong>
-                    <span class="actions">
-                      @if (entry.ended_at) {
-                        <button type="button" class="btn btn--sm" (click)="edit(entry)">
-                          Editar
+      </mat-card-header>
+      <mat-card-content>
+        @switch (state()) {
+          @case ('loading') {
+            <mat-progress-bar mode="indeterminate" />
+          }
+          @case ('error') {
+            <p class="alert" role="alert">Não foi possível carregar os registros.</p>
+          }
+          @default {
+            @for (day of days(); track day.date) {
+              <div class="day">
+                <h3>
+                  <span>{{ day.date | appDate }}</span>
+                  <span>{{ formatDuration(day.total) }}</span>
+                </h3>
+                <ul class="entries">
+                  @for (entry of day.entries; track entry.id) {
+                    <li>
+                      <span class="entries__time">{{ timeRange(entry) }}</span>
+                      <span class="entries__what">
+                        @if (entry.task_id && entry.tasks) {
+                          <a [routerLink]="['/tasks', entry.task_id]">{{ entry.tasks.title }}</a>
+                        } @else {
+                          <span class="muted">Sem tarefa</span>
+                        }
+                        @if (entry.description) {
+                          <span class="muted"> · {{ entry.description }}</span>
+                        }
+                      </span>
+                      <strong>{{ formatDuration(entrySeconds(entry)) }}</strong>
+                      <span class="entries__actions">
+                        @if (entry.ended_at) {
+                          <button
+                            matIconButton
+                            type="button"
+                            aria-label="Editar registro"
+                            (click)="edit(entry)"
+                          >
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                        }
+                        <button
+                          matIconButton
+                          type="button"
+                          aria-label="Excluir registro"
+                          (click)="remove(entry)"
+                        >
+                          <mat-icon>delete</mat-icon>
                         </button>
-                      }
-                      <button type="button" class="btn btn--sm" (click)="remove(entry)">
-                        Excluir
-                      </button>
-                    </span>
-                  </li>
-                }
-              </ul>
-            </div>
-          } @empty {
-            <p class="muted">Nenhum registro nesta semana.</p>
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            } @empty {
+              <p class="muted">Nenhum registro nesta semana.</p>
+            }
           }
         }
-      }
-    </section>
+      </mat-card-content>
+    </mat-card>
   </div>
 
-  <aside class="side">
-    <section class="card totals">
-      <h2>Totais</h2>
-      <dl>
-        <dt>Semana</dt>
-        <dd>{{ formatDuration(weekTotal()) }}</dd>
-        <dt>Mês</dt>
-        <dd>{{ formatDuration(monthTotal()) }}</dd>
-      </dl>
-    </section>
-    <section class="card totals">
-      <h2>Por categoria (semana)</h2>
-      @for (row of byCategory(); track row.label) {
-        <div class="totals__row">
-          <span>{{ row.label }}</span
-          ><span>{{ formatDuration(row.seconds) }}</span>
-        </div>
-      } @empty {
-        <p class="muted">Sem registros.</p>
-      }
-    </section>
-    <section class="card totals">
-      <h2>Por tarefa (semana)</h2>
-      @for (row of byTask(); track row.label) {
-        <div class="totals__row">
-          <span>{{ row.label }}</span
-          ><span>{{ formatDuration(row.seconds) }}</span>
-        </div>
-      } @empty {
-        <p class="muted">Sem registros.</p>
-      }
-    </section>
+  <aside class="stack">
+    <mat-card appearance="outlined" class="section totals">
+      <mat-card-header><mat-card-title>Totais</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <dl>
+          <dt>Semana</dt>
+          <dd>{{ formatDuration(weekTotal()) }}</dd>
+          <dt>Mês</dt>
+          <dd>{{ formatDuration(monthTotal()) }}</dd>
+        </dl>
+      </mat-card-content>
+    </mat-card>
+    <mat-card appearance="outlined" class="section totals">
+      <mat-card-header><mat-card-title>Por categoria (semana)</mat-card-title></mat-card-header>
+      <mat-card-content>
+        @for (row of byCategory(); track row.label) {
+          <div class="totals__row">
+            <span>{{ row.label }}</span
+            ><span>{{ formatDuration(row.seconds) }}</span>
+          </div>
+        } @empty {
+          <p class="muted">Sem registros.</p>
+        }
+      </mat-card-content>
+    </mat-card>
+    <mat-card appearance="outlined" class="section totals">
+      <mat-card-header><mat-card-title>Por tarefa (semana)</mat-card-title></mat-card-header>
+      <mat-card-content>
+        @for (row of byTask(); track row.label) {
+          <div class="totals__row">
+            <span>{{ row.label }}</span
+            ><span>{{ formatDuration(row.seconds) }}</span>
+          </div>
+        } @empty {
+          <p class="muted">Sem registros.</p>
+        }
+      </mat-card-content>
+    </mat-card>
   </aside>
 </div>

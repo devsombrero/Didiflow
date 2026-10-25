@@ -89,7 +89,7 @@ export function removeDir(dir: string): void {
 
 export async function login(page: Page, email: string): Promise<void> {
   await page.getByLabel('E-mail').fill(email);
-  await page.getByLabel('Senha').fill(PASSWORD);
+  await page.getByLabel('Senha', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Entrar' }).click();
-  await page.locator('.sidebar').waitFor();
+  await page.locator('.sidebar__nav').waitFor();
 }

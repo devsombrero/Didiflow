@@ -22,7 +22,16 @@ test('security: renderer is isolated from Node and only exposes the preload API'
     expect(surface).toEqual({
       require: 'undefined',
       process: 'undefined',
-      api: ['notify', 'onNavigate', 'openExternal', 'platform', 'saveFile', 'secureStore'],
+      api: [
+        'backups',
+        'notify',
+        'onNavigate',
+        'openBackupFile',
+        'openExternal',
+        'platform',
+        'saveFile',
+        'secureStore',
+      ],
     });
     await expect(
       page.evaluate(() =>
@@ -51,8 +60,9 @@ test('session persists encrypted across restarts and ends on sign-out', async ()
 
   const second = await launchApp(first.userDataDir);
   try {
-    await expect(second.page.locator('.sidebar')).toBeVisible();
-    await second.page.getByRole('button', { name: 'Sair' }).click();
+    await expect(second.page.locator('.sidebar__nav')).toBeVisible();
+    await second.page.locator('.sidebar__account').click();
+    await second.page.getByRole('menuitem', { name: 'Sair' }).click();
     await expect(second.page.getByRole('heading', { name: 'Entrar' })).toBeVisible();
   } finally {
     await second.close();
@@ -68,15 +78,13 @@ test('task lifecycle: create, progress, complete, search and export', async () =
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
     await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
-    await page.getByLabel('Título *').fill('Relatório trimestral E2E');
-    await page.getByLabel('Solicitante').fill('Marina');
+    await page.locator('#title').fill('Relatório trimestral E2E');
+    await page.locator('#requester_name').fill('Marina');
     await page.getByLabel('Possui card no Jira').check();
-    await page.getByLabel('URL do card no Jira *').fill('http://inseguro.local/DF-1');
+    await page.locator('#jira_url').fill('http://inseguro.local/DF-1');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByText('Informe uma URL começando com https://.')).toBeVisible();
-    await page
-      .getByLabel('URL do card no Jira *')
-      .fill('https://empresa.atlassian.net/browse/DF-1');
+    await page.locator('#jira_url').fill('https://empresa.atlassian.net/browse/DF-1');
     await page.getByRole('button', { name: 'Salvar' }).click();
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Relatório trimestral E2E');
@@ -84,10 +92,10 @@ test('task lifecycle: create, progress, complete, search and export', async () =
 
     await page.getByLabel('Progresso').fill('40');
     await page.getByLabel('Progresso').dispatchEvent('change');
-    await expect(page.locator('app-status-badge').first()).toHaveText('Em andamento');
+    await expect(page.locator('app-status-badge').first()).toContainText('Em andamento');
 
     await page.getByRole('button', { name: 'Marcar como concluída' }).click();
-    await expect(page.locator('app-status-badge').first()).toHaveText('Concluído');
+    await expect(page.locator('app-status-badge').first()).toContainText('Concluído');
     await expect(page.locator('.feed')).toContainText('Tarefa concluída');
 
     await page.keyboard.press('Control+K');
@@ -112,6 +120,96 @@ test('task lifecycle: create, progress, complete, search and export', async () =
     const csvFile = readdirSync(exportDir).find((file) => file.endsWith('.csv'))!;
     const csv = readFileSync(path.join(exportDir, csvFile), 'utf8');
     expect(csv).toContain('Relatório trimestral E2E;Concluído;100');
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('kanban: drag a card between columns and keep it after reload', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Card do quadro E2E');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Card do quadro E2E');
+
+    await page.goto(page.url().replace(/\/tasks\/.*$/, '/tasks/board'));
+    const card = page.locator('.column[data-status="not_started"] .card', {
+      hasText: 'Card do quadro E2E',
+    });
+    const target = page.locator('.column[data-status="in_progress"] .column__list');
+    await expect(card).toBeVisible();
+
+    // CDK drag & drop needs real pointer movement.
+    const from = (await card.boundingBox())!;
+    const to = (await target.boundingBox())!;
+    await page.mouse.move(from.x + from.width / 2, from.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2 + 10, from.y + 30, { steps: 5 });
+    await page.mouse.move(to.x + to.width / 2, to.y + 40, { steps: 15 });
+    await page.mouse.up();
+
+    await expect(
+      page.locator('.column[data-status="in_progress"] .card', { hasText: 'Card do quadro E2E' }),
+    ).toBeVisible();
+    await expect(page.locator('.toast--success')).toContainText('movida para Em andamento');
+
+    await page.reload();
+    await expect(
+      page.locator('.column[data-status="in_progress"] .card', { hasText: 'Card do quadro E2E' }),
+    ).toBeVisible();
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('backup: automatic and manual backups, restore with replace', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Tarefa protegida por backup');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tarefa protegida por backup');
+
+    await page.goto(page.url().replace(/\/tasks\/.*$/, '/backup'));
+    // The automatic backup runs right after sign-in (no previous backup in this profile).
+    await expect(page.locator('.files')).toContainText('Automático');
+
+    await page.getByRole('button', { name: 'Fazer backup agora' }).click();
+    await expect(page.locator('.toast--success')).toContainText('Backup criado');
+    await expect(page.locator('.files li', { hasText: 'Manual' })).toHaveCount(1);
+
+    // Delete the task, then bring it back from the manual backup.
+    await page.goto(page.url().replace(/\/backup$/, '/tasks'));
+    await page
+      .locator('tr', { hasText: 'Tarefa protegida por backup' })
+      .getByRole('button')
+      .click();
+    await page.getByRole('menuitem', { name: 'Excluir' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Excluir' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Tarefa excluída');
+
+    await page.goto(page.url().replace(/\/tasks$/, '/backup'));
+    await page
+      .locator('.files li', { hasText: 'Manual' })
+      .getByRole('button', { name: 'Restaurar' })
+      .click();
+    await expect(page.locator('.restore-card')).toContainText('Tarefas: ');
+    await page.getByRole('radio', { name: 'Substituir' }).click();
+    await page.locator('.restore-card').getByRole('button', { name: 'Restaurar' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Substituir' }).click();
+    await expect(page.locator('.toast--success').last()).toContainText('Backup restaurado');
+    await expect(page.locator('.files')).toContainText('Antes de restaurar');
+
+    await page.goto(page.url().replace(/\/backup$/, '/tasks'));
+    await expect(page.locator('tr', { hasText: 'Tarefa protegida por backup' })).toBeVisible();
   } finally {
     await close();
     removeDir(userDataDir);

@@ -18,6 +18,14 @@ describe('DesktopBridge', () => {
       notify: vi.fn().mockResolvedValue(true),
       onNavigate: vi.fn(() => () => undefined),
       saveFile: vi.fn().mockResolvedValue({ saved: true, path: 'C:/x.csv' }),
+      openBackupFile: vi.fn().mockResolvedValue({ canceled: true }),
+      backups: {
+        list: vi.fn(),
+        write: vi.fn(),
+        read: vi.fn(),
+        remove: vi.fn(),
+        openFolder: vi.fn(),
+      },
     };
 
     it('exposes the secure store and desktop flag', () => {

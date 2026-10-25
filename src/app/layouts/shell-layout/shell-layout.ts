@@ -7,6 +7,13 @@ import {
   type OnInit,
   viewChild,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -15,12 +22,25 @@ import { TimerStore } from '../../features/time-tracking/time.service';
 import { TimerWidget } from '../../features/time-tracking/timer-widget';
 import { NotificationScheduler } from '../../features/notifications/notification-scheduler';
 import { FocusStore } from '../../features/focus/focus.service';
+import { BackupScheduler } from '../../features/backup/backup-scheduler';
 import { formatClock } from '../../features/time-tracking/time-calc';
 import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-shell-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TimerWidget],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TimerWidget,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './shell-layout.html',
   styleUrl: './shell-layout.scss',
   host: { '(document:keydown)': 'onKeydown($event)' },
@@ -34,10 +54,23 @@ export class ShellLayout implements OnInit {
   private readonly timer = inject(TimerStore);
   private readonly scheduler = inject(NotificationScheduler);
   protected readonly focus = inject(FocusStore);
+  private readonly backupScheduler = inject(BackupScheduler);
   protected readonly focusClock = computed(() =>
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
   );
   protected readonly user = this.auth.user;
+  protected readonly navigation = [
+    { path: '/', label: 'Dashboard', icon: 'space_dashboard', exact: true },
+    { path: '/today', label: 'Hoje', icon: 'today', exact: false },
+    { path: '/focus', label: 'Foco', icon: 'timer', exact: false },
+    { path: '/tasks', label: 'Tarefas', icon: 'checklist', exact: false },
+    { path: '/calendar', label: 'Calendário', icon: 'calendar_month', exact: false },
+    { path: '/kpis', label: 'KPIs', icon: 'monitoring', exact: false },
+    { path: '/goals', label: 'Metas', icon: 'flag', exact: false },
+    { path: '/time', label: 'Tempo', icon: 'schedule', exact: false },
+    { path: '/organization', label: 'Organização', icon: 'folder_open', exact: false },
+    { path: '/settings', label: 'Configurações', icon: 'settings', exact: false },
+  ];
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   constructor() {
@@ -49,6 +82,7 @@ export class ShellLayout implements OnInit {
         this.timer.clear();
         this.scheduler.stop();
         this.focus.clear();
+        this.backupScheduler.stop();
         void this.router.navigate(['/login']);
       }
     });
@@ -59,6 +93,7 @@ export class ShellLayout implements OnInit {
       await Promise.all([this.profileService.load(), this.timer.refresh()]);
       this.scheduler.start();
       void this.focus.restore().catch(() => undefined);
+      this.backupScheduler.start();
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
     }

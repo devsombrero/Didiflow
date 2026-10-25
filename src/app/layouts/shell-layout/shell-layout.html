@@ -1,66 +1,85 @@
-<div class="shell">
-  <nav class="sidebar" aria-label="Navegação principal">
-    <p class="sidebar__brand">DidiFlow</p>
-    <form class="sidebar__search" role="search" (submit)="search($event)">
-      <label class="sr-only" for="global-search">Buscar tarefas</label>
-      <input
-        #searchInput
-        id="global-search"
-        class="input"
-        type="search"
-        name="q"
-        placeholder="Buscar (Ctrl+K)"
-        autocomplete="off"
-      />
-    </form>
-    <ul class="sidebar__nav">
-      <li>
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
-          >Dashboard</a
-        >
-      </li>
-      <li>
-        <a routerLink="/today" routerLinkActive="active">Hoje</a>
-      </li>
-      <li>
-        <a routerLink="/focus" routerLinkActive="active">
-          Foco
-          @if (focus.active()) {
-            <span class="nav-badge">{{ focusClock() }}</span>
+<mat-sidenav-container class="shell">
+  <mat-sidenav mode="side" opened class="sidebar" [disableClose]="true">
+    <div class="sidebar__inner">
+      <div class="sidebar__brand">
+        <mat-icon class="sidebar__logo">task_alt</mat-icon>
+        <span>DidiFlow</span>
+      </div>
+
+      <form class="sidebar__search" role="search" (submit)="search($event)">
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-icon matPrefix>search</mat-icon>
+          <mat-label>Buscar</mat-label>
+          <input
+            #searchInput
+            matInput
+            id="global-search"
+            type="search"
+            name="q"
+            autocomplete="off"
+            aria-label="Buscar tarefas"
+            placeholder="Ctrl+K"
+          />
+        </mat-form-field>
+      </form>
+
+      <nav aria-label="Navegação principal">
+        <mat-nav-list class="sidebar__nav">
+          @for (item of navigation; track item.path) {
+            <a
+              mat-list-item
+              [routerLink]="item.path"
+              routerLinkActive
+              #rla="routerLinkActive"
+              [activated]="rla.isActive"
+              [routerLinkActiveOptions]="{ exact: item.exact }"
+            >
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>
+                {{ item.label }}
+                @if (item.path === '/focus' && focus.active()) {
+                  <span class="nav-badge">{{ focusClock() }}</span>
+                }
+              </span>
+            </a>
           }
-        </a>
-      </li>
-      <li>
-        <a routerLink="/tasks" routerLinkActive="active">Tarefas</a>
-      </li>
-      <li>
-        <a routerLink="/calendar" routerLinkActive="active">Calendário</a>
-      </li>
-      <li>
-        <a routerLink="/kpis" routerLinkActive="active">KPIs</a>
-      </li>
-      <li>
-        <a routerLink="/goals" routerLinkActive="active">Metas</a>
-      </li>
-      <li>
-        <a routerLink="/time" routerLinkActive="active">Tempo</a>
-      </li>
-      <li>
-        <a routerLink="/organization" routerLinkActive="active">Organização</a>
-      </li>
-      <li>
-        <a routerLink="/settings" routerLinkActive="active">Configurações</a>
-      </li>
-    </ul>
-    <app-timer-widget />
-    <div class="sidebar__user">
-      <span class="sidebar__name">{{
-        profileService.profile()?.display_name || user()?.email
-      }}</span>
-      <button type="button" class="btn btn--link" (click)="signOut()">Sair</button>
+        </mat-nav-list>
+      </nav>
+
+      <app-timer-widget />
+
+      <div class="sidebar__user">
+        <button matButton class="sidebar__account" [matMenuTriggerFor]="accountMenu">
+          <mat-icon>account_circle</mat-icon>
+          <span class="sidebar__name">{{
+            profileService.profile()?.display_name || user()?.email
+          }}</span>
+        </button>
+        <mat-menu #accountMenu="matMenu" yPosition="above">
+          <a mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>Configurações</span>
+          </a>
+          <a mat-menu-item routerLink="/export">
+            <mat-icon>download</mat-icon>
+            <span>Exportar dados</span>
+          </a>
+          <a mat-menu-item routerLink="/backup">
+            <mat-icon>backup</mat-icon>
+            <span>Backup e restauração</span>
+          </a>
+          <button mat-menu-item (click)="signOut()">
+            <mat-icon>logout</mat-icon>
+            <span>Sair</span>
+          </button>
+        </mat-menu>
+      </div>
     </div>
-  </nav>
-  <main class="content">
-    <router-outlet />
-  </main>
-</div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content">
+    <main class="content__inner">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

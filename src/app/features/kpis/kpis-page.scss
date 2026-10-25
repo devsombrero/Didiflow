@@ -1,14 +1,27 @@
+.period {
+  width: 200px;
+}
+
 .intro {
   margin-top: calc(-1 * var(--space-2));
 }
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: var(--space-4);
 }
 
-.kpi {
+.kpi--expanded {
+  grid-column: 1 / -1;
+}
+
+.kpi__header {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi__body {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -18,48 +31,32 @@
   }
 }
 
-.kpi--expanded {
-  grid-column: 1 / -1;
-}
-
-.kpi__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--space-2);
-
-  h2 {
-    margin: 0;
-    font-size: 15px;
-  }
-}
-
 .kpi__value {
-  font-size: 28px;
-  font-weight: 700;
+  font: var(--mat-sys-display-small);
+  font-size: 34px;
   line-height: 1.1;
 }
 
 .kpi__insufficient {
-  font-size: 13px;
+  font: var(--mat-sys-body-small);
   color: var(--color-warning);
 }
 
 .kpi__detail,
 .kpi__description {
-  font-size: 12px;
+  font: var(--mat-sys-body-small);
 }
 
 .kpi__comparison {
-  font-size: 12px;
-  color: var(--color-text-muted);
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
 
   &[data-tone='better'] {
     color: var(--color-success);
   }
 
   &[data-tone='worse'] {
-    color: var(--color-danger);
+    color: var(--mat-sys-error);
   }
 }
 
@@ -67,25 +64,25 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font: var(--mat-sys-body-small);
 
   li {
     display: flex;
     justify-content: space-between;
     gap: var(--space-2);
     padding: 2px 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
   }
 }
 
 .kpi__goal {
-  font-size: 12px;
-  color: var(--color-primary);
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-primary);
 }
 
 .kpi__formula {
-  font-size: 12px;
-  color: var(--color-text-muted);
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 
   code {
     display: block;

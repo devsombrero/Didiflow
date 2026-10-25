@@ -1,6 +1,6 @@
 .focus {
   text-align: center;
-  padding: var(--space-6) var(--space-6) var(--space-6);
+  padding: var(--space-6);
 
   p {
     margin: 0 0 var(--space-3);
@@ -8,40 +8,42 @@
 }
 
 .focus__task {
-  font-size: 18px;
-  font-weight: 600;
+  font: var(--mat-sys-title-large);
+}
+
+.focus__ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: var(--space-4) auto;
+  width: 240px;
+  height: 240px;
+
+  mat-progress-spinner,
+  .focus__clock {
+    grid-area: 1 / 1;
+  }
 }
 
 .focus__clock {
-  font-size: 72px;
-  font-weight: 700;
-  line-height: 1;
+  margin: 0;
+  font: var(--mat-sys-display-medium);
   font-variant-numeric: tabular-nums;
 }
 
-.focus__bar {
-  height: 6px;
-  max-width: 420px;
-  margin: 0 auto var(--space-3);
-  border-radius: 999px;
-  background: var(--color-border);
-  overflow: hidden;
-
-  div {
-    height: 100%;
-    background: var(--color-primary);
-    transition: width 1s linear;
-  }
+.new-session {
+  max-width: 720px;
 }
 
 .presets {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .minutes {
-  width: 90px;
+  width: 120px;
 }
 
 .history {
@@ -55,10 +57,10 @@
 
   li {
     display: grid;
-    grid-template-columns: 140px minmax(0, 1fr) 120px 100px;
+    grid-template-columns: 150px minmax(0, 1fr) 130px 100px;
     gap: var(--space-3);
     padding: var(--space-2) 0;
-    border-bottom: 1px solid var(--color-border);
-    font-size: 13px;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    font: var(--mat-sys-body-small);
   }
 }

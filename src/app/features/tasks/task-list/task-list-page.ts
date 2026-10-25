@@ -9,7 +9,9 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator';
 import { Router, RouterLink } from '@angular/router';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../../shared/material';
 import { UserClock } from '../../../core/profile/user-clock';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { describeError } from '../../../shared/utils/errors';
@@ -42,7 +44,16 @@ export class TaskListState {
 
 @Component({
   selector: 'app-task-list-page',
-  imports: [RouterLink, AppDatePipe, StatusBadge, PriorityBadge, ProgressBar],
+  imports: [
+    RouterLink,
+    AppDatePipe,
+    StatusBadge,
+    PriorityBadge,
+    ProgressBar,
+    MATERIAL_FORMS,
+    MATERIAL_UI,
+    MatPaginatorModule,
+  ],
   templateUrl: './task-list-page.html',
   styleUrl: './task-list-page.scss',
   host: { '(document:keydown)': 'onShortcut($event)' },
@@ -136,12 +147,24 @@ export class TaskListPage {
     return id ? (this.org.byId().get(id)?.name ?? null) : null;
   }
 
+  protected openBoard(): void {
+    void this.router.navigate(['/tasks/board']);
+  }
+
   protected setArchive(value: string): void {
     this.patch({ archive: value as ArchiveFilter });
   }
 
-  protected setSort(index: string): void {
+  protected setSort(index: number | string): void {
     this.patch({ sort: SORT_OPTIONS[Number(index)].sort });
+  }
+
+  protected onPage(event: PageEvent): void {
+    this.query.update((q) => ({
+      ...q,
+      page: event.pageSize === q.pageSize ? event.pageIndex + 1 : 1,
+      pageSize: event.pageSize,
+    }));
   }
 
   protected goToPage(page: number): void {

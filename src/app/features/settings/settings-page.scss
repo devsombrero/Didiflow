@@ -1,0 +1,51 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 960px;
+}
+
+mat-icon[mat-card-avatar] {
+  display: grid;
+  place-items: center;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border-radius: 50%;
+}
+
+h3 {
+  margin-top: var(--space-4);
+}
+
+.narrow {
+  max-width: 280px;
+}
+
+.integrations {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 140px 120px 1fr;
+    gap: var(--space-3);
+    align-items: center;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.badge-status {
+  justify-self: start;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--mat-sys-surface-container-high);
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+
+  &[data-status='manual-links'] {
+    background: color-mix(in srgb, var(--color-success) 16%, transparent);
+    color: var(--color-success);
+  }
+}

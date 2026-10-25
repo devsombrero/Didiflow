@@ -263,14 +263,14 @@ isOneToOne: false
                   ]
                 },"user_preferences": {
                   Row: {
-                    "created_at": string,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
+                    "auto_backup_enabled": boolean,"auto_backup_interval_hours": number,"backup_retention": number,"created_at": string,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id": string
+                    "auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id"?: string
+                    "auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -324,6 +324,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"restore_backup":
+{ Args: { "p_backup": Json,"p_mode"?: string }; Returns: Json
+                           },
 "resume_timer":
 { Args: Record<PropertyKey, never>; Returns: {
               "created_at": string,

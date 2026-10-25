@@ -3,11 +3,9 @@ import { Router, RouterOutlet } from '@angular/router';
 import { DesktopBridge } from './core/platform/desktop-bridge';
 import { ProfileService } from './core/profile/profile.service';
 import { ThemeService } from './core/theme/theme.service';
-import { ConfirmDialog } from './shared/confirm/confirm-dialog';
-import { ToastContainer } from './shared/toast/toast-container';
 
 @Component({
-  imports: [RouterOutlet, ToastContainer, ConfirmDialog],
+  imports: [RouterOutlet],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',

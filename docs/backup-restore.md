@@ -18,6 +18,37 @@ Detalhes:
 - Os CSVs usam UTF-8 com BOM, separador `;` (padrão do Excel em pt-BR) e quebras CRLF.
 - Células que começam com `=`, `+`, `-`, `@`, tab ou CR recebem `'` no início, para impedir a execução de fórmulas (injeção de CSV).
 
+## Backups locais (aplicativo desktop)
+
+Em **Backup e restauração** (menu da conta):
+
+- **Automáticos:** criados enquanto o app está aberto (ao iniciar e a cada hora, quando o intervalo configurado venceu: de 6 horas a semanal). A retenção mantém os últimos N automáticos (padrão 10).
+- **Manuais:** botão "Fazer backup agora". Nunca são apagados pela retenção.
+- **De segurança:** criados automaticamente antes de qualquer restauração.
+
+Os arquivos ficam em `%APPDATA%didiflowackups`, no formato `didiflow-backup-<AAAAMMDDTHHMMSSZ>-<auto|manual|prerestore>.json`, com o mesmo conteúdo da cópia completa. O processo principal só lista, lê ou apaga arquivos com esse padrão de nome (IPC validado), e o renderer nunca acessa o sistema de arquivos.
+
+## Restauração pelo aplicativo
+
+A partir de um backup local ou de um arquivo (`Restaurar de um arquivo…`):
+
+1. O arquivo é validado (`format: didiflow-backup`, `version: 1`) e o app mostra uma prévia com a quantidade de registros por tipo.
+2. O usuário escolhe o modo:
+   - **Mesclar** (recomendado): mantém os dados atuais e adiciona o que falta.
+   - **Substituir**: apaga tarefas, organização, tempo, metas, lembretes, prioridades e sessões de foco atuais, e restaura o conteúdo do backup.
+3. No desktop, um backup de segurança é salvo antes. Em seguida, a RPC `restore_backup` roda no banco como o próprio usuário (`security invoker`, com RLS).
+
+Regras da RPC:
+
+- Os registros sempre pertencem a quem restaura; o `owner_id` do arquivo é ignorado.
+- **Mesclar, para o mesmo id:** vence a versão com `updated_at` mais recente.
+- **Mesclar, organização:** projetos, categorias, tags e contextos com o mesmo nome (sem diferenciar maiúsculas) são reaproveitados, e as referências são remapeadas.
+- **Ids de outra conta:** um id que já pertence a outra conta no mesmo banco ganha um id novo, e as referências acompanham.
+- **Sem duplicatas:** tempo, metas, desenvolvimento, lembretes e sessões não são duplicados ao restaurar o mesmo backup duas vezes.
+- **Ignorados:** cronômetros em andamento e sessões de foco ativas.
+- **Histórico:** `task_status_history` e `task_activity_logs` não são restaurados (são somente leitura para o usuário). Os triggers registram a própria restauração. No modo substituir, as exclusões ficam na trilha de auditoria.
+- **Perfil e preferências:** são atualizados quando o backup é mais recente, ou sempre no modo substituir.
+
 ## Exportação não é backup
 
 As exportações servem para portabilidade e análise. Elas **não substituem** backups do PostgreSQL:
@@ -38,9 +69,9 @@ Backups reais:
 1. Restaure em um projeto/banco com as mesmas migrations aplicadas (`supabase db push` ou `db reset`).
 2. Importe o dump com `psql` usando um papel administrativo, **fora do aplicativo**. A `service_role` nunca entra no app.
 
-### A partir da cópia completa (JSON)
+### A partir da cópia completa (JSON), manualmente
 
-Ainda não existe importação pelo aplicativo. O procedimento manual é:
+Prefira a restauração pelo aplicativo (acima). Sem o app, o procedimento manual é:
 
 1. Crie (ou use) a conta de destino e anote o `id` do usuário em `auth.users`.
 2. Substitua `owner_id` (e `user_id`/`id` em `profiles` e `user_preferences`) pelo id de destino.

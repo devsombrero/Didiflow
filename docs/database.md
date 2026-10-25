@@ -15,6 +15,8 @@ Implementado por migrations em `supabase/migrations/`. Este documento é atualiz
 | `20261025210000_task_reminders.sql`                 | Lembretes por tarefa                                                    |
 | `20261025220000_focus.sql`                          | Prioridades do dia e sessões de foco (no máximo uma ativa)              |
 | `20261025230000_search_tasks.sql`                   | Busca textual (`search_tasks`: português, unaccent e prefixo)           |
+| `20261026090000_backup_restore.sql`                 | Preferências de backup e `restore_backup`                               |
+| `20261026090100_restore_backup_lint.sql`            | `restore_backup` compatível com o `plpgsql_check`                       |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 

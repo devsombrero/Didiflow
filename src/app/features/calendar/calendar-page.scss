@@ -3,7 +3,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
 }
 
 .nav {
@@ -15,36 +14,14 @@
 
 .nav__title {
   margin: 0 0 0 var(--space-2);
-  font-size: 16px;
 }
 
 .filters {
   display: flex;
   gap: var(--space-2);
 
-  .input {
-    width: auto;
-  }
-}
-
-.segmented {
-  display: inline-flex;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-
-  button {
-    padding: 2px var(--space-3);
-    border: 0;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: inherit;
-    cursor: pointer;
-
-    &[aria-pressed='true'] {
-      background: var(--color-primary);
-      color: var(--color-primary-contrast);
-    }
+  mat-form-field {
+    width: 170px;
   }
 }
 
@@ -52,15 +29,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  font-size: 12px;
+  font: var(--mat-sys-body-small);
 }
 
 .grid {
   display: grid;
   gap: 1px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--mat-sys-outline-variant);
   border-radius: var(--radius-md);
-  background: var(--color-border);
+  background: var(--mat-sys-outline-variant);
   overflow: hidden;
 
   &[aria-busy='true'] {
@@ -78,18 +55,18 @@
 }
 
 .grid__weekday {
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-size: 12px;
+  padding: var(--space-2);
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
   text-transform: uppercase;
 }
 
 .cell {
-  min-height: 110px;
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-surface);
+  min-height: 112px;
   min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--mat-sys-surface-container-lowest);
 
   .grid--week & {
     min-height: 320px;
@@ -101,13 +78,13 @@
 }
 
 .cell--out {
-  background: var(--color-bg);
+  background: var(--mat-sys-surface-container-low);
   opacity: 0.6;
 }
 
 .cell--today .cell__date {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
 }
 
 .cell__header {
@@ -117,21 +94,24 @@
 }
 
 .cell__date {
-  min-width: 26px;
+  min-width: 28px;
+  height: 28px;
   padding: 0 var(--space-1);
   border: 0;
   border-radius: 999px;
   background: none;
-  color: var(--color-text);
-  font: inherit;
-  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-label-large);
   cursor: pointer;
+
+  &:hover {
+    background: var(--mat-sys-surface-container-high);
+  }
 }
 
 .cell__add {
-  padding: 0 var(--space-1);
-  color: var(--color-text-muted);
-  text-decoration: none;
+  display: inline-flex;
+  color: var(--mat-sys-on-surface-variant);
   opacity: 0;
 
   .cell:hover &,
@@ -152,20 +132,20 @@
 .ev {
   display: block;
   overflow: hidden;
-  padding: 1px var(--space-1);
-  border-left: 3px solid var(--color-border);
-  border-radius: 2px;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-size: 12px;
+  padding: 2px var(--space-2);
+  border-left: 3px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-small);
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 
   .grid--day & {
     white-space: normal;
-    font-size: 14px;
-    padding: var(--space-2);
+    font: var(--mat-sys-body-medium);
+    padding: var(--space-2) var(--space-3);
   }
 }
 
@@ -178,8 +158,8 @@
 }
 
 .ev--overdue {
-  border-left-color: var(--color-danger);
-  color: var(--color-danger);
+  border-left-color: var(--mat-sys-error);
+  color: var(--mat-sys-error);
   font-weight: 600;
 }
 

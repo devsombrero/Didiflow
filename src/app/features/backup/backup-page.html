@@ -1,0 +1,211 @@
+<header class="page-header">
+  <h1>Backup e restauração</h1>
+  <a matButton="outlined" routerLink="/export"><mat-icon>download</mat-icon> Exportar dados</a>
+</header>
+
+<p class="muted intro">
+  Os backups ficam neste computador ({{
+    desktop ? '%APPDATA%\\didiflow\\backups' : 'indisponível no navegador'
+  }}) e contêm todos os seus dados em JSON. Eles complementam, mas não substituem, os backups do
+  banco de dados.
+</p>
+
+<div class="layout">
+  <div class="stack">
+    @if (pending(); as p) {
+      <mat-card appearance="outlined" class="section restore-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>restore</mat-icon>
+          <mat-card-title>Restaurar {{ p.source }}</mat-card-title>
+          <mat-card-subtitle>
+            @if (p.preview.exportedAt) {
+              Gerado em {{ p.preview.exportedAt | appDate: true }} ·
+            }
+            {{ p.preview.total }} registro(s)
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="stack">
+          <mat-chip-set aria-label="Conteúdo do backup">
+            @for (row of p.preview.counts; track row.label) {
+              <mat-chip>{{ row.label }}: {{ row.count }}</mat-chip>
+            }
+          </mat-chip-set>
+          <mat-button-toggle-group
+            hideSingleSelectionIndicator
+            aria-label="Modo de restauração"
+            [value]="mode()"
+            (change)="mode.set($event.value)"
+          >
+            <mat-button-toggle value="merge"><mat-icon>merge</mat-icon> Mesclar</mat-button-toggle>
+            <mat-button-toggle value="replace"
+              ><mat-icon>swap_horiz</mat-icon> Substituir</mat-button-toggle
+            >
+          </mat-button-toggle-group>
+          <p class="field-hint">
+            @if (mode() === 'merge') {
+              Mantém seus dados atuais e adiciona o que falta. Em conflitos, vence a versão mais
+              recente; projetos, categorias e tags com o mesmo nome são reaproveitados.
+            } @else {
+              <strong class="warning">Apaga seus dados atuais</strong> (tarefas, organização, tempo,
+              metas) e restaura exatamente o conteúdo do backup.
+            }
+            O histórico de auditoria não é sobrescrito.
+          </p>
+          <div class="actions">
+            <button
+              matButton="filled"
+              type="button"
+              [class.danger-button]="mode() === 'replace'"
+              [disabled]="busy() !== null"
+              (click)="restore()"
+            >
+              <mat-icon>restore</mat-icon>
+              {{ busy() === 'restore' ? 'Restaurando…' : 'Restaurar' }}
+            </button>
+            <button matButton type="button" (click)="cancelRestore()">Cancelar</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <mat-card appearance="outlined" class="section">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>folder_zip</mat-icon>
+        <mat-card-title>Backups locais</mat-card-title>
+        <mat-card-subtitle>
+          @if (lastAuto(); as last) {
+            Último automático: {{ last.createdAt | appDate: true }}
+          } @else {
+            Nenhum backup automático ainda
+          }
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="actions toolbar">
+          <button
+            matButton="filled"
+            type="button"
+            [disabled]="!desktop || busy() !== null"
+            (click)="backupNow()"
+          >
+            <mat-icon>backup</mat-icon>
+            {{ busy() === 'create' ? 'Criando…' : 'Fazer backup agora' }}
+          </button>
+          <button
+            matButton="outlined"
+            type="button"
+            [disabled]="busy() !== null"
+            (click)="pickFile(fileInput)"
+          >
+            <mat-icon>upload_file</mat-icon> Restaurar de um arquivo…
+          </button>
+          @if (desktop) {
+            <button matButton type="button" (click)="openFolder()">
+              <mat-icon>folder_open</mat-icon> Abrir pasta
+            </button>
+          }
+          <input
+            #fileInput
+            type="file"
+            accept=".json,application/json"
+            class="sr-only"
+            tabindex="-1"
+            aria-hidden="true"
+            (change)="onFileInput(fileInput)"
+          />
+        </div>
+
+        @if (!desktop) {
+          <p class="muted">
+            Backups locais automáticos estão disponíveis no aplicativo desktop. No navegador, use
+            "Restaurar de um arquivo" com uma cópia completa exportada.
+          </p>
+        } @else {
+          <ul class="files">
+            @for (file of files(); track file.name) {
+              <li>
+                <mat-icon class="files__icon">{{
+                  file.kind === 'auto' ? 'schedule' : file.kind === 'manual' ? 'save' : 'shield'
+                }}</mat-icon>
+                <div class="files__info">
+                  <span>{{ file.createdAt | appDate: true }}</span>
+                  <span class="muted"
+                    >{{ kindLabels[file.kind] }} · {{ formatSize(file.size) }}</span
+                  >
+                </div>
+                <button
+                  matButton
+                  type="button"
+                  [disabled]="busy() !== null"
+                  (click)="prepareLocal(file)"
+                >
+                  <mat-icon>restore</mat-icon> Restaurar
+                </button>
+                <button
+                  matIconButton
+                  type="button"
+                  aria-label="Excluir backup"
+                  [disabled]="busy() !== null"
+                  (click)="remove(file)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </li>
+            } @empty {
+              <li class="muted">Nenhum backup salvo neste computador.</li>
+            }
+          </ul>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card appearance="outlined" class="section">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>settings_backup_restore</mat-icon>
+      <mat-card-title>Backup automático</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form class="form" [formGroup]="settingsForm" (ngSubmit)="saveSettings()" novalidate>
+        <mat-slide-toggle id="auto_backup_enabled" formControlName="auto_backup_enabled">
+          Fazer backups automaticamente
+        </mat-slide-toggle>
+        <mat-form-field>
+          <mat-label>Frequência</mat-label>
+          <mat-select id="auto_backup_interval_hours" formControlName="auto_backup_interval_hours">
+            @for (option of intervals; track option.hours) {
+              <mat-option [value]="option.hours">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Manter os últimos</mat-label>
+          <input
+            matInput
+            id="backup_retention"
+            type="number"
+            min="1"
+            max="100"
+            formControlName="backup_retention"
+          />
+          <span matTextSuffix>backups</span>
+          <mat-hint>Backups manuais e de segurança não são apagados automaticamente.</mat-hint>
+          <mat-error>Informe um valor entre 1 e 100.</mat-error>
+        </mat-form-field>
+        <p class="field-hint">
+          O backup automático roda enquanto o DidiFlow está aberto (ao iniciar e a cada hora, se
+          estiver no prazo).
+        </p>
+        <div class="actions">
+          <button
+            matButton="filled"
+            type="submit"
+            [disabled]="settingsForm.pristine || busy() === 'settings'"
+          >
+            Salvar
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -7,18 +7,20 @@ import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { ToastService } from '../../shared/toast/toast.service';
 import { zonedDateTime } from '../../shared/utils/dates';
 import { describeError } from '../../shared/utils/errors';
+import { MATERIAL_FORMS } from '../../shared/material';
 
 type Reminder = Tables<'task_reminders'>;
 
 /** Reminders of one task: list, add (date + time in the user zone) and remove. */
 @Component({
   selector: 'app-task-reminders-panel',
-  imports: [ReactiveFormsModule, AppDatePipe],
+  imports: [ReactiveFormsModule, AppDatePipe, MATERIAL_FORMS],
   template: `
     <ul class="reminders">
       @for (reminder of reminders(); track reminder.id) {
         <li [class.sent]="reminder.sent_at">
-          <span>
+          <mat-icon>{{ reminder.sent_at ? 'notifications_off' : 'notifications_active' }}</mat-icon>
+          <span class="reminders__text">
             {{ reminder.remind_at | appDate: true }}
             @if (reminder.note) {
               · {{ reminder.note }}
@@ -27,26 +29,35 @@ type Reminder = Tables<'task_reminders'>;
               <span class="muted">(enviado)</span>
             }
           </span>
-          <button type="button" class="btn btn--sm" (click)="remove(reminder)">Remover</button>
+          <button
+            matIconButton
+            type="button"
+            aria-label="Remover lembrete"
+            (click)="remove(reminder)"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
         </li>
       } @empty {
         <li class="muted">Nenhum lembrete.</li>
       }
     </ul>
     <form class="reminder-form" [formGroup]="form" (ngSubmit)="add()">
-      <label class="sr-only" for="reminder-date">Data</label>
-      <input id="reminder-date" class="input" type="date" formControlName="date" />
-      <label class="sr-only" for="reminder-time">Hora</label>
-      <input id="reminder-time" class="input" type="time" formControlName="time" />
-      <label class="sr-only" for="reminder-note">Nota</label>
-      <input
-        id="reminder-note"
-        class="input"
-        formControlName="note"
-        maxlength="200"
-        placeholder="Nota (opcional)"
-      />
-      <button class="btn" type="submit" [disabled]="busy()">Adicionar</button>
+      <mat-form-field>
+        <mat-label>Data</mat-label>
+        <input matInput id="reminder-date" type="date" formControlName="date" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Hora</mat-label>
+        <input matInput id="reminder-time" type="time" formControlName="time" />
+      </mat-form-field>
+      <mat-form-field class="reminder-form__note">
+        <mat-label>Nota (opcional)</mat-label>
+        <input matInput id="reminder-note" formControlName="note" maxlength="200" />
+      </mat-form-field>
+      <button matButton="tonal" type="submit" [disabled]="busy()">
+        <mat-icon>add_alert</mat-icon> Adicionar
+      </button>
     </form>
     <p class="field-hint">Exibido como notificação enquanto o DidiFlow estiver aberto.</p>
   `,
@@ -58,18 +69,30 @@ type Reminder = Tables<'task_reminders'>;
     }
     .reminders li {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-1) 0;
+    }
+    .reminders__text {
+      flex: 1;
     }
     .reminders .sent {
       opacity: 0.6;
     }
     .reminder-form {
-      display: grid;
-      grid-template-columns: auto auto 1fr auto;
+      display: flex;
+      flex-wrap: wrap;
       gap: var(--space-2);
+      align-items: flex-start;
+    }
+    .reminder-form mat-form-field {
+      flex: 1 1 140px;
+    }
+    .reminder-form .reminder-form__note {
+      flex-basis: 100%;
+    }
+    .reminder-form button {
+      margin-top: var(--space-2);
     }
   `,
 })
