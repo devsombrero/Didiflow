@@ -1,12 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MATERIAL_FORMS } from '../../../shared/material';
 import { AuthFailure } from '../../../core/auth/auth-errors';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
@@ -18,6 +19,7 @@ export class LoginPage {
     password: ['', Validators.required],
   });
   protected readonly submitting = signal(false);
+  protected readonly showPassword = signal(false);
   protected readonly error = signal<AuthFailure | null>(null);
 
   async submit(): Promise<void> {

@@ -1,6 +1,7 @@
 import { Component, inject, input, type OnInit, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MATERIAL_FORMS } from '../../../shared/material';
 import { AuthFailure } from '../../../core/auth/auth-errors';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -10,7 +11,7 @@ const OTP_PATTERN = /^\d{6}$/;
 
 @Component({
   selector: 'app-register-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS],
   templateUrl: './register-page.html',
 })
 export class RegisterPage implements OnInit {

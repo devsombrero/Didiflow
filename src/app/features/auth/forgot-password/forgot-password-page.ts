@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MATERIAL_FORMS } from '../../../shared/material';
 import { AuthFailure } from '../../../core/auth/auth-errors';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -8,7 +9,7 @@ import { matchFields, passwordStrength } from '../../../shared/validators/passwo
 
 @Component({
   selector: 'app-forgot-password-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS],
   templateUrl: './forgot-password-page.html',
 })
 export class ForgotPasswordPage {
