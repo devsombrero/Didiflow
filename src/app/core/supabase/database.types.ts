@@ -345,6 +345,11 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"search_tasks":
+{ Args: { "p_include_archived"?: boolean,"p_limit"?: number,"p_query": string }; Returns: {
+              "archived_at": string,"description": string,"due_date": string,"id": string,"notes": string,"priority": Database["public"]['Enums']["task_priority"],"project_name": string,"rank": number,"requester_name": string,"status": Database["public"]['Enums']["task_status"],"tag_names": (string)[],"title": string
+            }[]
+                           },
 "start_timer":
 { Args: { "p_description"?: string,"p_task_id"?: string }; Returns: {
               "created_at": string,

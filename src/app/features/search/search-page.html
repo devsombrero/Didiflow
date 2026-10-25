@@ -1,0 +1,117 @@
+<header class="page-header">
+  <h1>Busca</h1>
+</header>
+
+<div class="search-bar">
+  <label class="sr-only" for="search-input">Buscar tarefas</label>
+  <input
+    id="search-input"
+    class="input"
+    type="search"
+    #searchInput
+    placeholder="Título, descrição, solicitante, projeto, tags ou observações"
+    [value]="query()"
+    (input)="onInput($any($event.target).value)"
+  />
+</div>
+
+<div class="chips" role="group" aria-label="Filtros rápidos">
+  <button
+    type="button"
+    class="chip"
+    [attr.aria-pressed]="filter() === 'all'"
+    (click)="filter.set('all')"
+  >
+    Todas
+  </button>
+  <button
+    type="button"
+    class="chip"
+    [attr.aria-pressed]="filter() === 'open'"
+    (click)="filter.set('open')"
+  >
+    Abertas
+  </button>
+  <button
+    type="button"
+    class="chip"
+    [attr.aria-pressed]="filter() === 'done'"
+    (click)="filter.set('done')"
+  >
+    Concluídas
+  </button>
+  <button
+    type="button"
+    class="chip"
+    [attr.aria-pressed]="filter() === 'important'"
+    (click)="filter.set('important')"
+  >
+    Alta prioridade
+  </button>
+  <label class="archived">
+    <input
+      type="checkbox"
+      [checked]="includeArchived()"
+      (change)="includeArchived.set($any($event.target).checked)"
+    />
+    Incluir arquivadas
+  </label>
+</div>
+
+@switch (state()) {
+  @case ('idle') {
+    <p class="muted">Digite para buscar. Dica: use Ctrl+K em qualquer tela.</p>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">{{ errorMessage() }}</div>
+  }
+  @default {
+    <p class="muted" role="status" [attr.aria-busy]="state() === 'loading'">
+      {{ state() === 'loading' ? 'Buscando…' : filtered().length + ' resultado(s)' }}
+    </p>
+    <ul class="results">
+      @for (row of filtered(); track row.id) {
+        <li class="card result">
+          <a class="result__title" [routerLink]="['/tasks', row.id]">
+            <app-highlighted-text [text]="row.title" [terms]="terms()" />
+          </a>
+          <div class="result__meta">
+            <app-status-badge [status]="row.status" />
+            <app-priority-badge [priority]="row.priority" />
+            @if (row.due_date) {
+              <span>Entrega {{ row.due_date | appDate }}</span>
+              @if (deadline(row); as label) {
+                <span class="deadline">{{ label }}</span>
+              }
+            }
+            @if (row.archived_at) {
+              <span class="muted">Arquivada</span>
+            }
+          </div>
+          @if (snippet(row); as text) {
+            <p class="result__snippet"><app-highlighted-text [text]="text" [terms]="terms()" /></p>
+          }
+          <div class="result__meta muted">
+            @if (row.project_name) {
+              <span
+                >Projeto: <app-highlighted-text [text]="row.project_name" [terms]="terms()"
+              /></span>
+            }
+            @if (row.requester_name) {
+              <span
+                >Solicitante: <app-highlighted-text [text]="row.requester_name" [terms]="terms()"
+              /></span>
+            }
+            @for (tag of row.tag_names; track tag) {
+              <span class="tag"><app-highlighted-text [text]="tag" [terms]="terms()" /></span>
+            }
+          </div>
+        </li>
+      } @empty {
+        @if (state() === 'ready') {
+          <li class="muted">Nenhuma tarefa encontrada.</li>
+        }
+      }
+    </ul>
+  }
+}

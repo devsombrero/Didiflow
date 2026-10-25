@@ -21,6 +21,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASK_ROUTES),
       },
       {
+        path: 'search',
+        title: 'Busca · DidiFlow',
+        loadComponent: () => import('./features/search/search-page').then((m) => m.SearchPage),
+      },
+      {
         path: 'today',
         title: 'Hoje · DidiFlow',
         loadComponent: () => import('./features/focus/today-page').then((m) => m.TodayPage),

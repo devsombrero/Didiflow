@@ -1,4 +1,12 @@
-import { Component, computed, effect, inject, type OnInit } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  type ElementRef,
+  inject,
+  type OnInit,
+  viewChild,
+} from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from '../../core/profile/profile.service';
@@ -15,6 +23,7 @@ import { ToastService } from '../../shared/toast/toast.service';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, TimerWidget],
   templateUrl: './shell-layout.html',
   styleUrl: './shell-layout.scss',
+  host: { '(document:keydown)': 'onKeydown($event)' },
 })
 export class ShellLayout implements OnInit {
   private readonly auth = inject(AuthService);
@@ -29,6 +38,7 @@ export class ShellLayout implements OnInit {
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
   );
   protected readonly user = this.auth.user;
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   constructor() {
     // Session ended elsewhere (sign-out, expired refresh token): leave the shell.
@@ -51,6 +61,23 @@ export class ShellLayout implements OnInit {
       void this.focus.restore().catch(() => undefined);
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
+    }
+  }
+
+  protected search(event: Event): void {
+    event.preventDefault();
+    const input = this.searchInput()?.nativeElement;
+    const q = input?.value.trim() ?? '';
+    if (!q) return;
+    void this.router.navigate(['/search'], { queryParams: { q } });
+    if (input) input.value = '';
+  }
+
+  /** Ctrl+K (or Cmd+K) focuses the global search from anywhere. */
+  protected onKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      this.searchInput()?.nativeElement.focus();
     }
   }
 

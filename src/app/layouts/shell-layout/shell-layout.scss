@@ -20,6 +20,10 @@
   color: var(--color-primary);
 }
 
+.sidebar__search .input {
+  padding: var(--space-1) var(--space-2);
+}
+
 .sidebar__nav {
   display: flex;
   flex-direction: column;
