@@ -1,0 +1,72 @@
+// Design tokens. Light theme is the default; dark applies via
+// [data-theme='dark'] or the OS preference when no theme is forced.
+:root {
+  color-scheme: light;
+  --color-bg: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-border: #e2e5ea;
+  --color-text: #1b1f24;
+  --color-text-muted: #5b6470;
+  --color-primary: #3157d5;
+  --color-primary-contrast: #ffffff;
+  --color-success: #1f8a4c;
+  --color-warning: #b26a00;
+  --color-danger: #c62828;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+@mixin dark-tokens {
+  color-scheme: dark;
+  --color-bg: #121418;
+  --color-surface: #1b1e24;
+  --color-border: #2c313a;
+  --color-text: #e6e8eb;
+  --color-text-muted: #9aa3ae;
+  --color-primary: #7b9bff;
+  --color-primary-contrast: #0d1020;
+  --color-success: #4cc784;
+  --color-warning: #f0a83a;
+  --color-danger: #ff6b6b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-tokens;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

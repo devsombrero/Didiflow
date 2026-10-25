@@ -1,0 +1,9 @@
+dist
+dist-electron
+release
+coverage
+node_modules
+.angular
+package-lock.json
+supabase/.temp
+prompt.md
