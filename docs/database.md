@@ -2,12 +2,19 @@
 
 Implementado por migrations em `supabase/migrations/`. Este documento é atualizado junto com cada migration.
 
-| Migration                                 | Conteúdo                                                |
-| ----------------------------------------- | ------------------------------------------------------- |
-| `20261025150000_initial_schema.sql`       | Enums, tabelas do MVP, constraints, índices e triggers  |
-| `20261025150100_rls_policies.sql`         | RLS, políticas por dono, grants por coluna e revogações |
-| `20261025160000_task_status_progress.sql` | Normalização status × progresso e histórico de status   |
-| `20261025170000_task_activity_log.sql`    | Trilha de auditoria de tarefas (`task_activity_logs`)   |
+| Migration                                           | Conteúdo                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------- |
+| `20261025150000_initial_schema.sql`                 | Enums, tabelas do MVP, constraints, índices e triggers                  |
+| `20261025150100_rls_policies.sql`                   | RLS, políticas por dono, grants por coluna e revogações                 |
+| `20261025160000_task_status_progress.sql`           | Normalização status × progresso e histórico de status                   |
+| `20261025170000_task_activity_log.sql`              | Trilha de auditoria de tarefas (`task_activity_logs`)                   |
+| `20261025175900_activity_skip_account_deletion.sql` | Exclusão de conta com tarefas (guarda no trigger de auditoria)          |
+| `20261025180000_organization.sql`                   | Contextos de trabalho, view de solicitantes e auditoria de tags         |
+| `20261025190000_time_entries.sql`                   | Registros de tempo e ações de cronômetro no servidor                    |
+| `20261025200000_goals_achievements.sql`             | Metas SMART (`personal_goals`) e desenvolvimento (`skill_achievements`) |
+| `20261025210000_task_reminders.sql`                 | Lembretes por tarefa                                                    |
+| `20261025220000_focus.sql`                          | Prioridades do dia e sessões de foco (no máximo uma ativa)              |
+| `20261025230000_search_tasks.sql`                   | Busca textual (`search_tasks`: português, unaccent e prefixo)           |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 
@@ -41,7 +48,7 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 - `task_status`: `not_started`, `in_progress`, `blocked`, `done`, `cancelled`.
 - `task_priority`: `low`, `medium`, `high`, `urgent`.
 
-## Entidades do MVP
+## Entidades
 
 | Tabela                | Finalidade                                                                       |
 | --------------------- | -------------------------------------------------------------------------------- |
@@ -52,6 +59,12 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 | `tags` / `task_tags`  | Tags N:N com tarefas. Inclusão e remoção entram na auditoria.                    |
 | `work_contexts`       | Contextos de trabalho (ex.: Remoto, Reunião).                                    |
 | `task_requesters`     | View (`security_invoker`) com solicitantes distintos e quantidade de tarefas.    |
+| `time_entries`        | Registros de tempo (manuais e cronômetro).                                       |
+| `personal_goals`      | Metas SMART.                                                                     |
+| `skill_achievements`  | Cursos, certificações e habilidades.                                             |
+| `task_reminders`      | Lembretes por tarefa.                                                            |
+| `daily_priorities`    | Lista ordenada de prioridades por dia.                                           |
+| `focus_sessions`      | Sessões de foco registradas.                                                     |
 | `tasks`               | Demanda (campos abaixo).                                                         |
 | `task_status_history` | Transições de status e progresso. Append-only.                                   |
 | `task_activity_logs`  | Auditoria de criação, alteração de campos, arquivamento e exclusão. Append-only. |
