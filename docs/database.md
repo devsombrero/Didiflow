@@ -109,6 +109,15 @@ O trigger `tasks_record_status_history` (AFTER, `security definer`) grava cada t
 
 `(owner_id, status)`, `(owner_id, due_date)`, `(owner_id, priority)`, `(owner_id, updated_at desc)`, além de índices nas FKs (`project_id`, `category_id`, `task_tags.tag_id`).
 
+## Registro de tempo
+
+`time_entries` guarda apontamentos manuais (`source = manual`) e de cronômetro (`timer`):
+
+- `duration_seconds` é calculado por trigger: `ended_at − started_at − paused_seconds`. Fica nulo enquanto o registro está em andamento.
+- Um índice único parcial (`owner_id where ended_at is null`) garante no máximo um cronômetro ativo por usuário.
+- Cada registro tem no máximo 24 horas, `ended_at >= started_at`, e a tarefa associada precisa ser do mesmo dono (FK composta, `on delete set null`).
+- As RPCs `start_timer`, `pause_timer`, `resume_timer` e `stop_timer` (security invoker) usam `now()` do servidor. Assim o cronômetro não depende de a janela continuar aberta, nem do relógio local.
+
 ## Fases posteriores
 
-`time_entries`, `personal_goals`, `skill_achievements`, `focus_sessions` e, se necessário, `notifications`.
+`personal_goals`, `skill_achievements`, `focus_sessions` e, se necessário, `notifications`.
