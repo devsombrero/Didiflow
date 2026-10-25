@@ -38,7 +38,7 @@
 - Todo payload IPC é validado no processo principal (`electron/ipc/validation.ts`):
   - chaves do secure store: `[A-Za-z0-9._:-]{1,128}`; valores: string de até 64 KiB;
   - `openExternal`: apenas `https://`, sem credenciais na URL, até 2048 caracteres;
-  - `notify`: título de 1 a 120 caracteres, corpo de até 500 e rota interna opcional (`/caminho` com caracteres seguros, sem `//`). O clique na notificação só envia ao renderer essa rota já validada;
+  - `notify`: título de 1 a 120 caracteres, corpo de até 500, `silent` booleano opcional e rota interna opcional (`/caminho` com caracteres seguros, sem `//`). O clique na notificação só envia ao renderer essa rota já validada;
   - `saveFile`: nome-base seguro (`[A-Za-z0-9._-]`, sem caminho) com a extensão do tipo (`csv`/`json`), até 50 MB. O destino é escolhido pelo usuário no diálogo nativo e a gravação acontece no processo principal;
   - `backups.*`: nomes de arquivo restritos a `didiflow-backup-<data>-<auto|manual|prerestore>.json` dentro da pasta de backups; conteúdo precisa ser JSON com `format: didiflow-backup` e até 50 MB; retenção entre 1 e 100;
   - `openBackupFile`: diálogo nativo, apenas `.json` de até 50 MB com formato DidiFlow;
