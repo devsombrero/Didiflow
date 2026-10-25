@@ -283,14 +283,14 @@ isOneToOne: false
                   ]
                 },"user_preferences": {
                   Row: {
-                    "auto_backup_enabled": boolean,"auto_backup_interval_hours": number,"backup_retention": number,"created_at": string,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
+                    "animations_enabled": boolean,"auto_backup_enabled": boolean,"auto_backup_interval_hours": number,"backup_retention": number,"created_at": string,"date_format": string,"due_soon_days": number,"notifications_enabled": boolean,"notify_due_soon": boolean,"notify_overdue": boolean,"sound_volume": number,"sounds_enabled": boolean,"theme": Database["public"]['Enums']["theme_preference"],"timezone": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id": string
+                    "animations_enabled"?: boolean,"auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"sound_volume"?: number,"sounds_enabled"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id"?: string
+                    "animations_enabled"?: boolean,"auto_backup_enabled"?: boolean,"auto_backup_interval_hours"?: number,"backup_retention"?: number,"created_at"?: string,"date_format"?: string,"due_soon_days"?: number,"notifications_enabled"?: boolean,"notify_due_soon"?: boolean,"notify_overdue"?: boolean,"sound_volume"?: number,"sounds_enabled"?: boolean,"theme"?: Database["public"]['Enums']["theme_preference"],"timezone"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
