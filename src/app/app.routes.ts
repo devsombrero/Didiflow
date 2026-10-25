@@ -21,6 +21,12 @@ export const routes: Routes = [
         loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASK_ROUTES),
       },
       {
+        path: 'organization',
+        title: 'Organização · DidiFlow',
+        loadComponent: () =>
+          import('./features/organization/organization-page').then((m) => m.OrganizationPage),
+      },
+      {
         path: 'settings',
         title: 'Configurações · DidiFlow',
         loadComponent: () =>
