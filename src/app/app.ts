@@ -1,5 +1,6 @@
 import { Component, DestroyRef, effect, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
+import { MotionService } from './core/feedback/motion.service';
 import { DesktopBridge } from './core/platform/desktop-bridge';
 import { ProfileService } from './core/profile/profile.service';
 import { ThemeService } from './core/theme/theme.service';
@@ -13,6 +14,8 @@ import { ThemeService } from './core/theme/theme.service';
 export class App {
   constructor() {
     const theme = inject(ThemeService);
+    // Applies the animation preference to the document root.
+    inject(MotionService);
     const preferences = inject(ProfileService).preferences;
     effect(() => theme.apply(preferences()?.theme ?? 'system'));
 

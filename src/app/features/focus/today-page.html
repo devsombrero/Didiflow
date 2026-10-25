@@ -21,7 +21,11 @@
         <mat-card-content>
           <ol class="list">
             @for (row of priorities(); track row.id; let i = $index; let last = $last) {
-              <li [class.done]="row.tasks?.status === 'done'">
+              <li
+                animate.enter="enter-fade-up"
+                [style.--stagger]="$index"
+                [class.done]="row.tasks?.status === 'done'"
+              >
                 <span class="position">{{ i + 1 }}</span>
                 <div class="info">
                   @if (row.tasks; as task) {
@@ -99,7 +103,7 @@
         <mat-card-content>
           <ul class="suggestions">
             @for (suggestion of suggestions(); track suggestion.task.id) {
-              <li>
+              <li animate.enter="enter-fade-up" [style.--stagger]="$index">
                 <div class="info">
                   <a [routerLink]="['/tasks', suggestion.task.id]">{{ suggestion.task.title }}</a>
                   <span class="reason">{{ suggestion.reason }}</span>

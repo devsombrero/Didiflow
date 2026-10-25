@@ -7,6 +7,9 @@ import { ProfileService } from '../../core/profile/profile.service';
 import { INTEGRATIONS } from '../integrations/integrations';
 import type { ThemePreference } from '../../core/theme/theme.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { MatSliderModule } from '@angular/material/slider';
+import { SoundService } from '../../core/feedback/sound.service';
+import { SOUND_LABELS, type SoundName } from '../../core/feedback/sounds';
 
 export const DATE_FORMATS = [
   { value: 'dd/MM/yyyy', label: '31/12/2026' },
@@ -22,11 +25,12 @@ export const THEMES: readonly { value: ThemePreference; label: string }[] = [
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS, MATERIAL_UI],
+  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS, MATERIAL_UI, MatSliderModule],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss',
 })
 export class SettingsPage {
+  private readonly sounds = inject(SoundService);
   private readonly profileService = inject(ProfileService);
   private readonly toast = inject(ToastService);
   private readonly bridge = inject(DesktopBridge);
@@ -52,7 +56,16 @@ export class SettingsPage {
     notify_due_soon: [true],
     notify_overdue: [true],
     due_soon_days: [2, [Validators.required, Validators.min(0), Validators.max(30)]],
+    animations_enabled: [true],
+    sounds_enabled: [true],
+    sound_volume: [60, [Validators.min(0), Validators.max(100)]],
   });
+
+  protected readonly soundOptions = (Object.keys(SOUND_LABELS) as SoundName[]).map((value) => ({
+    value,
+    label: SOUND_LABELS[value],
+  }));
+  protected readonly previewName = signal<SoundName>('complete');
 
   constructor() {
     // Fill the forms once the profile is available (loaded by the shell).
@@ -68,6 +81,11 @@ export class SettingsPage {
       this.preferencesForm.reset(preferences);
       this.loaded.set(true);
     });
+  }
+
+  /** Plays the chosen effect at the volume currently on the slider. */
+  protected previewSound(): void {
+    this.sounds.preview(this.previewName(), this.preferencesForm.controls.sound_volume.value);
   }
 
   protected async testNotification(): Promise<void> {

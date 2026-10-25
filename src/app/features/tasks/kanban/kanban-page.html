@@ -69,6 +69,7 @@
           @for (task of groups()[column]; track task.id) {
             @let deadline = deadlineOf(task);
             <article
+              animate.enter="enter-pop"
               class="card"
               cdkDrag
               [cdkDragData]="task"
