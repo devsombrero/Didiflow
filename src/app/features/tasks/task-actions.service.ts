@@ -31,6 +31,10 @@ export class TaskActions {
     return this.run(() => this.tasks.cancel(task), 'Tarefa cancelada.');
   }
 
+  async complete(task: Task): Promise<Task | undefined> {
+    return this.run(() => this.tasks.setStatus(task.id, 'done'), 'Tarefa concluída.');
+  }
+
   async reopen(task: Task): Promise<Task | undefined> {
     return this.run(() => this.tasks.reopen(task), 'Tarefa reaberta.');
   }

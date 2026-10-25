@@ -1,6 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
-import type { Task, TaskInsert, TaskPage, TaskQuery, TaskUpdate } from './task.model';
+import type {
+  StatusHistoryEntry,
+  Task,
+  TaskInsert,
+  TaskPage,
+  TaskQuery,
+  TaskStatus,
+  TaskUpdate,
+} from './task.model';
 import { cancelChanges, duplicateInput, reopenChanges, sanitizeSearch } from './task-rules';
 
 const SEARCH_COLUMNS = ['title', 'description', 'requester_name', 'notes'] as const;
@@ -84,6 +92,28 @@ export class TasksService {
 
   unarchive(id: string): Promise<Task> {
     return this.update(id, { archived_at: null });
+  }
+
+  /** The database normalizes progress and completed_at (see the status trigger). */
+  setStatus(id: string, status: TaskStatus): Promise<Task> {
+    return this.update(id, { status });
+  }
+
+  setProgress(id: string, progress: number): Promise<Task> {
+    return this.update(id, {
+      progress_percentage: Math.round(Math.min(Math.max(progress, 0), 100)),
+    });
+  }
+
+  async statusHistory(taskId: string): Promise<StatusHistoryEntry[]> {
+    const { data, error } = await this.supabase
+      .from('task_status_history')
+      .select('*')
+      .eq('task_id', taskId)
+      .order('changed_at', { ascending: false })
+      .order('id', { ascending: false });
+    if (error) throw error;
+    return data;
   }
 
   /** Logical delete: the row and its history are kept (see docs/database.md). */

@@ -1,6 +1,9 @@
 import type { Task } from './task.model';
 import {
   canCancel,
+  canChangeStatus,
+  canComplete,
+  canEditProgress,
   canReopen,
   cancelChanges,
   duplicateInput,
@@ -84,5 +87,25 @@ describe('task rules', () => {
     expect(sanitizeSearch('  relatório, (urgente)  ')).toBe('relatório urgente');
     expect(sanitizeSearch('100%_done*')).toBe('100 done');
     expect(sanitizeSearch('a'.repeat(150))).toHaveLength(100);
+  });
+});
+
+describe('progress rules', () => {
+  it('allows manual progress only when not started or in progress', () => {
+    expect(canEditProgress(task({ status: 'not_started' }))).toBe(true);
+    expect(canEditProgress(task({ status: 'in_progress' }))).toBe(true);
+    expect(canEditProgress(task({ status: 'blocked' }))).toBe(false);
+    expect(canEditProgress(task({ status: 'done' }))).toBe(false);
+  });
+
+  it('locks direct status changes on cancelled tasks', () => {
+    expect(canChangeStatus(task({ status: 'cancelled' }))).toBe(false);
+    expect(canChangeStatus(task({ status: 'done' }))).toBe(true);
+  });
+
+  it('completes only open tasks', () => {
+    expect(canComplete(task({ status: 'blocked' }))).toBe(true);
+    expect(canComplete(task({ status: 'done' }))).toBe(false);
+    expect(canComplete(task({ status: 'cancelled' }))).toBe(false);
   });
 });

@@ -81,3 +81,13 @@ export interface TaskPage {
   items: Task[];
   total: number;
 }
+
+export type StatusHistoryEntry = Tables<'task_status_history'>;
+
+/** Statuses selectable directly; cancelling has its own confirmed flow. */
+export const SELECTABLE_STATUSES: readonly TaskStatus[] = [
+  'not_started',
+  'in_progress',
+  'blocked',
+  'done',
+];

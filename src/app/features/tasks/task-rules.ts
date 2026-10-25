@@ -65,3 +65,17 @@ export function sanitizeSearch(term: string): string {
     .trim()
     .slice(0, 100);
 }
+
+/** Progress is adjusted manually only on tasks that are not started or in progress. */
+export function canEditProgress(task: Pick<Task, 'status'>): boolean {
+  return task.status === 'not_started' || task.status === 'in_progress';
+}
+
+/** Status can be changed directly unless the task is cancelled (reopen first). */
+export function canChangeStatus(task: Pick<Task, 'status'>): boolean {
+  return task.status !== 'cancelled';
+}
+
+export function canComplete(task: Pick<Task, 'status'>): boolean {
+  return task.status !== 'done' && task.status !== 'cancelled';
+}
