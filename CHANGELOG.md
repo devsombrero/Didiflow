@@ -6,6 +6,7 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Adicionado
 
+- Aba "Recursos" no card de anexos para links externos (https), com abrir, copiar, remover e registro na atividade.
 - Épicos e subtarefas (até três níveis), com progresso calculado automaticamente a partir dos itens.
 - Cálculo automático de horas: totais da tarefa com subtarefas, horas de hoje, ritmo necessário por dia útil até a entrega, gráfico diário e meta de horas por dia.
 

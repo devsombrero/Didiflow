@@ -42,6 +42,8 @@ const ACTION_TITLES: Record<string, string> = {
   deleted: 'Tarefa excluída',
   restored: 'Tarefa restaurada',
   attachment_added: 'Anexo adicionado',
+  link_added: 'Link adicionado',
+  link_removed: 'Link removido',
   attachment_removed: 'Anexo removido',
 };
 
@@ -124,6 +126,9 @@ export function describeActivity(
         ? `“${changes['file_name']}” (${formatBytes(size)})`
         : `“${changes['file_name']}”`,
     );
+  }
+  if (typeof changes['url'] === 'string') {
+    details.push(`“${String(changes['title'] ?? changes['url'])}”`);
   }
   if (changes['hard_delete'] === true) {
     details.push('Exclusão definitiva');

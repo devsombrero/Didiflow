@@ -49,7 +49,11 @@ Os formulários de **tarefa**, **meta**, **registro de desenvolvimento** e **apo
 
 A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, **negrito**, _itálico_, listas, checklists (`- [ ]`), citações, código e links. Use a barra de formatação (atalhos `Ctrl+B`, `Ctrl+I` e `Ctrl+K`) e a aba **Visualizar** para conferir antes de salvar. Links abrem no navegador padrão.
 
-**Anexos** (detalhe da tarefa, aplicativo desktop):
+**Anexos** (detalhe da tarefa): o card tem duas abas.
+
+**Recursos** (aba ao lado de Arquivos): links externos da tarefa (protótipos, documentos, cards, vídeos). Aceita endereços `https://` (ou sem o prefixo, que é completado), com título opcional; até 50 por tarefa. Cada link abre no navegador padrão, pode ser copiado ou removido, e as inclusões e remoções aparecem na atividade. Os links entram no backup.
+
+**Arquivos** (aplicativo desktop):
 
 - **Limite:** até 50 MB por tarefa, somando todos os arquivos.
 - **Onde ficam:** os arquivos são copiados para `%APPDATA%\didiflow\attachments`, no próprio computador; o Supabase guarda só nome, tipo, tamanho e checksum.

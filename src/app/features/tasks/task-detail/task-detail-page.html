@@ -210,11 +210,36 @@
 
         <mat-card appearance="outlined" class="section detail-grid__wide">
           <mat-card-header><mat-card-title>Anexos</mat-card-title></mat-card-header>
-          <mat-card-content
-            ><app-task-attachments-panel
-              [taskId]="task.id"
-              (changed)="activityVersion.update((v) => v + 1)"
-          /></mat-card-content>
+          <mat-card-content>
+            <mat-tab-group class="attach-tabs" animationDuration="150ms" mat-stretch-tabs="false">
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon class="tab-icon">attach_file</mat-icon> Arquivos
+                </ng-template>
+                <div class="tab-body">
+                  <app-task-attachments-panel
+                    [taskId]="task.id"
+                    (changed)="activityVersion.update((v) => v + 1)"
+                  />
+                </div>
+              </mat-tab>
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon class="tab-icon">link</mat-icon> Recursos
+                  @if (linkCount()) {
+                    <span class="tab-count">{{ linkCount() }}</span>
+                  }
+                </ng-template>
+                <div class="tab-body">
+                  <app-task-links-panel
+                    [taskId]="task.id"
+                    (count)="linkCount.set($event)"
+                    (changed)="activityVersion.update((v) => v + 1)"
+                  />
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+          </mat-card-content>
         </mat-card>
 
         <mat-card appearance="outlined" class="section detail-grid__wide">
