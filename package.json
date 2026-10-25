@@ -22,7 +22,8 @@
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --level warning",
     "env": "node scripts/write-env.mjs",
-    "db:types": "supabase gen types typescript --local --schema public > src/app/core/supabase/database.types.ts"
+    "db:types": "supabase gen types typescript --local --schema public > src/app/core/supabase/database.types.ts",
+    "test:integration": "node --test \"tests/integration/**/*.test.mjs\""
   },
   "private": true,
   "packageManager": "npm@12.2.0",
