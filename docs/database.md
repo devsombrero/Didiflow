@@ -18,6 +18,7 @@ Implementado por migrations em `supabase/migrations/`. Este documento é atualiz
 | `20261026090000_backup_restore.sql`                 | Preferências de backup e `restore_backup`                               |
 | `20261026090100_restore_backup_lint.sql`            | `restore_backup` compatível com o `plpgsql_check`                       |
 | `20261026100000_task_attachments.sql`               | Metadados de anexos, cota de 50 MB por tarefa e auditoria               |
+| `20261026110000_feedback_preferences.sql`           | Preferências de animações, sons e volume                                |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 

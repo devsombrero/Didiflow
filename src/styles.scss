@@ -462,3 +462,143 @@ app-bar-chart .chart--vertical .ngx-charts .gridline-path-vertical {
 .dialog-form {
   padding-top: var(--space-2);
 }
+
+/* ---------------------------------------------------------------------------
+ * Motion. Every animation below is cancelled when the user turns animations
+ * off (data-motion="off") or the OS asks for reduced motion.
+ * ------------------------------------------------------------------------- */
+:root {
+  --motion-fast: 120ms;
+  --motion-medium: 220ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), calc(var(--dy) + 120px)) rotate(var(--spin));
+  }
+}
+
+/* List items entering (Angular animate.enter), lightly staggered. */
+.enter-fade-up {
+  animation: fade-up var(--motion-medium) var(--ease-out) both;
+  animation-delay: calc(min(var(--stagger, 0), 12) * 25ms);
+}
+
+.enter-pop {
+  animation: pop-in 260ms var(--ease-spring) both;
+}
+
+/* Dashboard tiles and cards rise in when the page opens. */
+.tiles > * {
+  animation: fade-up var(--motion-medium) var(--ease-out) both;
+}
+@for $i from 1 through 12 {
+  .tiles > :nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 30}ms;
+  }
+}
+
+/* Page changes: only the content area cross-fades; the sidebar stays put. */
+.page-transition {
+  view-transition-name: page;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(page) {
+  animation: page-out var(--motion-fast) ease-in both;
+}
+::view-transition-new(page) {
+  animation: page-in var(--motion-medium) var(--ease-out) both;
+}
+
+/* Micro-interactions: lift on hover, press feedback. */
+.tile,
+.kpi,
+.board .card,
+.goal {
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+a.tile:hover,
+.kpi:hover,
+.board .card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--mat-sys-level2);
+}
+.mdc-button:active,
+.mat-mdc-icon-button:active,
+.mat-mdc-fab:active {
+  transform: scale(0.97);
+}
+
+/* Completion confetti (MotionService.celebrate). */
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10000;
+
+  span {
+    position: absolute;
+    width: 8px;
+    height: 12px;
+    border-radius: 2px;
+    animation: confetti-burst 1000ms cubic-bezier(0.15, 0.6, 0.4, 1) forwards;
+  }
+}
+
+:root[data-motion='off'] {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

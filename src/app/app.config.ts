@@ -9,7 +9,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { APP_ENVIRONMENT } from './core/config/app-environment';
@@ -19,7 +19,19 @@ import { PtBrPaginatorIntl } from './shared/paginator-intl';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      // Page changes cross-fade the content area; skipped when motion is off.
+      withViewTransitions({
+        skipInitialTransition: true,
+        onViewTransitionCreated: ({ transition }) => {
+          const root = document.documentElement;
+          const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (reduce || root.getAttribute('data-motion') === 'off') transition.skipTransition();
+        },
+      }),
+    ),
     // Required by ngx-charts (legacy animation triggers); loaded lazily.
     provideAnimationsAsync(),
     provideAppMarkdown(),

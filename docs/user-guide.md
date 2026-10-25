@@ -30,6 +30,8 @@ Para desinstalar: **Configurações do Windows → Aplicativos**. Seus dados fic
 | Tempo                              | Cronômetro (também na barra lateral), apontamentos manuais e totais                                                                               |
 | Busca (`Ctrl+K`)                   | Título, descrição, solicitante, projeto, tags e observações, sem diferenciar acentos                                                              |
 
+**Animações e sons** (Configurações → Preferências): transições entre páginas, entrada suave de listas, confete ao concluir tarefas e efeitos sonoros curtos (sucesso, conclusão, notificação, erro, fim de foco), com volume ajustável e botão para ouvir cada som. As animações também são reduzidas quando o Windows está configurado para mostrar menos animações.
+
 Os formulários de **tarefa**, **meta**, **registro de desenvolvimento** e **apontamento manual de tempo** abrem em janelas flutuantes sobre a tela atual. Feche com `Esc`, pelo `×` ou clicando fora; se a tarefa tiver alterações não salvas, o app pergunta antes de descartar. Os endereços `/tasks/new` e `/tasks/:id/edit` continuam abrindo o formulário em página inteira.
 
 A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, **negrito**, _itálico_, listas, checklists (`- [ ]`), citações, código e links. Use a barra de formatação (atalhos `Ctrl+B`, `Ctrl+I` e `Ctrl+K`) e a aba **Visualizar** para conferir antes de salvar. Links abrem no navegador padrão.
