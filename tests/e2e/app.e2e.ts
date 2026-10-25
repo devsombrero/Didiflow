@@ -51,8 +51,9 @@ test('session persists encrypted across restarts and ends on sign-out', async ()
 
   const second = await launchApp(first.userDataDir);
   try {
-    await expect(second.page.locator('.sidebar')).toBeVisible();
-    await second.page.getByRole('button', { name: 'Sair' }).click();
+    await expect(second.page.locator('.sidebar__nav')).toBeVisible();
+    await second.page.locator('.sidebar__account').click();
+    await second.page.getByRole('menuitem', { name: 'Sair' }).click();
     await expect(second.page.getByRole('heading', { name: 'Entrar' })).toBeVisible();
   } finally {
     await second.close();
@@ -68,15 +69,13 @@ test('task lifecycle: create, progress, complete, search and export', async () =
 
     await page.getByRole('link', { name: 'Tarefas' }).click();
     await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
-    await page.getByLabel('Título *').fill('Relatório trimestral E2E');
-    await page.getByLabel('Solicitante').fill('Marina');
+    await page.locator('#title').fill('Relatório trimestral E2E');
+    await page.locator('#requester_name').fill('Marina');
     await page.getByLabel('Possui card no Jira').check();
-    await page.getByLabel('URL do card no Jira *').fill('http://inseguro.local/DF-1');
+    await page.locator('#jira_url').fill('http://inseguro.local/DF-1');
     await page.getByRole('button', { name: 'Salvar' }).click();
     await expect(page.getByText('Informe uma URL começando com https://.')).toBeVisible();
-    await page
-      .getByLabel('URL do card no Jira *')
-      .fill('https://empresa.atlassian.net/browse/DF-1');
+    await page.locator('#jira_url').fill('https://empresa.atlassian.net/browse/DF-1');
     await page.getByRole('button', { name: 'Salvar' }).click();
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Relatório trimestral E2E');
@@ -84,10 +83,10 @@ test('task lifecycle: create, progress, complete, search and export', async () =
 
     await page.getByLabel('Progresso').fill('40');
     await page.getByLabel('Progresso').dispatchEvent('change');
-    await expect(page.locator('app-status-badge').first()).toHaveText('Em andamento');
+    await expect(page.locator('app-status-badge').first()).toContainText('Em andamento');
 
     await page.getByRole('button', { name: 'Marcar como concluída' }).click();
-    await expect(page.locator('app-status-badge').first()).toHaveText('Concluído');
+    await expect(page.locator('app-status-badge').first()).toContainText('Concluído');
     await expect(page.locator('.feed')).toContainText('Tarefa concluída');
 
     await page.keyboard.press('Control+K');

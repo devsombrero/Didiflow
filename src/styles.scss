@@ -267,3 +267,20 @@ input[type='range'] {
 .auth-footer {
   text-align: center;
 }
+
+// Breathing room between a card title and the first floating field label.
+.mat-mdc-card-header + .mat-mdc-card-content {
+  padding-top: var(--space-4);
+}
+
+.mat-mdc-card-content.form-row {
+  display: grid;
+}
+
+.form-row {
+  row-gap: var(--space-2);
+}
+
+.form {
+  gap: var(--space-3);
+}

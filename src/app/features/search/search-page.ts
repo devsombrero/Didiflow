@@ -11,6 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { UserClock } from '../../core/profile/user-clock';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
 import { HighlightedText } from '../../shared/components/highlighted-text';
@@ -39,7 +40,15 @@ type QuickFilter = 'all' | 'open' | 'done' | 'important';
 
 @Component({
   selector: 'app-search-page',
-  imports: [RouterLink, AppDatePipe, HighlightedText, StatusBadge, PriorityBadge],
+  imports: [
+    RouterLink,
+    AppDatePipe,
+    HighlightedText,
+    StatusBadge,
+    PriorityBadge,
+    MATERIAL_FORMS,
+    MATERIAL_UI,
+  ],
   templateUrl: './search-page.html',
   styleUrl: './search-page.scss',
 })

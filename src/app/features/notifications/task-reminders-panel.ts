@@ -80,10 +80,16 @@ type Reminder = Tables<'task_reminders'>;
       opacity: 0.6;
     }
     .reminder-form {
-      display: grid;
-      grid-template-columns: 150px 110px 1fr auto;
-      gap: 0 var(--space-2);
-      align-items: start;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: flex-start;
+    }
+    .reminder-form mat-form-field {
+      flex: 1 1 140px;
+    }
+    .reminder-form .reminder-form__note {
+      flex-basis: 100%;
     }
     .reminder-form button {
       margin-top: var(--space-2);
