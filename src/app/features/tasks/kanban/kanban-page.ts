@@ -21,6 +21,7 @@ import {
 } from '../task.model';
 import { TasksService } from '../tasks.service';
 import { BOARD_COLUMNS, boardMove, groupByStatus } from './kanban';
+import { TaskFormDialogs } from '../task-form/task-form-dialog';
 
 const COLUMN_ICONS: Record<TaskStatus, string> = {
   not_started: 'radio_button_unchecked',
@@ -48,6 +49,7 @@ const RECENT_DAYS = 14;
   styleUrl: './kanban-page.scss',
 })
 export class KanbanPage {
+  protected readonly taskDialogs = inject(TaskFormDialogs);
   private readonly tasksService = inject(TasksService);
   private readonly actions = inject(TaskActions);
   private readonly toast = inject(ToastService);

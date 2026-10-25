@@ -1,6 +1,8 @@
-<header class="page-header">
-  <h1>{{ id() ? 'Editar tarefa' : 'Nova tarefa' }}</h1>
-</header>
+@if (!embedded()) {
+  <header class="page-header">
+    <h1>{{ id() ? 'Editar tarefa' : 'Nova tarefa' }}</h1>
+  </header>
+}
 
 @switch (state()) {
   @case ('loading') {
@@ -10,7 +12,7 @@
     <mat-card appearance="outlined" class="empty-state">
       <mat-card-content>
         <p>Tarefa não encontrada.</p>
-        <a matButton="outlined" routerLink="/tasks">Voltar para a lista</a>
+        <button matButton="outlined" type="button" (click)="cancel()">Voltar</button>
       </mat-card-content>
     </mat-card>
   }
@@ -20,7 +22,13 @@
     </div>
   }
   @default {
-    <form class="task-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <form
+      class="task-form"
+      [class.task-form--embedded]="embedded()"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      novalidate
+    >
       <mat-card appearance="outlined" class="section">
         <mat-card-header><mat-card-title>Demanda</mat-card-title></mat-card-header>
         <mat-card-content class="form">
@@ -93,7 +101,10 @@
               </mat-chip-listbox>
             } @else {
               <span class="field-hint">
-                Nenhuma tag cadastrada. Crie tags em <a routerLink="/organization">Organização</a>.
+                Nenhuma tag cadastrada. Crie tags em
+                <a routerLink="/organization" (click)="embedded() && cancelled.emit()"
+                  >Organização</a
+                >.
               </span>
             }
           </div>
@@ -215,7 +226,7 @@
         <button matButton="filled" type="submit" [disabled]="saving()">
           <mat-icon>save</mat-icon> {{ saving() ? 'Salvando…' : 'Salvar' }}
         </button>
-        <a matButton="outlined" [routerLink]="id() ? ['/tasks', id()] : ['/tasks']">Cancelar</a>
+        <button matButton="outlined" type="button" (click)="cancel()">Cancelar</button>
       </div>
     </form>
   }
