@@ -1,6 +1,18 @@
 <div class="shell">
   <nav class="sidebar" aria-label="Navegação principal">
     <p class="sidebar__brand">DidiFlow</p>
+    <form class="sidebar__search" role="search" (submit)="search($event)">
+      <label class="sr-only" for="global-search">Buscar tarefas</label>
+      <input
+        #searchInput
+        id="global-search"
+        class="input"
+        type="search"
+        name="q"
+        placeholder="Buscar (Ctrl+K)"
+        autocomplete="off"
+      />
+    </form>
     <ul class="sidebar__nav">
       <li>
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
