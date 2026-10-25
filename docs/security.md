@@ -34,11 +34,12 @@
 ## Electron
 
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
-- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`, `notify`, `onNavigate`); não expõe `ipcRenderer` nem módulos do Node.
+- O preload expõe apenas `window.didiflow` (`platform`, `secureStore`, `openExternal`, `notify`, `onNavigate`, `saveFile`); não expõe `ipcRenderer` nem módulos do Node.
 - Todo payload IPC é validado no processo principal (`electron/ipc/validation.ts`):
   - chaves do secure store: `[A-Za-z0-9._:-]{1,128}`; valores: string de até 64 KiB;
   - `openExternal`: apenas `https://`, sem credenciais na URL, até 2048 caracteres;
-  - `notify`: título de 1 a 120 caracteres, corpo de até 500 e rota interna opcional (`/caminho` com caracteres seguros, sem `//`). O clique na notificação só envia ao renderer essa rota já validada.
+  - `notify`: título de 1 a 120 caracteres, corpo de até 500 e rota interna opcional (`/caminho` com caracteres seguros, sem `//`). O clique na notificação só envia ao renderer essa rota já validada;
+  - `saveFile`: nome-base seguro (`[A-Za-z0-9._-]`, sem caminho) com a extensão do tipo (`csv`/`json`), até 50 MB. O destino é escolhido pelo usuário no diálogo nativo e a gravação acontece no processo principal.
 - Handlers IPC rejeitam chamadas de frames fora das origens confiáveis (`app://didiflow` e, só em builds não empacotados, o dev server).
 - `DIDIFLOW_DEV_SERVER_URL` é ignorada em builds empacotados.
 - Navegação para origens externas, `window.open` e `<webview>` são bloqueados. Links `https://` abertos via `window.open` vão para o navegador padrão.

@@ -28,5 +28,6 @@ Detalhes em [Fluxo de desenvolvimento](docs/development-workflow.md).
 - [Segurança](docs/security.md)
 - [Fluxo de desenvolvimento](docs/development-workflow.md)
 - [Definições de KPIs](docs/kpi-definitions.md)
+- [Backup, exportação e restauração](docs/backup-restore.md)
 
 Requisitos originais: [prompt.md](prompt.md).
