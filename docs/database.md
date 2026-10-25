@@ -22,6 +22,8 @@ Implementado por migrations em `supabase/migrations/`. Este documento é atualiz
 | `20261026120000_custom_notifications.sql`           | Notificações personalizadas (agenda, som, limite de 100 por usuário)                |
 | `20261026130000_task_hierarchy_progress.sql`        | Épicos/subtarefas, progresso e horas automáticos, novo fluxo de status, meta diária |
 | `20261026130100_restore_task_hierarchy.sql`         | Restauração com hierarquia e meta diária                                            |
+| `20261026140000_task_links.sql`                     | Links externos das tarefas (https, até 50 por tarefa) e auditoria                   |
+| `20261026140100_restore_task_links.sql`             | Restauração com os links das tarefas                                                |
 
 Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run db:test`. Os tipos TypeScript são gerados com `npm run db:types`.
 
@@ -71,6 +73,7 @@ O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `p
 | `skill_achievements`   | Cursos, certificações e habilidades.                                                                                                                            |
 | `task_reminders`       | Lembretes por tarefa.                                                                                                                                           |
 | `custom_notifications` | Avisos criados pelo usuário: agenda (`once`, `daily`, `weekdays`, `weekly`, `interval` com janela opcional), som, ativo e `last_fired_at`. Até 100 por usuário. |
+| `task_links`           | Recursos externos da tarefa: URL `https://` (CHECK), título opcional, único por tarefa, até 50. Inclusão e remoção entram na auditoria.                         |
 | `task_attachments`     | Metadados dos anexos (nome, tipo, tamanho, SHA-256). Os arquivos ficam no computador do usuário.                                                                |
 | `daily_priorities`     | Lista ordenada de prioridades por dia.                                                                                                                          |
 | `focus_sessions`       | Sessões de foco registradas.                                                                                                                                    |
