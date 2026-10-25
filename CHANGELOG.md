@@ -4,6 +4,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Alterado
+
+- Gráficos do dashboard e dos KPIs migrados para ngx-charts, com animação de entrada, tooltips e cores do tema.
+
 ## [0.2.0] - 2026-10-25
 
 ### Adicionado

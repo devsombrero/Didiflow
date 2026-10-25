@@ -1,26 +1,16 @@
 import {
   afterNextRender,
   Component,
+  computed,
   DestroyRef,
-  effect,
   type ElementRef,
   inject,
   input,
   signal,
   viewChild,
 } from '@angular/core';
-import {
-  BarController,
-  BarElement,
-  CategoryScale,
-  Chart,
-  type ChartConfiguration,
-  Legend,
-  LinearScale,
-  Tooltip,
-} from 'chart.js';
-
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+import { BarChartModule, type Color, ScaleType } from '@swimlane/ngx-charts';
+import { barPadding, formatTick, integerTicks, maxValue, toChartResults } from './chart-data';
 
 export interface BarSeries {
   label: string;
@@ -34,16 +24,138 @@ export interface BarChartData {
   series: BarSeries[];
 }
 
+/** Space taken by the axes, subtracted when sizing the bars. */
+const AXIS_WIDTH = 80;
+const AXIS_HEIGHT = 40;
+
 /**
- * Thin-bar chart following the dataviz guidelines: recessive grid, rounded
- * data ends, hover tooltips, a legend only for 2+ series and a data table
- * for screen readers. Colors come from CSS tokens and follow the theme.
+ * Thin-bar chart (ngx-charts) following the dataviz guidelines: recessive
+ * grid, rounded data ends, whole-number ticks, hover tooltips, a legend only
+ * for 2+ series and a data table for screen readers. Colors come from CSS
+ * tokens and follow the theme.
  */
 @Component({
   selector: 'app-bar-chart',
+  imports: [BarChartModule],
   template: `
-    <div class="chart" [style.height.px]="height()">
-      <canvas #canvas role="img" [attr.aria-label]="ariaLabel()"></canvas>
+    @if (data().series.length > 1) {
+      <ul class="legend" aria-hidden="true">
+        @for (series of data().series; track series.label) {
+          <li>
+            <span class="legend__dot" [style.background]="'var(' + series.colorVar + ')'"></span>
+            {{ series.label }}
+          </li>
+        }
+      </ul>
+    }
+    <div
+      #box
+      class="chart"
+      role="img"
+      [class.chart--stacked]="stacked()"
+      [class.chart--vertical]="!horizontal()"
+      [attr.aria-label]="ariaLabel()"
+      [style.height.px]="height()"
+    >
+      @let results = chart();
+      @if (multi()) {
+        @if (horizontal()) {
+          @if (stacked()) {
+            <ngx-charts-bar-horizontal-stacked
+              [results]="results"
+              [customColors]="colors()"
+              [scheme]="scheme()"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showGridLines]="true"
+              [xAxisTicks]="ticks()"
+              [xAxisTickFormatting]="formatTick"
+              [xScaleMax]="scaleMax()"
+              [barPadding]="padding()"
+              [animations]="animations"
+              [noBarWhenZero]="true"
+            />
+          } @else {
+            <ngx-charts-bar-horizontal-2d
+              [results]="results"
+              [customColors]="colors()"
+              [scheme]="scheme()"
+              [xAxis]="true"
+              [yAxis]="true"
+              [xAxisTicks]="ticks()"
+              [xAxisTickFormatting]="formatTick"
+              [xScaleMax]="scaleMax()"
+              [roundEdges]="true"
+              [groupPadding]="padding()"
+              [barPadding]="2"
+              [animations]="animations"
+              [noBarWhenZero]="true"
+            />
+          }
+        } @else if (stacked()) {
+          <ngx-charts-bar-vertical-stacked
+            [results]="results"
+            [customColors]="colors()"
+            [scheme]="scheme()"
+            [xAxis]="true"
+            [yAxis]="true"
+            [showGridLines]="true"
+            [yAxisTicks]="ticks()"
+            [yAxisTickFormatting]="formatTick"
+            [yScaleMax]="scaleMax()"
+            [barPadding]="padding()"
+            [animations]="animations"
+            [noBarWhenZero]="true"
+          />
+        } @else {
+          <ngx-charts-bar-vertical-2d
+            [results]="results"
+            [customColors]="colors()"
+            [scheme]="scheme()"
+            [xAxis]="true"
+            [yAxis]="true"
+            [yAxisTicks]="ticks()"
+            [yAxisTickFormatting]="formatTick"
+            [yScaleMax]="scaleMax()"
+            [roundEdges]="true"
+            [groupPadding]="padding()"
+            [barPadding]="2"
+            [animations]="animations"
+            [noBarWhenZero]="true"
+          />
+        }
+      } @else if (horizontal()) {
+        <ngx-charts-bar-horizontal
+          [results]="results"
+          [scheme]="scheme()"
+          [xAxis]="true"
+          [yAxis]="true"
+          [showGridLines]="true"
+          [xAxisTicks]="ticks()"
+          [xAxisTickFormatting]="formatTick"
+          [xScaleMax]="scaleMax()"
+          [roundEdges]="true"
+          [barPadding]="padding()"
+          [showDataLabel]="true"
+          [animations]="animations"
+          [noBarWhenZero]="true"
+        />
+      } @else {
+        <ngx-charts-bar-vertical
+          [results]="results"
+          [scheme]="scheme()"
+          [xAxis]="true"
+          [yAxis]="true"
+          [showGridLines]="true"
+          [yAxisTicks]="ticks()"
+          [yAxisTickFormatting]="formatTick"
+          [yScaleMax]="scaleMax()"
+          [roundEdges]="true"
+          [barPadding]="padding()"
+          [animations]="animations"
+          [noBarWhenZero]="true"
+        />
+      }
     </div>
     <details class="chart__table">
       <summary>Ver dados em tabela</summary>
@@ -70,8 +182,32 @@ export interface BarChartData {
     </details>
   `,
   styles: `
+    :host {
+      display: block;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-4);
+      margin: 0 0 var(--space-2);
+      padding: 0;
+      list-style: none;
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+    .legend li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .legend__dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
     .chart {
       position: relative;
+      width: 100%;
     }
     .chart__table {
       margin-top: var(--space-2);
@@ -99,113 +235,89 @@ export class BarChart {
   readonly stacked = input(false);
   readonly height = input(220);
 
-  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+  /** Bars grow in on first render unless the user prefers reduced motion. */
+  protected readonly animations = !prefersReducedMotion();
+
+  private readonly box = viewChild.required<ElementRef<HTMLElement>>('box');
+  private readonly width = signal(0);
   private readonly themeVersion = signal(0);
-  private chart: Chart<'bar'> | null = null;
+
+  protected readonly multi = computed(() => this.data().series.length > 1 || this.stacked());
+  protected readonly chart = computed(() => toChartResults(this.data(), this.multi()));
+
+  protected readonly ticks = computed(() => integerTicks(maxValue(this.data(), this.stacked())));
+  protected readonly formatTick = formatTick;
+  protected readonly scaleMax = computed(() => this.ticks().at(-1) ?? 1);
+
+  /** Keeps bars thin whatever the container size. */
+  protected readonly padding = computed(() => {
+    const plot = this.horizontal() ? this.height() - AXIS_HEIGHT : this.width() - AXIS_WIDTH;
+    const perCategory = this.multi() && !this.stacked() ? this.data().series.length : 1;
+    return barPadding(plot, this.data().labels.length, perCategory, this.horizontal() ? 20 : 28);
+  });
+
+  /** Series colors resolved from CSS tokens (SVG attributes cannot use var()). */
+  private readonly resolved = computed(() => {
+    this.themeVersion();
+    return resolveTokens(this.data().series.map((s) => s.colorVar));
+  });
+
+  protected readonly scheme = computed<Color>(() => ({
+    name: 'didiflow',
+    selectable: false,
+    group: ScaleType.Ordinal,
+    domain: this.resolved(),
+  }));
+
+  protected readonly colors = computed(() =>
+    this.data().series.map((s, i) => ({ name: s.label, value: this.resolved()[i] })),
+  );
 
   constructor() {
     const destroyRef = inject(DestroyRef);
-
     afterNextRender(() => {
+      const box = this.box().nativeElement;
+      this.width.set(box.clientWidth);
+      const resize =
+        typeof ResizeObserver === 'function'
+          ? new ResizeObserver(([entry]) => this.width.set(entry.contentRect.width))
+          : null;
+      resize?.observe(box);
+
       // Re-read tokens when the theme changes (app setting or OS preference).
-      const observer = new MutationObserver(() => this.themeVersion.update((v) => v + 1));
+      const bump = () => this.themeVersion.update((v) => v + 1);
+      const observer = new MutationObserver(bump);
       observer.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-theme'],
       });
-      const media = window.matchMedia('(prefers-color-scheme: dark)');
-      const onMedia = () => this.themeVersion.update((v) => v + 1);
-      media.addEventListener('change', onMedia);
+      const media =
+        typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+      media?.addEventListener('change', bump);
       destroyRef.onDestroy(() => {
+        resize?.disconnect();
         observer.disconnect();
-        media.removeEventListener('change', onMedia);
+        media?.removeEventListener('change', bump);
       });
     });
-
-    effect(() => {
-      const config = this.buildConfig();
-      if (this.chart) {
-        this.chart.data = config.data;
-        this.chart.options = config.options ?? {};
-        this.chart.update();
-      } else {
-        this.chart = new Chart(this.canvas().nativeElement, config);
-      }
-    });
-
-    destroyRef.onDestroy(() => this.chart?.destroy());
   }
+}
 
-  private buildConfig(): ChartConfiguration<'bar'> {
-    this.themeVersion();
-    // Tokens may be light-dark() expressions; resolve them to a concrete color
-    // through a probe element, since canvas cannot parse CSS functions.
-    const probe = document.createElement('span');
-    document.body.appendChild(probe);
-    const token = (name: string) => {
-      probe.style.color = `var(${name})`;
-      return getComputedStyle(probe).color;
-    };
-    const surface = token('--color-surface');
-    const muted = token('--chart-ink-muted');
-    const grid = token('--chart-grid');
-    const axis = token('--chart-axis');
-    const resolved = (name: string) => token(name);
-    const { labels, series } = this.data();
-    const horizontal = this.horizontal();
-    const stacked = this.stacked();
+/**
+ * Resolves CSS tokens (possibly light-dark() expressions) to concrete colors
+ * through a probe element.
+ */
+function resolveTokens(names: string[]): string[] {
+  const probe = document.createElement('span');
+  document.body.appendChild(probe);
+  const colors = names.map((name) => {
+    probe.style.color = `var(${name})`;
+    return getComputedStyle(probe).color;
+  });
+  probe.remove();
+  return colors;
+}
 
-    const valueAxis = {
-      beginAtZero: true,
-      stacked,
-      grid: { color: grid },
-      border: { display: false },
-      ticks: { color: muted, precision: 0 },
-    };
-    const categoryAxis = {
-      stacked,
-      grid: { display: false },
-      border: { color: axis },
-      ticks: { color: muted },
-    };
-
-    const colors = new Map(series.map((s) => [s.colorVar, resolved(s.colorVar)]));
-    probe.remove();
-
-    return {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: series.map((s) => ({
-          label: s.label,
-          data: s.values,
-          backgroundColor: colors.get(s.colorVar),
-          hoverBackgroundColor: colors.get(s.colorVar),
-          borderRadius: 4,
-          borderSkipped: 'start',
-          // 2px surface gap between stacked segments.
-          borderColor: surface,
-          borderWidth: stacked ? (horizontal ? { right: 2 } : { top: 2 }) : 0,
-          maxBarThickness: 24,
-        })),
-      },
-      options: {
-        indexAxis: horizontal ? 'y' : 'x',
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: horizontal ? { x: valueAxis, y: categoryAxis } : { x: categoryAxis, y: valueAxis },
-        plugins: {
-          legend: {
-            display: series.length > 1,
-            position: 'top',
-            align: 'start',
-            labels: { color: muted, boxWidth: 10, boxHeight: 10, usePointStyle: true },
-          },
-          tooltip: { mode: 'index', intersect: false },
-        },
-      },
-    };
-  }
+function prefersReducedMotion(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }

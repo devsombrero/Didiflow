@@ -294,3 +294,63 @@ input[type='range'] {
 .cdk-drag-animating {
   transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
 }
+
+/* ngx-charts: recessive axes and grid, themed tooltip. */
+app-bar-chart .ngx-charts {
+  float: none;
+  overflow: visible;
+
+  text {
+    fill: var(--chart-ink-muted);
+    font-family: inherit;
+  }
+  .tick text {
+    font-size: 11px;
+  }
+  .gridline-path {
+    stroke: var(--chart-grid);
+    stroke-dasharray: none;
+  }
+  .textDataLabel {
+    fill: var(--color-text);
+    font-size: 11px;
+  }
+  .bar {
+    transition: opacity 120ms ease;
+  }
+  .bar:hover {
+    opacity: 0.85;
+  }
+}
+
+/* 2px surface gap between stacked segments. */
+app-bar-chart .chart--stacked .ngx-charts .bar {
+  stroke: var(--color-surface);
+  stroke-width: 2px;
+}
+
+.ngx-charts-tooltip-content.type-tooltip {
+  background: var(--mat-sys-inverse-surface);
+  color: var(--mat-sys-inverse-on-surface);
+  border-radius: 8px;
+  box-shadow: var(--mat-sys-level2);
+  font: var(--mat-sys-body-small);
+
+  .tooltip-caret.position-top {
+    border-top-color: var(--mat-sys-inverse-surface);
+  }
+  .tooltip-caret.position-bottom {
+    border-bottom-color: var(--mat-sys-inverse-surface);
+  }
+  .tooltip-caret.position-left {
+    border-left-color: var(--mat-sys-inverse-surface);
+  }
+  .tooltip-caret.position-right {
+    border-right-color: var(--mat-sys-inverse-surface);
+  }
+}
+
+/* Vertical bars: category gridlines add noise; keep only value gridlines. */
+app-bar-chart .chart--vertical .ngx-charts .gridline-path-vertical {
+  display: none;
+}
