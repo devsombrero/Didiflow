@@ -21,6 +21,8 @@ import { MarkdownView } from '../../../shared/markdown/markdown-view';
 import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
 import { TaskChildrenPanel } from '../components/task-children-panel';
 import { TaskHoursPanel } from '../components/task-hours-panel';
+import { TaskLinksPanel } from '../components/task-links-panel';
+import { MatTabsModule } from '@angular/material/tabs';
 import { TaskFormDialogs } from '../task-form/task-form-dialog';
 
 @Component({
@@ -36,6 +38,8 @@ import { TaskFormDialogs } from '../task-form/task-form-dialog';
     TaskRemindersPanel,
     TaskChildrenPanel,
     TaskHoursPanel,
+    TaskLinksPanel,
+    MatTabsModule,
     TaskAttachmentsPanel,
     MarkdownView,
     MATERIAL_UI,
@@ -63,6 +67,8 @@ export class TaskDetailPage {
   /** Active children reported by the subtasks panel. */
   protected readonly childrenCount = signal(0);
   protected readonly hoursVersion = signal(0);
+  /** Links of the task, for the "Recursos" tab label. */
+  protected readonly linkCount = signal(0);
   /** Alias usable inside the template where `task` is shadowed by @if. */
   protected readonly task$ = this.task;
   protected readonly state = signal<'loading' | 'ready' | 'not-found' | 'error'>('loading');

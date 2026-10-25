@@ -691,3 +691,8 @@ a.tile:hover,
 .kind-icon--sub {
   color: var(--color-text-muted);
 }
+
+/* Task attachments tabs: content never scrolls sideways. */
+.attach-tabs .mat-mdc-tab-body-content {
+  overflow-x: hidden;
+}
