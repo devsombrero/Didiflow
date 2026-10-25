@@ -4,7 +4,7 @@ Aplicação desktop para gestão pessoal de demandas: tarefas, prazos, progresso
 
 Stack: Electron 44 · Angular 22 · Supabase (Auth, PostgreSQL com RLS).
 
-**Versão 0.1.0.** Inclui o MVP completo e os recursos de planejamento, tempo, foco, notificações, busca e exportação. Veja o [CHANGELOG](CHANGELOG.md).
+**Versão 0.2.0.** Inclui o MVP completo, os recursos de planejamento, tempo, foco, notificações, busca e exportação, o quadro Kanban, backups locais com restauração e a interface com Angular Material. Veja o [CHANGELOG](CHANGELOG.md).
 
 ## Funcionalidades
 

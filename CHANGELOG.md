@@ -4,6 +4,8 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.2.0] - 2026-10-25
+
 ### Adicionado
 
 - Interface com Angular Material (M3), com temas claro e escuro e ícones locais.
