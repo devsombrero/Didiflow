@@ -1,5 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { ProfileService } from '../../core/profile/profile.service';
 import type { ThemePreference } from '../../core/theme/theme.service';
@@ -19,7 +20,7 @@ export const THEMES: readonly { value: ThemePreference; label: string }[] = [
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './settings-page.html',
 })
 export class SettingsPage {

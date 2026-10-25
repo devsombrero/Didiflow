@@ -69,6 +69,34 @@ export function assertNotification(value: unknown): ValidNotification {
   return { title: title.trim(), body: body ?? '', route: route ?? null };
 }
 
+export const MAX_SAVE_BYTES = 50 * 1024 * 1024;
+const FILE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,100}$/;
+
+export interface ValidSaveRequest {
+  defaultName: string;
+  content: string;
+  kind: 'csv' | 'json';
+}
+
+/** Validates a save request: safe base name with the right extension and bounded size. */
+export function assertSaveRequest(value: unknown): ValidSaveRequest {
+  if (typeof value !== 'object' || value === null)
+    throw new IpcValidationError('Invalid save request');
+  const { defaultName, content, kind } = value as Record<string, unknown>;
+  if (kind !== 'csv' && kind !== 'json') throw new IpcValidationError('Invalid file kind');
+  if (
+    typeof defaultName !== 'string' ||
+    !FILE_NAME_PATTERN.test(defaultName) ||
+    !defaultName.toLowerCase().endsWith(`.${kind}`)
+  ) {
+    throw new IpcValidationError('Invalid file name');
+  }
+  if (typeof content !== 'string' || Buffer.byteLength(content, 'utf8') > MAX_SAVE_BYTES) {
+    throw new IpcValidationError('Invalid file content');
+  }
+  return { defaultName, content, kind };
+}
+
 /**
  * True when the URL belongs to one of the trusted renderer origins.
  * Builds the origin from protocol and host because Node's URL reports

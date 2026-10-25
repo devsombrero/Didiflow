@@ -1,5 +1,9 @@
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import {
+  app,
   type BrowserWindow,
+  dialog,
   ipcMain,
   Notification,
   shell,
@@ -10,6 +14,7 @@ import type { SecureStore } from './secure-store';
 import {
   assertExternalUrl,
   assertNotification,
+  assertSaveRequest,
   assertStoreKey,
   assertStoreValue,
   IpcValidationError,
@@ -54,5 +59,29 @@ export function registerIpcHandlers({ store, trustedOrigins, getWindow }: IpcDep
     });
     notification.show();
     return true;
+  });
+  handle(IPC_CHANNELS.saveFile, async (payload) => {
+    const { defaultName, content, kind } = assertSaveRequest(payload);
+    const window = getWindow();
+    const options = {
+      title: 'Salvar exportação',
+      defaultPath: path.join(app.getPath('downloads'), defaultName),
+      filters: [
+        kind === 'csv'
+          ? { name: 'CSV', extensions: ['csv'] }
+          : { name: 'JSON', extensions: ['json'] },
+      ],
+    };
+    const result = window
+      ? await dialog.showSaveDialog(window, options)
+      : await dialog.showSaveDialog(options);
+    if (result.canceled || !result.filePath) return { saved: false };
+
+    // The user picked the destination in a native dialog; enforce the extension.
+    const target = result.filePath.toLowerCase().endsWith(`.${kind}`)
+      ? result.filePath
+      : `${result.filePath}.${kind}`;
+    await writeFile(target, content, 'utf8');
+    return { saved: true, path: target };
   });
 }

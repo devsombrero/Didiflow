@@ -63,6 +63,11 @@ export const routes: Routes = [
           import('./features/organization/organization-page').then((m) => m.OrganizationPage),
       },
       {
+        path: 'export',
+        title: 'Exportar dados · DidiFlow',
+        loadComponent: () => import('./features/export/export-page').then((m) => m.ExportPage),
+      },
+      {
         path: 'settings',
         title: 'Configurações · DidiFlow',
         loadComponent: () =>
