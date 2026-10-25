@@ -30,7 +30,7 @@ import {
   type TaskQuery,
   type TaskStatus,
 } from '../task.model';
-import { canCancel, canReopen } from '../task-rules';
+import { canCancel, canComplete, canReopen } from '../task-rules';
 import { TasksService } from '../tasks.service';
 
 /** Keeps list filters while navigating to a task and back. */
@@ -134,6 +134,7 @@ export class TaskListPage {
 
   protected canCancel = canCancel;
   protected canReopen = canReopen;
+  protected canComplete = canComplete;
 
   /** Runs a row action and refreshes the list when it changed something. */
   protected async act(action: Promise<unknown>): Promise<void> {

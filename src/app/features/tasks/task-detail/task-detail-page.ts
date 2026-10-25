@@ -4,7 +4,9 @@ import { DesktopBridge } from '../../../core/platform/desktop-bridge';
 import { UserClock } from '../../../core/profile/user-clock';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { ToastService } from '../../../shared/toast/toast.service';
-import { PriorityBadge, ProgressBar, StatusBadge } from '../components/task-badges';
+import { PriorityBadge, StatusBadge } from '../components/task-badges';
+import { TaskProgressPanel } from '../components/task-progress-panel';
+import { TaskStatusTimeline } from '../components/task-status-timeline';
 import { TaskActions } from '../task-actions.service';
 import { deadlineLabel, deadlineState } from '../task-deadline';
 import type { Task } from '../task.model';
@@ -13,7 +15,14 @@ import { TasksService } from '../tasks.service';
 
 @Component({
   selector: 'app-task-detail-page',
-  imports: [RouterLink, AppDatePipe, StatusBadge, PriorityBadge, ProgressBar],
+  imports: [
+    RouterLink,
+    AppDatePipe,
+    StatusBadge,
+    PriorityBadge,
+    TaskProgressPanel,
+    TaskStatusTimeline,
+  ],
   templateUrl: './task-detail-page.html',
   styleUrl: './task-detail-page.scss',
 })
@@ -28,6 +37,8 @@ export class TaskDetailPage implements OnInit {
   readonly id = input.required<string>();
 
   protected readonly task = signal<Task | null>(null);
+  /** Alias usable inside the template where `task` is shadowed by @if. */
+  protected readonly task$ = this.task;
   protected readonly state = signal<'loading' | 'ready' | 'not-found' | 'error'>('loading');
   protected readonly deadline = computed(() => {
     const task = this.task();
