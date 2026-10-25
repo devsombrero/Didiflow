@@ -23,6 +23,7 @@ import { TimerWidget } from '../../features/time-tracking/timer-widget';
 import { NotificationScheduler } from '../../features/notifications/notification-scheduler';
 import { FocusStore } from '../../features/focus/focus.service';
 import { AttachmentsService } from '../../features/attachments/attachments.service';
+import { NotificationBell } from '../../features/notifications/notification-bell';
 import { BackupScheduler } from '../../features/backup/backup-scheduler';
 import { formatClock } from '../../features/time-tracking/time-calc';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -34,6 +35,7 @@ import { ToastService } from '../../shared/toast/toast.service';
     RouterLink,
     RouterLinkActive,
     TimerWidget,
+    NotificationBell,
     MatSidenavModule,
     MatListModule,
     MatIconModule,
@@ -71,6 +73,7 @@ export class ShellLayout implements OnInit {
     { path: '/goals', label: 'Metas', icon: 'flag', exact: false },
     { path: '/time', label: 'Tempo', icon: 'schedule', exact: false },
     { path: '/organization', label: 'Organização', icon: 'folder_open', exact: false },
+    { path: '/notifications', label: 'Notificações', icon: 'campaign', exact: false },
     { path: '/settings', label: 'Configurações', icon: 'settings', exact: false },
   ];
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');

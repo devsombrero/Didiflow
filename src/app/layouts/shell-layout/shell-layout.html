@@ -3,7 +3,8 @@
     <div class="sidebar__inner">
       <div class="sidebar__brand">
         <mat-icon class="sidebar__logo">task_alt</mat-icon>
-        <span>DidiFlow</span>
+        <span class="sidebar__title">DidiFlow</span>
+        <app-notification-bell />
       </div>
 
       <form class="sidebar__search" role="search" (submit)="search($event)">

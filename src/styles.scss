@@ -236,15 +236,83 @@ mat-form-field,
   font: var(--mat-sys-label-small);
 }
 
-// Toasts (MatSnackBar panel classes)
+// Toasts (MatSnackBar + ToastCard)
+.mat-mdc-snack-bar-container.toast {
+  --mat-snack-bar-container-color: var(--mat-sys-surface-container-highest);
+  --mat-snack-bar-supporting-text-color: var(--mat-sys-on-surface);
+  --toast-accent: var(--mat-sys-primary);
+
+  .mdc-snackbar__surface {
+    padding: 0;
+    border-radius: 16px;
+    box-shadow: var(--mat-sys-level3);
+    overflow: hidden;
+  }
+  .mdc-snackbar__label {
+    padding: 0;
+  }
+}
 .mat-mdc-snack-bar-container.toast--success {
-  --mat-snack-bar-button-color: var(--mat-sys-inverse-primary);
+  --toast-accent: light-dark(#1b8a5a, #5fd39b);
+}
+.mat-mdc-snack-bar-container.toast--error {
+  --toast-accent: var(--mat-sys-error);
+}
+.mat-mdc-snack-bar-container.toast--notification {
+  --toast-accent: var(--mat-sys-tertiary);
 }
 
-.mat-mdc-snack-bar-container.toast--error {
-  --mat-snack-bar-container-color: var(--mat-sys-error-container);
-  --mat-snack-bar-supporting-text-color: var(--mat-sys-on-error-container);
-  --mat-snack-bar-button-color: var(--mat-sys-on-error-container);
+.toast-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 300px;
+  max-width: 440px;
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-4);
+  border-left: 4px solid var(--toast-accent);
+}
+.toast-card__icon {
+  flex: none;
+  color: var(--toast-accent);
+}
+.toast-card__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.toast-card__title {
+  font: var(--mat-sys-title-small);
+}
+.toast-card__message {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  overflow-wrap: anywhere;
+}
+.toast-card__title + .toast-card__message {
+  font: var(--mat-sys-body-small);
+}
+.toast-card__action {
+  flex: none;
+  --mat-button-text-label-text-color: var(--toast-accent);
+}
+.toast-card__timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--toast-accent);
+  opacity: 0.5;
+  transform-origin: left;
+  animation: toast-timer linear forwards;
+}
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
+  }
 }
 
 // Native range input used for task progress.
@@ -600,5 +668,16 @@ a.tile:hover,
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Notification bell menu: wider than the default 280px menu. */
+.mat-mdc-menu-panel.notification-menu {
+  max-width: 400px;
+  max-height: none;
+  overflow: hidden;
+
+  .mat-mdc-menu-content {
+    padding: 0;
   }
 }

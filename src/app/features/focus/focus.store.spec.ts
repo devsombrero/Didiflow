@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
+import { AppNotifier } from '../notifications/notification-center';
 import { FocusService, FocusStore } from './focus.service';
 
 describe('FocusStore', () => {
@@ -17,7 +18,8 @@ describe('FocusStore', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: FocusService, useValue: service },
-        { provide: DesktopBridge, useValue: { notify } },
+        { provide: DesktopBridge, useValue: {} },
+        { provide: AppNotifier, useValue: { notify } },
       ],
     });
     return { store: TestBed.inject(FocusStore), service, notify };

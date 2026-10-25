@@ -5,12 +5,21 @@ import { ProfileService } from '../../core/profile/profile.service';
 import { UserClock } from '../../core/profile/user-clock';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
 import { addDays } from '../../shared/utils/dates';
+import { checkDue } from './custom-schedule';
+import {
+  type CustomNotification,
+  CustomNotificationsService,
+} from './custom-notifications.service';
 import { buildDigest } from './deadline-digest';
+import { AppNotifier } from './notification-center';
 
-const INTERVAL_MS = 60_000;
+const INTERVAL_MS = 30_000;
+/** Custom rules are re-read at most this often (and after any change). */
+const RULES_TTL_MS = 5 * 60_000;
 
 /**
- * Delivers reminders and the daily deadline digest while the app is open.
+ * Delivers reminders, the daily deadline digest and custom notifications
+ * while the app is open.
  * Nothing runs when the app is closed: there is no background service.
  */
 @Injectable({ providedIn: 'root' })
@@ -20,6 +29,9 @@ export class NotificationScheduler {
   private readonly auth = inject(AuthService);
   private readonly preferences = inject(ProfileService).preferences;
   private readonly clock = inject(UserClock);
+  private readonly notifier = inject(AppNotifier);
+  private readonly custom = inject(CustomNotificationsService);
+  private rules: { version: number; loadedAt: number; items: CustomNotification[] } | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
@@ -44,6 +56,7 @@ export class NotificationScheduler {
     try {
       await this.deliverReminders();
       await this.deliverDigest(userId, prefs);
+      await this.deliverCustom();
     } catch (error) {
       console.error('Notification pass failed', error);
     } finally {
@@ -61,7 +74,8 @@ export class NotificationScheduler {
     if (error) throw error;
 
     for (const reminder of data) {
-      await this.bridge.notify({
+      await this.notifier.notify({
+        kind: 'reminder',
         title: `Lembrete: ${reminder.tasks?.title ?? 'tarefa'}`.slice(0, 120),
         body: reminder.note ?? '',
         route: `/tasks/${reminder.task_id}`,
@@ -96,8 +110,40 @@ export class NotificationScheduler {
     for (const notification of buildDigest(data, today, prefs)) {
       if (!pending.includes(notification.kind)) continue;
       const { kind, ...payload } = notification;
-      if (await this.bridge.notify(payload)) this.markSent(userId, today, kind);
+      await this.notifier.notify({ kind: 'digest', ...payload });
+      this.markSent(userId, today, kind);
     }
+  }
+
+  private async deliverCustom(): Promise<void> {
+    const now = new Date();
+    const version = this.custom.version();
+    if (
+      !this.rules ||
+      this.rules.version !== version ||
+      now.getTime() - this.rules.loadedAt > RULES_TTL_MS
+    ) {
+      this.rules = { version, loadedAt: now.getTime(), items: await this.custom.active() };
+    }
+    const timeZone = this.clock.timeZone();
+    for (const rule of this.rules.items) {
+      const due = checkDue(rule, now, timeZone);
+      if (!due.advanceTo) continue;
+      // Record first: a failed delivery must not repeat every pass.
+      await this.custom.markFired(rule, due.advanceTo);
+      rule.last_fired_at = due.advanceTo.toISOString();
+      if (rule.schedule === 'once') rule.active = false;
+      if (due.fire) {
+        await this.notifier.notify({
+          kind: 'custom',
+          title: rule.title,
+          body: rule.message ?? '',
+          sound: rule.sound as never,
+          route: '/notifications',
+        });
+      }
+    }
+    this.rules.items = this.rules.items.filter((rule) => rule.active);
   }
 
   // Delivery bookkeeping is a per-device convenience: at worst a digest is

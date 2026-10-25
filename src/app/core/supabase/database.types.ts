@@ -19,6 +19,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"custom_notifications": {
+                  Row: {
+                    "active": boolean,"created_at": string,"id": string,"interval_minutes": number | null,"last_fired_at": string | null,"message": string | null,"owner_id": string,"run_at": string | null,"schedule": string,"sound": string,"time_of_day": string | null,"title": string,"updated_at": string,"weekdays": (number)[] | null,"window_end": string | null,"window_start": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"interval_minutes"?: number | null,"last_fired_at"?: string | null,"message"?: string | null,"owner_id"?: string,"run_at"?: string | null,"schedule": string,"sound"?: string,"time_of_day"?: string | null,"title": string,"updated_at"?: string,"weekdays"?: (number)[] | null,"window_end"?: string | null,"window_start"?: string | null
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"id"?: string,"interval_minutes"?: number | null,"last_fired_at"?: string | null,"message"?: string | null,"owner_id"?: string,"run_at"?: string | null,"schedule"?: string,"sound"?: string,"time_of_day"?: string | null,"title"?: string,"updated_at"?: string,"weekdays"?: (number)[] | null,"window_end"?: string | null,"window_start"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"daily_priorities": {
                   Row: {
                     "created_at": string,"id": string,"owner_id": string,"position": number,"priority_date": string,"task_id": string

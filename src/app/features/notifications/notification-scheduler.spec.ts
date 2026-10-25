@@ -5,6 +5,11 @@ import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { ProfileService, type UserPreferences } from '../../core/profile/profile.service';
 import { queryMock } from '../../../testing/query.mock';
 import { createSupabaseMock, provideSupabaseMock } from '../../../testing/supabase.mock';
+import {
+  type CustomNotification,
+  CustomNotificationsService,
+} from './custom-notifications.service';
+import { AppNotifier } from './notification-center';
 import { NotificationScheduler } from './notification-scheduler';
 
 describe('NotificationScheduler', () => {
@@ -17,7 +22,7 @@ describe('NotificationScheduler', () => {
     date_format: 'dd/MM/yyyy',
   } as UserPreferences;
 
-  function setup(preferences: UserPreferences | null) {
+  function setup(preferences: UserPreferences | null, rules: Partial<CustomNotification>[] = []) {
     localStorage.clear();
     const supabase = createSupabaseMock();
     const reminders = queryMock({ data: [], error: null });
@@ -29,16 +34,23 @@ describe('NotificationScheduler', () => {
       table === 'task_reminders' ? reminders : tasks,
     );
     const notify = vi.fn().mockResolvedValue(true);
+    const custom = {
+      version: signal(0),
+      active: vi.fn().mockResolvedValue(rules),
+      markFired: vi.fn().mockResolvedValue(undefined),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         provideSupabaseMock(supabase),
-        { provide: DesktopBridge, useValue: { isDesktop: true, notify } },
+        { provide: DesktopBridge, useValue: { isDesktop: true } },
+        { provide: AppNotifier, useValue: { notify } },
+        { provide: CustomNotificationsService, useValue: custom },
         { provide: AuthService, useValue: { user: signal({ id: 'u1' }) } },
         { provide: ProfileService, useValue: { preferences: signal(preferences) } },
       ],
     });
-    return { scheduler: TestBed.inject(NotificationScheduler), notify };
+    return { scheduler: TestBed.inject(NotificationScheduler), notify, custom };
   }
 
   it('sends the overdue digest only once per day', async () => {
@@ -48,6 +60,7 @@ describe('NotificationScheduler', () => {
 
     expect(notify).toHaveBeenCalledTimes(1);
     expect(notify).toHaveBeenCalledWith({
+      kind: 'digest',
       title: '1 tarefa atrasada',
       body: 'Atrasada',
       route: '/tasks/t1',
@@ -58,5 +71,34 @@ describe('NotificationScheduler', () => {
     const { scheduler, notify } = setup({ ...prefs, notifications_enabled: false });
     await scheduler.tick();
     expect(notify).not.toHaveBeenCalled();
+  });
+
+  it('delivers a due custom notification once and records it', async () => {
+    const recent = new Date(Date.now() - 60_000).toISOString();
+    const rule = {
+      id: 'r1',
+      title: 'Beber água',
+      message: 'Pausa',
+      schedule: 'once',
+      run_at: recent,
+      sound: 'chime',
+      active: true,
+      created_at: recent,
+      last_fired_at: null,
+    };
+    const { scheduler, notify, custom } = setup({ ...prefs, notify_overdue: false }, [rule]);
+    await scheduler.tick();
+    await scheduler.tick();
+
+    expect(custom.markFired).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'custom',
+        title: 'Beber água',
+        body: 'Pausa',
+        sound: 'chime',
+      }),
+    );
   });
 });
