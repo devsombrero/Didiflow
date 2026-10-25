@@ -7,6 +7,7 @@ export const IPC_CHANNELS = {
   secureStoreRemove: 'secure-store:remove',
   openExternal: 'shell:open-external',
   notify: 'notification:show',
+  saveFile: 'file:save',
   /** Main → renderer: navigate to an in-app route (notification click). */
   navigate: 'app:navigate',
 } as const;
@@ -24,6 +25,19 @@ export interface SecureStoreApi {
   remove(key: string): Promise<void>;
 }
 
+export interface SaveFileRequest {
+  /** Suggested file name, e.g. didiflow-tarefas-2026-10-25.csv */
+  defaultName: string;
+  content: string;
+  kind: 'csv' | 'json';
+}
+
+export interface SaveFileResult {
+  saved: boolean;
+  /** Absolute path chosen by the user (only when saved). */
+  path?: string;
+}
+
 /** API exposed to the renderer as `window.didiflow`. */
 export interface DidiflowApi {
   readonly platform: string;
@@ -34,4 +48,6 @@ export interface DidiflowApi {
   notify(notification: DesktopNotification): Promise<boolean>;
   /** Subscribes to navigation requests from the main process. Returns an unsubscribe function. */
   onNavigate(listener: (route: string) => void): () => void;
+  /** Asks where to save and writes the file; the renderer never touches the file system. */
+  saveFile(request: SaveFileRequest): Promise<SaveFileResult>;
 }

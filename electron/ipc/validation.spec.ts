@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   assertExternalUrl,
   assertNotification,
+  assertSaveRequest,
   isAppRoute,
   assertStoreKey,
   assertStoreValue,
@@ -122,5 +123,28 @@ describe('isAppRoute', () => {
     expect(isAppRoute('//evil.example')).toBe(false);
     expect(isAppRoute('tasks')).toBe(false);
     expect(isAppRoute('/tasks?x=1')).toBe(false);
+  });
+});
+
+describe('assertSaveRequest', () => {
+  it('accepts safe names with the matching extension', () => {
+    expect(
+      assertSaveRequest({ defaultName: 'didiflow-tarefas.csv', content: 'a;b', kind: 'csv' }),
+    ).toEqual({
+      defaultName: 'didiflow-tarefas.csv',
+      content: 'a;b',
+      kind: 'csv',
+    });
+  });
+
+  it.each([
+    null,
+    { defaultName: 'x.csv', content: 'a', kind: 'exe' },
+    { defaultName: '../x.csv', content: 'a', kind: 'csv' },
+    { defaultName: 'C:\\x.csv', content: 'a', kind: 'csv' },
+    { defaultName: 'x.json', content: 'a', kind: 'csv' },
+    { defaultName: 'x.csv', content: 42, kind: 'csv' },
+  ])('rejects %j', (payload) => {
+    expect(() => assertSaveRequest(payload)).toThrow(IpcValidationError);
   });
 });
