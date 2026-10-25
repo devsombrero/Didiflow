@@ -1,0 +1,151 @@
+<header class="page-header">
+  <h1>{{ id() ? 'Editar tarefa' : 'Nova tarefa' }}</h1>
+</header>
+
+@switch (state()) {
+  @case ('loading') {
+    <p class="muted" role="status">Carregando…</p>
+  }
+  @case ('not-found') {
+    <section class="card empty-state">
+      <p>Tarefa não encontrada.</p>
+      <a class="btn" routerLink="/tasks">Voltar para a lista</a>
+    </section>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">Não foi possível carregar a tarefa.</div>
+  }
+  @default {
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <section class="card form">
+        <h2>Demanda</h2>
+        <div class="field">
+          <label for="title">Título *</label>
+          <input id="title" class="input" formControlName="title" maxlength="200" />
+          @if (form.controls.title.touched && form.controls.title.invalid) {
+            <span class="field-error">Informe um título de até 200 caracteres.</span>
+          }
+        </div>
+        <div class="field">
+          <label for="description">Descrição</label>
+          <textarea
+            id="description"
+            class="input"
+            rows="4"
+            formControlName="description"
+          ></textarea>
+        </div>
+        <div class="field">
+          <label for="priority">Prioridade</label>
+          <select id="priority" class="input" formControlName="priority">
+            @for (priority of priorities; track priority) {
+              <option [value]="priority">{{ priorityLabels[priority] }}</option>
+            }
+          </select>
+        </div>
+      </section>
+
+      <section class="card form">
+        <h2>Solicitação</h2>
+        <div class="form-row">
+          <div class="field">
+            <label for="requested_at">Data da solicitação</label>
+            <input id="requested_at" class="input" type="date" formControlName="requested_at" />
+          </div>
+          <div class="field">
+            <label for="requester_name">Solicitante</label>
+            <input id="requester_name" class="input" formControlName="requester_name" />
+          </div>
+        </div>
+      </section>
+
+      <section class="card form">
+        <h2>Vínculos</h2>
+        <div class="field field--inline">
+          <input id="has_jira_card" type="checkbox" formControlName="has_jira_card" />
+          <label for="has_jira_card">Possui card no Jira</label>
+        </div>
+        @if (form.controls.has_jira_card.value) {
+          <div class="field">
+            <label for="jira_url">URL do card no Jira *</label>
+            <input
+              id="jira_url"
+              class="input"
+              type="url"
+              formControlName="jira_url"
+              placeholder="https://empresa.atlassian.net/browse/ABC-123"
+            />
+            @if (form.errors?.['jiraUrl'] && form.controls.jira_url.touched) {
+              <span class="field-error">Informe uma URL começando com https://.</span>
+            }
+          </div>
+        }
+        <div class="field field--inline">
+          <input id="has_slack_thread" type="checkbox" formControlName="has_slack_thread" />
+          <label for="has_slack_thread">Possui thread no Slack</label>
+        </div>
+        @if (form.controls.has_slack_thread.value) {
+          <div class="field">
+            <label for="slack_thread_url">URL da thread no Slack *</label>
+            <input
+              id="slack_thread_url"
+              class="input"
+              type="url"
+              formControlName="slack_thread_url"
+              placeholder="https://empresa.slack.com/archives/…"
+            />
+            @if (form.errors?.['slackUrl'] && form.controls.slack_thread_url.touched) {
+              <span class="field-error">Informe uma URL começando com https://.</span>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="card form">
+        <h2>Planejamento</h2>
+        <div class="form-row">
+          <div class="field">
+            <label for="start_date">Data de início</label>
+            <input id="start_date" class="input" type="date" formControlName="start_date" />
+          </div>
+          <div class="field">
+            <label for="due_date">Data prevista de entrega</label>
+            <input id="due_date" class="input" type="date" formControlName="due_date" />
+            @if (form.errors?.['dueBeforeStart']) {
+              <span class="field-error">A entrega não pode ser anterior ao início.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="estimated_hours">Estimativa de esforço (horas)</label>
+            <input
+              id="estimated_hours"
+              class="input"
+              type="number"
+              min="0"
+              step="0.25"
+              formControlName="estimated_hours"
+            />
+            @if (form.controls.estimated_hours.invalid) {
+              <span class="field-error">Informe um valor positivo.</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="card form">
+        <h2>Observações</h2>
+        <div class="field">
+          <label for="notes" class="sr-only">Observações</label>
+          <textarea id="notes" class="input" rows="3" formControlName="notes"></textarea>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button class="btn btn--primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Salvando…' : 'Salvar' }}
+        </button>
+        <a class="btn" [routerLink]="id() ? ['/tasks', id()] : ['/tasks']">Cancelar</a>
+      </div>
+    </form>
+  }
+}

@@ -204,3 +204,45 @@ a {
   color: var(--color-primary);
   padding-inline: 0;
 }
+
+.btn--danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #fff;
+}
+
+.btn--sm {
+  padding: 2px var(--space-2);
+  font-size: 12px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-6);
+
+  p {
+    margin: 0 0 var(--space-4);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
