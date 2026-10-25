@@ -129,6 +129,8 @@ if (!app.requestSingleInstanceLock()) {
       callback(false),
     );
     registerAppProtocol();
+    // Windows needs an AppUserModelID for toast notifications.
+    if (process.platform === 'win32') app.setAppUserModelId('com.didiflow.app');
     registerIpcHandlers({
       store: new SecureStore(path.join(app.getPath('userData'), 'secure-store.json'), {
         isAvailable: () => safeStorage.isEncryptionAvailable(),
@@ -136,6 +138,7 @@ if (!app.requestSingleInstanceLock()) {
         decrypt: (encrypted) => safeStorage.decryptString(encrypted),
       }),
       trustedOrigins,
+      getWindow: () => mainWindow,
     });
     createMainWindow();
 

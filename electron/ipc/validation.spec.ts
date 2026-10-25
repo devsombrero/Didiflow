@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertExternalUrl,
+  assertNotification,
+  isAppRoute,
   assertStoreKey,
   assertStoreValue,
   IpcValidationError,
@@ -79,5 +81,46 @@ describe('isTrustedOrigin', () => {
     expect(isTrustedOrigin('null', ['null'])).toBe(false);
     expect(isTrustedOrigin(undefined, trusted)).toBe(false);
     expect(isTrustedOrigin('::::', trusted)).toBe(false);
+  });
+});
+
+describe('assertNotification', () => {
+  it('accepts a title with optional body and route', () => {
+    expect(
+      assertNotification({
+        title: ' Lembrete ',
+        body: 'Revisar contrato',
+        route: '/tasks/abc-123',
+      }),
+    ).toEqual({
+      title: 'Lembrete',
+      body: 'Revisar contrato',
+      route: '/tasks/abc-123',
+    });
+    expect(assertNotification({ title: 'Oi' })).toEqual({ title: 'Oi', body: '', route: null });
+  });
+
+  it.each([
+    null,
+    'text',
+    { title: '' },
+    { title: 'x'.repeat(121) },
+    { title: 'ok', body: 42 },
+    { title: 'ok', body: 'x'.repeat(501) },
+    { title: 'ok', route: 'https://evil.example' },
+    { title: 'ok', route: '/tasks/../../etc' },
+    { title: 'ok', route: 'javascript:alert(1)' },
+  ])('rejects %j', (payload) => {
+    expect(() => assertNotification(payload)).toThrow(IpcValidationError);
+  });
+});
+
+describe('isAppRoute', () => {
+  it('accepts in-app paths only', () => {
+    expect(isAppRoute('/')).toBe(true);
+    expect(isAppRoute('/tasks')).toBe(true);
+    expect(isAppRoute('//evil.example')).toBe(false);
+    expect(isAppRoute('tasks')).toBe(false);
+    expect(isAppRoute('/tasks?x=1')).toBe(false);
   });
 });

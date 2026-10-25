@@ -11,6 +11,14 @@ const api: DidiflowApi = {
     remove: (key) => ipcRenderer.invoke(IPC_CHANNELS.secureStoreRemove, key),
   },
   openExternal: (url) => ipcRenderer.invoke(IPC_CHANNELS.openExternal, url),
+  notify: (notification) => ipcRenderer.invoke(IPC_CHANNELS.notify, notification),
+  onNavigate: (listener) => {
+    const handler = (_event: Electron.IpcRendererEvent, route: unknown) => {
+      if (typeof route === 'string') listener(route);
+    };
+    ipcRenderer.on(IPC_CHANNELS.navigate, handler);
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.navigate, handler);
+  },
 };
 
 contextBridge.exposeInMainWorld('didiflow', api);
