@@ -8,6 +8,12 @@ export const IPC_CHANNELS = {
   openExternal: 'shell:open-external',
   notify: 'notification:show',
   saveFile: 'file:save',
+  openFile: 'file:open',
+  backupList: 'backup:list',
+  backupWrite: 'backup:write',
+  backupRead: 'backup:read',
+  backupDelete: 'backup:delete',
+  backupOpenFolder: 'backup:open-folder',
   /** Main → renderer: navigate to an in-app route (notification click). */
   navigate: 'app:navigate',
 } as const;
@@ -38,6 +44,30 @@ export interface SaveFileResult {
   path?: string;
 }
 
+export type BackupKind = 'auto' | 'manual' | 'prerestore';
+
+export interface BackupFile {
+  name: string;
+  kind: BackupKind;
+  size: number;
+  createdAt: string;
+}
+
+export interface OpenFileResult {
+  canceled: boolean;
+  name?: string;
+  content?: string;
+}
+
+/** Local backups folder (%APPDATA%/didiflow/backups), managed by the main process. */
+export interface BackupApi {
+  list(): Promise<BackupFile[]>;
+  write(content: string, kind: BackupKind, retention: number): Promise<BackupFile>;
+  read(name: string): Promise<string>;
+  remove(name: string): Promise<void>;
+  openFolder(): Promise<void>;
+}
+
 /** API exposed to the renderer as `window.didiflow`. */
 export interface DidiflowApi {
   readonly platform: string;
@@ -50,4 +80,7 @@ export interface DidiflowApi {
   onNavigate(listener: (route: string) => void): () => void;
   /** Asks where to save and writes the file; the renderer never touches the file system. */
   saveFile(request: SaveFileRequest): Promise<SaveFileResult>;
+  /** Picks a DidiFlow JSON backup with the native dialog and returns its content. */
+  openBackupFile(): Promise<OpenFileResult>;
+  readonly backups: BackupApi;
 }
