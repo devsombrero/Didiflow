@@ -3,6 +3,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import type { HasPendingChanges } from '../../../shared/guards/pending-changes.guard';
 import { ToastService } from '../../../shared/toast/toast.service';
+import { isValidDate } from '../../../shared/utils/dates';
 import { describeError } from '../../../shared/utils/errors';
 import {
   PRIORITY_LABELS,
@@ -31,6 +32,8 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
 
   /** Route parameter; absent when creating. */
   readonly id = input<string>();
+  /** ?due=YYYY-MM-DD prefills the due date when planning from the calendar. */
+  readonly due = input<string>();
 
   protected readonly priorities = TASK_PRIORITIES;
   protected readonly priorityLabels = PRIORITY_LABELS;
@@ -78,7 +81,11 @@ export class TaskFormPage implements OnInit, HasPendingChanges {
   async ngOnInit(): Promise<void> {
     void this.org.ensureLoaded().catch(() => undefined);
     const id = this.id();
-    if (!id) return;
+    if (!id) {
+      const due = this.due();
+      if (due && isValidDate(due)) this.form.controls.due_date.setValue(due);
+      return;
+    }
 
     this.state.set('loading');
     try {

@@ -93,3 +93,23 @@ describe('TaskFormPage', () => {
     expect(element.textContent).toContain('A entrega não pode ser anterior ao início.');
   });
 });
+
+describe('TaskFormPage planning prefill', () => {
+  it('prefills the due date from the calendar', async () => {
+    await TestBed.configureTestingModule({
+      imports: [TaskFormPage],
+      providers: [
+        provideRouter([]),
+        provideSupabaseMock(),
+        provideOrganizationMock(),
+        { provide: TasksService, useValue: { create: vi.fn(), setTags: vi.fn(), get: vi.fn() } },
+      ],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(TaskFormPage);
+    fixture.componentRef.setInput('due', '2026-11-03');
+    await fixture.whenStable();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('#due_date')!.value,
+    ).toBe('2026-11-03');
+  });
+});

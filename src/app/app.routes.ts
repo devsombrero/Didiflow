@@ -21,6 +21,12 @@ export const routes: Routes = [
         loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASK_ROUTES),
       },
       {
+        path: 'calendar',
+        title: 'Calendário · DidiFlow',
+        loadComponent: () =>
+          import('./features/calendar/calendar-page').then((m) => m.CalendarPage),
+      },
+      {
         path: 'kpis',
         title: 'KPIs · DidiFlow',
         loadComponent: () => import('./features/kpis/kpis-page').then((m) => m.KpisPage),
