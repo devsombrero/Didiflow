@@ -19,6 +19,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"personal_goals": {
+                  Row: {
+                    "achievability": string | null,"comparison": string,"created_at": string,"end_date": string,"id": string,"metric": Database["public"]['Enums']["kpi_metric"],"owner_id": string,"relevance": string | null,"start_date": string,"target_value": number,"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "achievability"?: string | null,"comparison"?: string,"created_at"?: string,"end_date": string,"id"?: string,"metric": Database["public"]['Enums']["kpi_metric"],"owner_id"?: string,"relevance"?: string | null,"start_date": string,"target_value": number,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "achievability"?: string | null,"comparison"?: string,"created_at"?: string,"end_date"?: string,"id"?: string,"metric"?: Database["public"]['Enums']["kpi_metric"],"owner_id"?: string,"relevance"?: string | null,"start_date"?: string,"target_value"?: number,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string,"id": string,"updated_at": string
@@ -43,6 +57,20 @@ export type Database = {
                   }
                   Update: {
                     "archived_at"?: string | null,"color"?: string | null,"created_at"?: string,"description"?: string | null,"id"?: string,"name"?: string,"owner_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"skill_achievements": {
+                  Row: {
+                    "achieved_on": string,"created_at": string,"hours": number | null,"id": string,"kind": string,"notes": string | null,"owner_id": string,"provider": string | null,"title": string,"updated_at": string,"url": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "achieved_on": string,"created_at"?: string,"hours"?: number | null,"id"?: string,"kind": string,"notes"?: string | null,"owner_id"?: string,"provider"?: string | null,"title": string,"updated_at"?: string,"url"?: string | null
+                  }
+                  Update: {
+                    "achieved_on"?: string,"created_at"?: string,"hours"?: number | null,"id"?: string,"kind"?: string,"notes"?: string | null,"owner_id"?: string,"provider"?: string | null,"title"?: string,"updated_at"?: string,"url"?: string | null
                   }
                   Relationships: [
                     
@@ -301,7 +329,7 @@ isOneToOne: false
       } }
           }
           Enums: {
-            "task_priority": "low"|"medium"|"high"|"urgent","task_status": "not_started"|"in_progress"|"blocked"|"done"|"cancelled","theme_preference": "system"|"light"|"dark"
+            "kpi_metric": "deliveries"|"on_time_rate"|"late_rate"|"lead_time"|"cycle_time"|"predictability"|"rework_rate"|"time_invested"|"learning","task_priority": "low"|"medium"|"high"|"urgent","task_status": "not_started"|"in_progress"|"blocked"|"done"|"cancelled","theme_preference": "system"|"light"|"dark"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -417,7 +445,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "task_priority": ["low", "medium", "high", "urgent"],"task_status": ["not_started", "in_progress", "blocked", "done", "cancelled"],"theme_preference": ["system", "light", "dark"]
+            "kpi_metric": ["deliveries", "on_time_rate", "late_rate", "lead_time", "cycle_time", "predictability", "rework_rate", "time_invested", "learning"],"task_priority": ["low", "medium", "high", "urgent"],"task_status": ["not_started", "in_progress", "blocked", "done", "cancelled"],"theme_preference": ["system", "light", "dark"]
           }
         }
 } as const

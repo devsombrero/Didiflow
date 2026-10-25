@@ -1,0 +1,236 @@
+<header class="page-header">
+  <h1>Metas e desenvolvimento</h1>
+  <a class="btn" routerLink="/kpis">Ver KPIs</a>
+</header>
+
+@switch (state()) {
+  @case ('loading') {
+    <p class="muted" role="status">Carregando…</p>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">Não foi possível carregar metas e registros.</div>
+  }
+  @default {
+    <div class="layout">
+      <section class="card">
+        <h2>Metas SMART</h2>
+        @for (row of evaluated(); track row.goal.id) {
+          <article class="goal">
+            <header class="goal__header">
+              <h3>{{ row.goal.title }}</h3>
+              <span class="goal__status" [attr.data-status]="row.evaluation.status">
+                {{ statusLabels[row.evaluation.status] }}
+              </span>
+            </header>
+            <p class="muted">
+              {{ metricLabel(row.goal.metric) }}
+              {{ row.goal.comparison === 'at_least' ? 'de pelo menos' : 'de no máximo' }}
+              {{ row.goal.target_value }} {{ metricUnit(row.goal.metric) }} ·
+              {{ row.goal.start_date | appDate }} a {{ row.goal.end_date | appDate }}
+            </p>
+            <div class="goal__progress">
+              <div
+                class="progress"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-valuenow]="row.evaluation.progress"
+                [attr.aria-label]="'Progresso da meta ' + row.evaluation.progress + '%'"
+              >
+                <div class="progress__fill" [style.width.%]="row.evaluation.progress"></div>
+              </div>
+              <span>Atual: {{ formatValue(row.goal.metric, row.evaluation) }}</span>
+            </div>
+            @if (row.goal.relevance) {
+              <p class="goal__note"><strong>Relevância:</strong> {{ row.goal.relevance }}</p>
+            }
+            @if (row.goal.achievability) {
+              <p class="goal__note">
+                <strong>Por que é alcançável:</strong> {{ row.goal.achievability }}
+              </p>
+            }
+            <div class="actions">
+              <button type="button" class="btn btn--sm" (click)="editGoal(row.goal)">Editar</button>
+              <button type="button" class="btn btn--sm" (click)="removeGoal(row.goal)">
+                Excluir
+              </button>
+            </div>
+          </article>
+        } @empty {
+          <p class="muted">
+            Nenhuma meta ainda. Uma boa meta é específica, mensurável, alcançável, relevante e com
+            prazo definido.
+          </p>
+        }
+
+        <h3>{{ editingGoal() ? 'Editar meta' : 'Nova meta' }}</h3>
+        <form class="form" [formGroup]="goalForm" (ngSubmit)="saveGoal()" novalidate>
+          <div class="field">
+            <label for="goal-title">Específica: o que você quer alcançar?</label>
+            <input
+              id="goal-title"
+              class="input"
+              formControlName="title"
+              placeholder="Ex.: Entregar no prazo as demandas do cliente X"
+            />
+            @if (goalForm.controls.title.touched && goalForm.controls.title.invalid) {
+              <span class="field-error">Informe um título de até 150 caracteres.</span>
+            }
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="goal-metric">Mensurável: indicador</label>
+              <select id="goal-metric" class="input" formControlName="metric">
+                @for (option of metrics; track option.metric) {
+                  <option [value]="option.metric">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="goal-comparison">Condição</label>
+              <select id="goal-comparison" class="input" formControlName="comparison">
+                <option value="at_least">Pelo menos</option>
+                <option value="at_most">No máximo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="goal-target">Valor-alvo ({{ unit() }})</label>
+              <input
+                id="goal-target"
+                class="input"
+                type="number"
+                min="0"
+                step="0.1"
+                formControlName="target_value"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="goal-start">Temporal: início</label>
+              <input id="goal-start" class="input" type="date" formControlName="start_date" />
+            </div>
+            <div class="field">
+              <label for="goal-end">Fim</label>
+              <input id="goal-end" class="input" type="date" formControlName="end_date" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="goal-achievability">Alcançável: por que é viável?</label>
+            <input id="goal-achievability" class="input" formControlName="achievability" />
+          </div>
+          <div class="field">
+            <label for="goal-relevance">Relevante: por que importa?</label>
+            <input id="goal-relevance" class="input" formControlName="relevance" />
+          </div>
+          @if (goalErrors(); as message) {
+            <p class="field-error">{{ message }}</p>
+          }
+          @if (goalForm.controls.target_value.touched && goalForm.controls.target_value.invalid) {
+            <p class="field-error">Informe um valor-alvo maior ou igual a zero.</p>
+          }
+          <div class="actions">
+            <button class="btn btn--primary" type="submit" [disabled]="saving()">
+              {{ editingGoal() ? 'Salvar meta' : 'Criar meta' }}
+            </button>
+            @if (editingGoal()) {
+              <button class="btn" type="button" (click)="resetGoal()">Cancelar</button>
+            }
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Desenvolvimento pessoal</h2>
+        <ul class="achievements">
+          @for (item of achievements(); track item.id) {
+            <li>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <span class="muted">
+                  · {{ kindLabel(item.kind) }}
+                  @if (item.provider) {
+                    · {{ item.provider }}
+                  }
+                  · {{ item.achieved_on | appDate }}
+                  @if (item.hours) {
+                    · {{ item.hours }} h
+                  }
+                </span>
+              </div>
+              <span class="actions">
+                <button type="button" class="btn btn--sm" (click)="editAchievement(item)">
+                  Editar
+                </button>
+                <button type="button" class="btn btn--sm" (click)="removeAchievement(item)">
+                  Excluir
+                </button>
+              </span>
+            </li>
+          } @empty {
+            <li class="muted">Nenhum curso, certificação ou habilidade registrada.</li>
+          }
+        </ul>
+
+        <h3>{{ editingAchievement() ? 'Editar registro' : 'Novo registro' }}</h3>
+        <form class="form" [formGroup]="achievementForm" (ngSubmit)="saveAchievement()" novalidate>
+          <div class="field">
+            <label for="ach-title">Título</label>
+            <input id="ach-title" class="input" formControlName="title" />
+            @if (achievementForm.controls.title.touched && achievementForm.controls.title.invalid) {
+              <span class="field-error">Informe um título de até 150 caracteres.</span>
+            }
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="ach-kind">Tipo</label>
+              <select id="ach-kind" class="input" formControlName="kind">
+                @for (kind of kinds; track kind.value) {
+                  <option [value]="kind.value">{{ kind.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="ach-date">Data</label>
+              <input id="ach-date" class="input" type="date" formControlName="achieved_on" />
+            </div>
+            <div class="field">
+              <label for="ach-hours">Carga horária</label>
+              <input
+                id="ach-hours"
+                class="input"
+                type="number"
+                min="0"
+                step="0.5"
+                formControlName="hours"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="ach-provider">Instituição</label>
+              <input id="ach-provider" class="input" formControlName="provider" />
+            </div>
+            <div class="field">
+              <label for="ach-url">Link (https)</label>
+              <input id="ach-url" class="input" type="url" formControlName="url" />
+              @if (urlInvalid()) {
+                <span class="field-error">Use um link começando com https://.</span>
+              }
+            </div>
+          </div>
+          <div class="field">
+            <label for="ach-notes">Observações</label>
+            <input id="ach-notes" class="input" formControlName="notes" />
+          </div>
+          <div class="actions">
+            <button class="btn btn--primary" type="submit" [disabled]="saving()">Salvar</button>
+            @if (editingAchievement()) {
+              <button class="btn" type="button" (click)="resetAchievement()">Cancelar</button>
+            }
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+}

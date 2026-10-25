@@ -15,7 +15,7 @@ export type MetricTimeEntry = TimeEntryTiming & {
 };
 
 const COLUMNS =
-  'id,status,priority,progress_percentage,start_date,due_date,completed_at,archived_at,category_id,project_id';
+  'id,status,priority,progress_percentage,start_date,due_date,completed_at,archived_at,category_id,project_id,estimated_minutes';
 const PAGE_SIZE = 1000; // PostgREST max_rows
 
 /** Loads the (non-deleted) task fields needed for metrics. RLS limits rows to the user. */

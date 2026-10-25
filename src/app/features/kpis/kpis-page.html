@@ -1,0 +1,85 @@
+<header class="page-header">
+  <h1>KPIs pessoais</h1>
+  <div class="actions">
+    <select class="input" aria-label="Período" (change)="preset.set($any($event.target).value)">
+      @for (option of presets; track option.value) {
+        <option [value]="option.value" [selected]="option.value === preset()">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+    <a class="btn" routerLink="/goals">Metas e desenvolvimento</a>
+  </div>
+</header>
+
+<p class="muted intro">
+  Período analisado: {{ periodLabel() }}. Os indicadores usam apenas dados registrados; quando
+  faltam dados, o indicador informa o que é necessário. As fórmulas estão em cada cartão.
+</p>
+
+@switch (state()) {
+  @case ('loading') {
+    <p class="muted" role="status">Calculando indicadores…</p>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">
+      Não foi possível carregar os indicadores.
+      <button type="button" class="btn btn--link" (click)="load()">Tentar novamente</button>
+    </div>
+  }
+  @default {
+    <div class="kpis">
+      @for (card of cards(); track card.kpi.id) {
+        <article class="card kpi" [class.kpi--expanded]="expanded() === card.kpi.id">
+          <header class="kpi__header">
+            <h2>{{ card.kpi.name }}</h2>
+            <button
+              type="button"
+              class="btn btn--link btn--sm"
+              [attr.aria-expanded]="expanded() === card.kpi.id"
+              (click)="toggle(card.kpi.id)"
+            >
+              {{ expanded() === card.kpi.id ? 'Ocultar histórico' : 'Histórico' }}
+            </button>
+          </header>
+          <p class="kpi__value">{{ card.result.display }}</p>
+          @if (card.result.insufficient) {
+            <p class="kpi__insufficient">{{ card.result.insufficient }}</p>
+          }
+          @if (card.result.detail) {
+            <p class="muted kpi__detail">{{ card.result.detail }}</p>
+          }
+          @if (card.comparison; as comparison) {
+            <p class="kpi__comparison" [attr.data-tone]="comparison.tone">{{ comparison.text }}</p>
+          }
+          @if (card.result.breakdown?.length) {
+            <ul class="kpi__breakdown">
+              @for (row of card.result.breakdown; track row.label) {
+                <li>
+                  <span>{{ row.label }}</span
+                  ><span>{{ row.display }}</span>
+                </li>
+              }
+            </ul>
+          }
+          @for (goal of card.goals; track goal.title) {
+            <p class="kpi__goal">Meta: {{ goal.title }} · {{ goal.status }}</p>
+          }
+          <p class="muted kpi__description">{{ card.kpi.description }}</p>
+          <details class="kpi__formula">
+            <summary>Fórmula</summary>
+            <code>{{ card.kpi.formula }}</code>
+          </details>
+          @if (expanded() === card.kpi.id && history(); as chart) {
+            <app-bar-chart
+              [data]="chart"
+              [height]="180"
+              categoryLabel="Período"
+              [ariaLabel]="'Histórico de ' + card.kpi.name + ' nos últimos 6 períodos'"
+            />
+          }
+        </article>
+      }
+    </div>
+  }
+}
