@@ -15,7 +15,12 @@
   @default {
     <div class="layout">
       <mat-card appearance="outlined" class="section">
-        <mat-card-header><mat-card-title>Metas SMART</mat-card-title></mat-card-header>
+        <mat-card-header class="card-head">
+          <mat-card-title>Metas SMART</mat-card-title>
+          <button matButton="tonal" type="button" (click)="newGoal()">
+            <mat-icon>add</mat-icon> Nova meta
+          </button>
+        </mat-card-header>
         <mat-card-content>
           @for (row of evaluated(); track row.goal.id) {
             <article class="goal">
@@ -67,83 +72,16 @@
               prazo definido.
             </p>
           }
-
-          <h3 class="form-title">{{ editingGoal() ? 'Editar meta' : 'Nova meta' }}</h3>
-          <form class="form" [formGroup]="goalForm" (ngSubmit)="saveGoal()" novalidate>
-            <mat-form-field>
-              <mat-label>Específica: o que você quer alcançar?</mat-label>
-              <input
-                matInput
-                id="goal-title"
-                formControlName="title"
-                placeholder="Ex.: Entregar no prazo as demandas do cliente X"
-              />
-              <mat-error>Informe um título de até 150 caracteres.</mat-error>
-            </mat-form-field>
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Mensurável: indicador</mat-label>
-                <mat-select id="goal-metric" formControlName="metric">
-                  @for (option of metrics; track option.metric) {
-                    <mat-option [value]="option.metric">{{ option.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Condição</mat-label>
-                <mat-select id="goal-comparison" formControlName="comparison">
-                  <mat-option value="at_least">Pelo menos</mat-option>
-                  <mat-option value="at_most">No máximo</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Valor-alvo ({{ unit() }})</mat-label>
-                <input
-                  matInput
-                  id="goal-target"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  formControlName="target_value"
-                />
-                <mat-error>Informe um valor maior ou igual a zero.</mat-error>
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Temporal: início</mat-label>
-                <input matInput id="goal-start" type="date" formControlName="start_date" />
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Fim</mat-label>
-                <input matInput id="goal-end" type="date" formControlName="end_date" />
-              </mat-form-field>
-            </div>
-            <mat-form-field>
-              <mat-label>Alcançável: por que é viável?</mat-label>
-              <input matInput id="goal-achievability" formControlName="achievability" />
-            </mat-form-field>
-            <mat-form-field>
-              <mat-label>Relevante: por que importa?</mat-label>
-              <input matInput id="goal-relevance" formControlName="relevance" />
-            </mat-form-field>
-            @if (goalErrors(); as message) {
-              <span class="hint-error">{{ message }}</span>
-            }
-            <div class="actions">
-              <button matButton="filled" type="submit" [disabled]="saving()">
-                {{ editingGoal() ? 'Salvar meta' : 'Criar meta' }}
-              </button>
-              @if (editingGoal()) {
-                <button matButton type="button" (click)="resetGoal()">Cancelar</button>
-              }
-            </div>
-          </form>
         </mat-card-content>
       </mat-card>
 
       <mat-card appearance="outlined" class="section">
-        <mat-card-header><mat-card-title>Desenvolvimento pessoal</mat-card-title></mat-card-header>
+        <mat-card-header class="card-head">
+          <mat-card-title>Desenvolvimento pessoal</mat-card-title>
+          <button matButton="tonal" type="button" (click)="newAchievement()">
+            <mat-icon>add</mat-icon> Novo registro
+          </button>
+        </mat-card-header>
         <mat-card-content>
           <ul class="achievements">
             @for (item of achievements(); track item.id) {
@@ -185,72 +123,148 @@
               <li class="muted">Nenhum curso, certificação ou habilidade registrada.</li>
             }
           </ul>
-
-          <h3 class="form-title">
-            {{ editingAchievement() ? 'Editar registro' : 'Novo registro' }}
-          </h3>
-          <form
-            class="form"
-            [formGroup]="achievementForm"
-            (ngSubmit)="saveAchievement()"
-            novalidate
-          >
-            <mat-form-field>
-              <mat-label>Título</mat-label>
-              <input matInput id="ach-title" formControlName="title" />
-              <mat-error>Informe um título de até 150 caracteres.</mat-error>
-            </mat-form-field>
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Tipo</mat-label>
-                <mat-select id="ach-kind" formControlName="kind">
-                  @for (kind of kinds; track kind.value) {
-                    <mat-option [value]="kind.value">{{ kind.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Data</mat-label>
-                <input matInput id="ach-date" type="date" formControlName="achieved_on" />
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Carga horária</mat-label>
-                <input
-                  matInput
-                  id="ach-hours"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  formControlName="hours"
-                />
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field>
-                <mat-label>Instituição</mat-label>
-                <input matInput id="ach-provider" formControlName="provider" />
-              </mat-form-field>
-              <mat-form-field>
-                <mat-label>Link (https)</mat-label>
-                <input matInput id="ach-url" type="url" formControlName="url" />
-              </mat-form-field>
-            </div>
-            @if (urlInvalid()) {
-              <span class="hint-error">Use um link começando com https://.</span>
-            }
-            <mat-form-field>
-              <mat-label>Observações</mat-label>
-              <input matInput id="ach-notes" formControlName="notes" />
-            </mat-form-field>
-            <div class="actions">
-              <button matButton="filled" type="submit" [disabled]="saving()">Salvar</button>
-              @if (editingAchievement()) {
-                <button matButton type="button" (click)="resetAchievement()">Cancelar</button>
-              }
-            </div>
-          </form>
         </mat-card-content>
       </mat-card>
     </div>
   }
 }
+
+<ng-template #goalDialog>
+  <h2 mat-dialog-title>{{ editingGoal() ? 'Editar meta' : 'Nova meta' }}</h2>
+  <mat-dialog-content>
+    <form
+      id="goal-form"
+      class="form dialog-form"
+      [formGroup]="goalForm"
+      (ngSubmit)="saveGoal()"
+      novalidate
+    >
+      <mat-form-field>
+        <mat-label>Específica: o que você quer alcançar?</mat-label>
+        <input
+          matInput
+          id="goal-title"
+          formControlName="title"
+          placeholder="Ex.: Entregar no prazo as demandas do cliente X"
+        />
+        <mat-error>Informe um título de até 150 caracteres.</mat-error>
+      </mat-form-field>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Mensurável: indicador</mat-label>
+          <mat-select id="goal-metric" formControlName="metric">
+            @for (option of metrics; track option.metric) {
+              <mat-option [value]="option.metric">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Condição</mat-label>
+          <mat-select id="goal-comparison" formControlName="comparison">
+            <mat-option value="at_least">Pelo menos</mat-option>
+            <mat-option value="at_most">No máximo</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Valor-alvo ({{ unit() }})</mat-label>
+          <input
+            matInput
+            id="goal-target"
+            type="number"
+            min="0"
+            step="0.1"
+            formControlName="target_value"
+          />
+          <mat-error>Informe um valor maior ou igual a zero.</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Temporal: início</mat-label>
+          <input matInput id="goal-start" type="date" formControlName="start_date" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Fim</mat-label>
+          <input matInput id="goal-end" type="date" formControlName="end_date" />
+        </mat-form-field>
+      </div>
+      <mat-form-field>
+        <mat-label>Alcançável: por que é viável?</mat-label>
+        <input matInput id="goal-achievability" formControlName="achievability" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Relevante: por que importa?</mat-label>
+        <input matInput id="goal-relevance" formControlName="relevance" />
+      </mat-form-field>
+      @if (goalErrors(); as message) {
+        <span class="hint-error">{{ message }}</span>
+      }
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Cancelar</button>
+    <button matButton="filled" type="submit" form="goal-form" [disabled]="saving()">
+      {{ editingGoal() ? 'Salvar meta' : 'Criar meta' }}
+    </button>
+  </mat-dialog-actions>
+</ng-template>
+
+<ng-template #achievementDialog>
+  <h2 mat-dialog-title>{{ editingAchievement() ? 'Editar registro' : 'Novo registro' }}</h2>
+  <mat-dialog-content>
+    <form
+      id="achievement-form"
+      class="form dialog-form"
+      [formGroup]="achievementForm"
+      (ngSubmit)="saveAchievement()"
+      novalidate
+    >
+      <mat-form-field>
+        <mat-label>Título</mat-label>
+        <input matInput id="ach-title" formControlName="title" />
+        <mat-error>Informe um título de até 150 caracteres.</mat-error>
+      </mat-form-field>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Tipo</mat-label>
+          <mat-select id="ach-kind" formControlName="kind">
+            @for (kind of kinds; track kind.value) {
+              <mat-option [value]="kind.value">{{ kind.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Data</mat-label>
+          <input matInput id="ach-date" type="date" formControlName="achieved_on" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Carga horária</mat-label>
+          <input matInput id="ach-hours" type="number" min="0" step="0.5" formControlName="hours" />
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <mat-form-field>
+          <mat-label>Instituição</mat-label>
+          <input matInput id="ach-provider" formControlName="provider" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Link (https)</mat-label>
+          <input matInput id="ach-url" type="url" formControlName="url" />
+        </mat-form-field>
+      </div>
+      @if (urlInvalid()) {
+        <span class="hint-error">Use um link começando com https://.</span>
+      }
+      <mat-form-field>
+        <mat-label>Observações</mat-label>
+        <input matInput id="ach-notes" formControlName="notes" />
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Cancelar</button>
+    <button matButton="filled" type="submit" form="achievement-form" [disabled]="saving()">
+      Salvar
+    </button>
+  </mat-dialog-actions>
+</ng-template>

@@ -1,4 +1,12 @@
-import { Component, computed, inject, type OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  type OnInit,
+  signal,
+  TemplateRef,
+  viewChild,
+} from '@angular/core';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -21,6 +29,8 @@ import {
 } from '../kpis/goals';
 import type { KpiData, KpiMetric } from '../kpis/kpis';
 import { type Achievement, KpisService } from '../kpis/kpis.service';
+import { MatDialog, type MatDialogRef } from '@angular/material/dialog';
+import { FORM_DIALOG, formDialogConfig } from '../../shared/dialog/form-dialog';
 
 const ACHIEVEMENT_KINDS = [
   { value: 'course', label: 'Curso' },
@@ -31,11 +41,44 @@ const ACHIEVEMENT_KINDS = [
 
 @Component({
   selector: 'app-goals-page',
-  imports: [ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
+  imports: [FORM_DIALOG, ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
   templateUrl: './goals-page.html',
   styleUrl: './goals-page.scss',
 })
 export class GoalsPage implements OnInit {
+  private readonly dialog = inject(MatDialog);
+  private readonly goalDialog = viewChild.required<TemplateRef<unknown>>('goalDialog');
+  private readonly achievementDialog =
+    viewChild.required<TemplateRef<unknown>>('achievementDialog');
+  private goalRef: MatDialogRef<unknown> | null = null;
+  private achievementRef: MatDialogRef<unknown> | null = null;
+
+  protected newGoal(): void {
+    this.resetGoal();
+    this.openGoalDialog();
+  }
+
+  protected newAchievement(): void {
+    this.resetAchievement();
+    this.openAchievementDialog();
+  }
+
+  private openGoalDialog(): void {
+    this.goalRef = this.dialog.open(this.goalDialog(), formDialogConfig(760));
+    this.goalRef.afterClosed().subscribe(() => {
+      this.goalRef = null;
+      this.resetGoal();
+    });
+  }
+
+  private openAchievementDialog(): void {
+    this.achievementRef = this.dialog.open(this.achievementDialog(), formDialogConfig(720));
+    this.achievementRef.afterClosed().subscribe(() => {
+      this.achievementRef = null;
+      this.resetAchievement();
+    });
+  }
+
   private readonly service = inject(KpisService);
   private readonly clock = inject(UserClock);
   private readonly org = inject(OrganizationStore);
@@ -119,6 +162,7 @@ export class GoalsPage implements OnInit {
       start_date: goal.start_date,
       end_date: goal.end_date,
     });
+    this.openGoalDialog();
   }
 
   protected resetGoal(): void {
@@ -166,6 +210,7 @@ export class GoalsPage implements OnInit {
       );
       this.toast.success(this.editingGoal() ? 'Meta atualizada.' : 'Meta criada.');
       this.resetGoal();
+      this.goalRef?.close();
     });
   }
 
@@ -196,6 +241,7 @@ export class GoalsPage implements OnInit {
       url: item.url ?? '',
       notes: item.notes ?? '',
     });
+    this.openAchievementDialog();
   }
 
   protected resetAchievement(): void {
@@ -237,6 +283,7 @@ export class GoalsPage implements OnInit {
       );
       this.toast.success('Registro de desenvolvimento salvo.');
       this.resetAchievement();
+      this.achievementRef?.close();
     });
   }
 
