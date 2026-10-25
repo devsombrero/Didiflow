@@ -21,6 +21,16 @@ export const routes: Routes = [
         loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASK_ROUTES),
       },
       {
+        path: 'today',
+        title: 'Hoje · DidiFlow',
+        loadComponent: () => import('./features/focus/today-page').then((m) => m.TodayPage),
+      },
+      {
+        path: 'focus',
+        title: 'Modo foco · DidiFlow',
+        loadComponent: () => import('./features/focus/focus-page').then((m) => m.FocusPage),
+      },
+      {
         path: 'calendar',
         title: 'Calendário · DidiFlow',
         loadComponent: () =>

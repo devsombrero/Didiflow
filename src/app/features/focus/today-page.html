@@ -1,0 +1,110 @@
+<header class="page-header">
+  <h1>Prioridades de hoje</h1>
+  <a class="btn btn--primary" routerLink="/focus">Modo foco</a>
+</header>
+
+@switch (state()) {
+  @case ('loading') {
+    <p class="muted" role="status">Carregando…</p>
+  }
+  @case ('error') {
+    <div class="alert" role="alert">Não foi possível carregar as prioridades.</div>
+  }
+  @default {
+    <div class="layout">
+      <section class="card">
+        <h2>Minha lista ({{ priorities().length }})</h2>
+        <ol class="list">
+          @for (row of priorities(); track row.id; let i = $index; let last = $last) {
+            <li [class.done]="row.tasks?.status === 'done'">
+              <span class="position">{{ i + 1 }}</span>
+              <div class="info">
+                @if (row.tasks; as task) {
+                  <a [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                  <span class="meta">
+                    <app-priority-badge [priority]="task.priority" />
+                    <span class="muted">{{ statusLabels[task.status] }}</span>
+                    <app-progress-bar [value]="task.progress_percentage" />
+                  </span>
+                }
+              </div>
+              <span class="actions">
+                <button
+                  type="button"
+                  class="btn btn--sm"
+                  aria-label="Subir"
+                  [disabled]="i === 0 || busy()"
+                  (click)="shift(i, -1)"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  class="btn btn--sm"
+                  aria-label="Descer"
+                  [disabled]="last || busy()"
+                  (click)="shift(i, 1)"
+                >
+                  ↓
+                </button>
+                @if (row.tasks?.status !== 'done') {
+                  <a class="btn btn--sm" routerLink="/focus" [queryParams]="{ task: row.task_id }"
+                    >Focar</a
+                  >
+                  <button
+                    type="button"
+                    class="btn btn--sm"
+                    [disabled]="busy()"
+                    (click)="complete(row)"
+                  >
+                    Concluir
+                  </button>
+                }
+                <button type="button" class="btn btn--sm" [disabled]="busy()" (click)="remove(row)">
+                  Remover
+                </button>
+              </span>
+            </li>
+          } @empty {
+            <li class="muted empty">
+              Escolha poucas tarefas para hoje: comece pelas sugestões ao lado.
+            </li>
+          }
+        </ol>
+        @if (others().length) {
+          <label class="sr-only" for="add-task">Adicionar outra tarefa</label>
+          <select id="add-task" class="input" (change)="add($any($event.target).value)">
+            <option value="">Adicionar outra tarefa…</option>
+            @for (task of others(); track task.id) {
+              <option [value]="task.id">{{ task.title }}</option>
+            }
+          </select>
+        }
+      </section>
+
+      <section class="card">
+        <h2>Sugestões</h2>
+        <ul class="suggestions">
+          @for (suggestion of suggestions(); track suggestion.task.id) {
+            <li>
+              <div class="info">
+                <a [routerLink]="['/tasks', suggestion.task.id]">{{ suggestion.task.title }}</a>
+                <span class="muted reason">{{ suggestion.reason }}</span>
+              </div>
+              <button
+                type="button"
+                class="btn btn--sm"
+                [disabled]="busy()"
+                (click)="add(suggestion.task.id)"
+              >
+                Adicionar
+              </button>
+            </li>
+          } @empty {
+            <li class="muted">Nada urgente: nenhuma tarefa atrasada ou vencendo em breve.</li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+}
