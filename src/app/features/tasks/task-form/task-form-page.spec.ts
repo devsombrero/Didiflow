@@ -12,6 +12,7 @@ describe('TaskFormPage', () => {
       update: vi.fn(),
       setTags: vi.fn().mockResolvedValue(undefined),
       get: vi.fn(),
+      hierarchyOptions: vi.fn().mockResolvedValue([]),
     };
     await TestBed.configureTestingModule({
       imports: [TaskFormPage],
@@ -103,7 +104,15 @@ describe('TaskFormPage planning prefill', () => {
         provideRouter([]),
         provideSupabaseMock(),
         provideOrganizationMock(),
-        { provide: TasksService, useValue: { create: vi.fn(), setTags: vi.fn(), get: vi.fn() } },
+        {
+          provide: TasksService,
+          useValue: {
+            create: vi.fn(),
+            setTags: vi.fn(),
+            get: vi.fn(),
+            hierarchyOptions: vi.fn().mockResolvedValue([]),
+          },
+        },
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(TaskFormPage);

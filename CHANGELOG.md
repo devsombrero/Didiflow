@@ -4,6 +4,15 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Adicionado
+
+- Épicos e subtarefas (até três níveis), com progresso calculado automaticamente a partir dos itens.
+- Cálculo automático de horas: totais da tarefa com subtarefas, horas de hoje, ritmo necessário por dia útil até a entrega, gráfico diário e meta de horas por dia.
+
+### Alterado
+
+- Iniciar uma tarefa mantém 0% (antes ia para 1%); 100% conclui a tarefa, e uma tarefa em andamento não volta a "Não iniciado" ao zerar o progresso.
+
 ## [0.3.0] - 2026-10-25
 
 ### Adicionado

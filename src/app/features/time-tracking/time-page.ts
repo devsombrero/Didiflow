@@ -8,6 +8,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
+import { DailyHoursCard } from './daily-hours-card';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -34,7 +35,15 @@ interface DayGroup {
 
 @Component({
   selector: 'app-time-page',
-  imports: [FORM_DIALOG, ReactiveFormsModule, RouterLink, AppDatePipe, MATERIAL_FORMS, MATERIAL_UI],
+  imports: [
+    DailyHoursCard,
+    FORM_DIALOG,
+    ReactiveFormsModule,
+    RouterLink,
+    AppDatePipe,
+    MATERIAL_FORMS,
+    MATERIAL_UI,
+  ],
   templateUrl: './time-page.html',
   styleUrl: './time-page.scss',
 })
@@ -42,6 +51,7 @@ export class TimePage {
   private readonly dialog = inject(MatDialog);
   private readonly entryDialog = viewChild.required<TemplateRef<unknown>>('entryDialog');
   private entryRef: MatDialogRef<unknown> | null = null;
+  private readonly dailyHours = viewChild(DailyHoursCard);
 
   protected newEntry(): void {
     this.cancelEdit();
@@ -248,6 +258,7 @@ export class TimePage {
   }
 
   private async load(week: string): Promise<void> {
+    this.dailyHours()?.reload();
     const tz = this.clock.timeZone();
     const monthStart = `${week.slice(0, 8)}01`;
     try {

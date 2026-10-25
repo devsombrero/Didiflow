@@ -12,6 +12,7 @@ import type {
   TaskUpdate,
   TaskWithTags,
 } from './task.model';
+import type { HierarchyTask, TaskRollup } from './task-hierarchy';
 import { cancelChanges, duplicateInput, reopenChanges, sanitizeSearch } from './task-rules';
 
 const SEARCH_COLUMNS = ['title', 'description', 'requester_name', 'notes'] as const;
@@ -208,6 +209,83 @@ export class TasksService {
       .order('id', { ascending: false });
     if (error) throw error;
     return data;
+  }
+
+  /** Direct children (tasks of an epic, subtasks of a task), oldest first. */
+  async children(parentId: string): Promise<Task[]> {
+    const { data, error } = await this.supabase
+      .from('tasks')
+      .select('*')
+      .eq('parent_id', parentId)
+      .is('deleted_at', null)
+      .order('created_at');
+    if (error) throw error;
+    return data;
+  }
+
+  /** Lightweight list of active tasks for the parent picker and breadcrumbs. */
+  async hierarchyOptions(): Promise<HierarchyTask[]> {
+    const { data, error } = await this.supabase
+      .from('tasks')
+      .select('id,title,kind,parent_id,status')
+      .is('deleted_at', null)
+      .is('archived_at', null)
+      .order('title')
+      .limit(1000);
+    if (error) throw error;
+    return data;
+  }
+
+  /** Parent chain from the top level down to the direct parent. */
+  async ancestors(task: Pick<Task, 'parent_id'>): Promise<Pick<Task, 'id' | 'title' | 'kind'>[]> {
+    const chain: Pick<Task, 'id' | 'title' | 'kind'>[] = [];
+    let parentId = task.parent_id;
+    for (let i = 0; parentId && i < 3; i++) {
+      const { data, error } = await this.supabase
+        .from('tasks')
+        .select('id,title,kind,parent_id')
+        .eq('id', parentId)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) break;
+      chain.unshift({ id: data.id, title: data.title, kind: data.kind });
+      parentId = data.parent_id;
+    }
+    return chain;
+  }
+
+  createSubtask(
+    parent: Pick<Task, 'id' | 'project_id' | 'priority'>,
+    title: string,
+  ): Promise<Task> {
+    return this.create({
+      title: title.trim().slice(0, 200),
+      parent_id: parent.id,
+      project_id: parent.project_id,
+      priority: parent.priority,
+    });
+  }
+
+  /** Tracked hours of the task, of its subtree and of today, plus children counts. */
+  async rollup(taskId: string): Promise<TaskRollup | null> {
+    const { data, error } = await this.supabase.rpc('task_time_rollup', { p_task_id: taskId });
+    if (error) throw error;
+    return (data?.[0] as TaskRollup | undefined) ?? null;
+  }
+
+  /** Seconds tracked per day (user time zone), optionally for one task and its subtasks. */
+  async dailyHours(
+    from: string,
+    to: string,
+    taskId?: string,
+  ): Promise<{ day: string; seconds: number }[]> {
+    const { data, error } = await this.supabase.rpc('daily_hours', {
+      p_from: from,
+      p_to: to,
+      ...(taskId ? { p_task_id: taskId } : {}),
+    });
+    if (error) throw error;
+    return data ?? [];
   }
 
   /** Logical delete: the row and its history are kept (see docs/database.md). */
