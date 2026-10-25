@@ -1,0 +1,141 @@
+<header class="page-header">
+  <h1>Quadro</h1>
+  <div class="page-actions">
+    <mat-button-toggle-group hideSingleSelectionIndicator aria-label="Visualização" value="board">
+      <mat-button-toggle value="list" aria-label="Lista" (click)="openList()">
+        <mat-icon>view_list</mat-icon>
+      </mat-button-toggle>
+      <mat-button-toggle value="board" aria-label="Quadro Kanban">
+        <mat-icon>view_kanban</mat-icon>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+    <a matButton="filled" routerLink="/tasks/new"><mat-icon>add</mat-icon> Nova tarefa</a>
+  </div>
+</header>
+
+<section class="filters" aria-label="Filtros do quadro">
+  <mat-form-field>
+    <mat-label>Projeto</mat-label>
+    <mat-select [value]="projectId()" (selectionChange)="projectId.set($event.value)">
+      <mat-option value="">Todos</mat-option>
+      @for (item of org.items().projects; track item.id) {
+        <mat-option [value]="item.id">{{ item.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Prioridade</mat-label>
+    <mat-select [value]="priority()" (selectionChange)="priority.set($event.value)">
+      <mat-option value="">Todas</mat-option>
+      @for (p of priorities; track p) {
+        <mat-option [value]="p">{{ priorityLabels[p] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-slide-toggle [checked]="includeCancelled()" (change)="includeCancelled.set($event.checked)">
+    Mostrar canceladas
+  </mat-slide-toggle>
+  <span class="muted hint">
+    Concluídas e canceladas dos últimos {{ recentDays }} dias. Arraste os cards ou use o menu "Mover
+    para".
+  </span>
+</section>
+
+@if (state() === 'error') {
+  <div class="alert" role="alert">
+    <mat-icon>error</mat-icon>Não foi possível carregar o quadro.
+  </div>
+} @else {
+  @if (state() === 'loading') {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  <div class="board" cdkDropListGroup>
+    @for (column of columns(); track column) {
+      <section class="column" [attr.data-status]="column" [attr.aria-label]="statusLabels[column]">
+        <header class="column__header">
+          <mat-icon>{{ icons[column] }}</mat-icon>
+          <h2>{{ statusLabels[column] }}</h2>
+          <span class="column__count">{{ groups()[column].length }}</span>
+        </header>
+        <div
+          class="column__list"
+          cdkDropList
+          [cdkDropListData]="column"
+          [cdkDropListSortingDisabled]="true"
+          (cdkDropListDropped)="drop($event)"
+        >
+          @for (task of groups()[column]; track task.id) {
+            @let deadline = deadlineOf(task);
+            <article
+              class="card"
+              cdkDrag
+              [cdkDragData]="task"
+              [class.card--moving]="moving() === task.id"
+              [attr.data-task-id]="task.id"
+            >
+              <div class="card__top">
+                <a class="card__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                <button
+                  matIconButton
+                  type="button"
+                  class="card__menu"
+                  [matMenuTriggerFor]="moveMenu"
+                  [attr.aria-label]="'Mover ' + task.title"
+                >
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #moveMenu="matMenu">
+                  <span class="menu-title" mat-menu-item disabled>Mover para</span>
+                  @for (target of columns(); track target) {
+                    @if (target !== task.status) {
+                      <button mat-menu-item (click)="moveTo(task, target)">
+                        <mat-icon>{{ icons[target] }}</mat-icon>
+                        <span>{{ statusLabels[target] }}</span>
+                      </button>
+                    }
+                  }
+                  @if (!includeCancelled() && task.status !== 'cancelled') {
+                    <button mat-menu-item (click)="moveTo(task, 'cancelled')">
+                      <mat-icon>cancel</mat-icon><span>Cancelado</span>
+                    </button>
+                  }
+                </mat-menu>
+              </div>
+              <div class="card__meta">
+                <app-priority-badge [priority]="task.priority" />
+                @if (task.due_date) {
+                  <span class="card__due" [attr.data-kind]="deadline.kind">
+                    <mat-icon inline>event</mat-icon> {{ task.due_date | appDate }}
+                  </span>
+                }
+              </div>
+              @if (deadline.label) {
+                <span class="card__deadline" [attr.data-kind]="deadline.kind">{{
+                  deadline.label
+                }}</span>
+              }
+              <app-progress-bar [value]="task.progress_percentage" />
+              @if (task.project_id || task.task_tags.length) {
+                <div class="card__tags">
+                  @if (nameOf(task.project_id); as project) {
+                    <span class="card__project"
+                      ><mat-icon inline>folder</mat-icon>{{ project }}</span
+                    >
+                  }
+                  @for (link of task.task_tags; track link.tag_id) {
+                    @if (nameOf(link.tag_id); as tag) {
+                      <span class="tag">{{ tag }}</span>
+                    }
+                  }
+                </div>
+              }
+              <div class="card__placeholder" *cdkDragPlaceholder></div>
+            </article>
+          } @empty {
+            <p class="column__empty muted">Solte uma tarefa aqui</p>
+          }
+        </div>
+      </section>
+    }
+  </div>
+}

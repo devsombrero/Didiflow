@@ -147,6 +147,10 @@ export class TaskListPage {
     return id ? (this.org.byId().get(id)?.name ?? null) : null;
   }
 
+  protected openBoard(): void {
+    void this.router.navigate(['/tasks/board']);
+  }
+
   protected setArchive(value: string): void {
     this.patch({ archive: value as ArchiveFilter });
   }

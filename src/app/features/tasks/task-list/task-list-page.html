@@ -1,6 +1,14 @@
 <header class="page-header">
   <h1>Tarefas</h1>
   <div class="page-actions">
+    <mat-button-toggle-group hideSingleSelectionIndicator aria-label="Visualização" value="list">
+      <mat-button-toggle value="list" aria-label="Lista">
+        <mat-icon>view_list</mat-icon>
+      </mat-button-toggle>
+      <mat-button-toggle value="board" aria-label="Quadro Kanban" (click)="openBoard()">
+        <mat-icon>view_kanban</mat-icon>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
     <a matButton="filled" routerLink="/tasks/new" matTooltip="Atalho: N">
       <mat-icon>add</mat-icon> Nova tarefa
     </a>

@@ -116,3 +116,44 @@ test('task lifecycle: create, progress, complete, search and export', async () =
     removeDir(userDataDir);
   }
 });
+
+test('kanban: drag a card between columns and keep it after reload', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('link', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Card do quadro E2E');
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Card do quadro E2E');
+
+    await page.goto(page.url().replace(/\/tasks\/.*$/, '/tasks/board'));
+    const card = page.locator('.column[data-status="not_started"] .card', {
+      hasText: 'Card do quadro E2E',
+    });
+    const target = page.locator('.column[data-status="in_progress"] .column__list');
+    await expect(card).toBeVisible();
+
+    // CDK drag & drop needs real pointer movement.
+    const from = (await card.boundingBox())!;
+    const to = (await target.boundingBox())!;
+    await page.mouse.move(from.x + from.width / 2, from.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2 + 10, from.y + 30, { steps: 5 });
+    await page.mouse.move(to.x + to.width / 2, to.y + 40, { steps: 15 });
+    await page.mouse.up();
+
+    await expect(
+      page.locator('.column[data-status="in_progress"] .card', { hasText: 'Card do quadro E2E' }),
+    ).toBeVisible();
+    await expect(page.locator('.toast--success')).toContainText('movida para Em andamento');
+
+    await page.reload();
+    await expect(
+      page.locator('.column[data-status="in_progress"] .card', { hasText: 'Card do quadro E2E' }),
+    ).toBeVisible();
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
