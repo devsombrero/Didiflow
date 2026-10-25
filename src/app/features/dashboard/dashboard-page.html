@@ -138,8 +138,10 @@
         </div>
         <div class="tile">
           <span class="tile__label">Tempo investido</span>
-          <span class="tile__value">—</span>
-          <span class="tile__hint">Sem registros de tempo</span>
+          <span class="tile__value">{{ timeInvested() ?? '—' }}</span>
+          @if (!timeInvested()) {
+            <span class="tile__hint">Sem registros de tempo no período</span>
+          }
         </div>
       </section>
 

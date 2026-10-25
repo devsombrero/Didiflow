@@ -28,6 +28,7 @@ O DidiFlow é uma aplicação desktop composta por três partes com responsabili
 | Estado                 | Serviços com signals                                  | Escopo pessoal não justifica NgRx.                                                                                                                      |
 | Testes unitários       | Vitest (runner do `@angular/build`)                   | Padrão do Angular 22.                                                                                                                                   |
 | Testes e2e             | Playwright                                            | Suporta Electron.                                                                                                                                       |
+| Orçamento de bundle    | Inicial: aviso em 750 kB, erro em 1,5 MB              | O app desktop carrega os arquivos do disco (`app://`), sem custo de rede; o chart.js continua em chunk lazy.                                            |
 | Supabase em dev        | Local via Docker (`supabase start`)                   | Migrations e testes de RLS reproduzíveis e offline.                                                                                                     |
 
 ## Electron
