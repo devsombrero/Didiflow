@@ -1,6 +1,8 @@
 import { inject, Injectable, InjectionToken } from '@angular/core';
 import type {
+  BackupApi,
   DesktopNotification,
+  OpenFileResult,
   DidiflowApi,
   SaveFileRequest,
   SaveFileResult,
@@ -27,6 +29,9 @@ export class DesktopBridge {
 
   /** OS-encrypted storage; null outside Electron. */
   readonly secureStore: SecureStoreApi | null = this.api?.secureStore ?? null;
+
+  /** Local backups folder; null outside Electron. */
+  readonly backups: BackupApi | null = this.api?.backups ?? null;
 
   async openExternal(url: string): Promise<void> {
     if (this.api) {
@@ -55,6 +60,11 @@ export class DesktopBridge {
     link.click();
     URL.revokeObjectURL(url);
     return { saved: true };
+  }
+
+  /** Native dialog to pick a backup file (desktop only). */
+  async openBackupFile(): Promise<OpenFileResult> {
+    return this.api ? this.api.openBackupFile() : { canceled: true };
   }
 
   /** Navigation requests coming from notification clicks. */
