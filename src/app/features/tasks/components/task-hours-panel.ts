@@ -174,7 +174,7 @@ export class TaskHoursPanel {
     const days = this.daily();
     if (!days.some((d) => d.seconds > 0)) return null;
     return {
-      labels: days.map((d) => `${d.day.slice(8, 10)}/${d.day.slice(5, 7)}`),
+      labels: days.map((d) => d.day.slice(8, 10)),
       series: [
         {
           label: 'Horas',

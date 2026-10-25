@@ -195,7 +195,16 @@
                 @let deadline = deadlineOf(task);
                 <tr animate.enter="enter-fade-up" [style.--stagger]="$index">
                   <td>
-                    <a class="table__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                    <a class="table__title" [routerLink]="['/tasks', task.id]">
+                      @if (task.kind === 'epic') {
+                        <mat-icon class="kind-icon" inline matTooltip="Épico">bolt</mat-icon>
+                      } @else if (task.parent_id) {
+                        <mat-icon class="kind-icon kind-icon--sub" inline matTooltip="Subtarefa"
+                          >subdirectory_arrow_right</mat-icon
+                        >
+                      }
+                      {{ task.title }}</a
+                    >
                     @if (task.project_id || task.task_tags.length) {
                       <div class="table__meta">
                         @if (nameOf(task.project_id); as project) {

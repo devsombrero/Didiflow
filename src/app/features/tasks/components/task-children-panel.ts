@@ -7,8 +7,14 @@ import {
   output,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormGroupDirective,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MATERIAL_FORMS } from '../../../shared/material';
 import { ToastService } from '../../../shared/toast/toast.service';
@@ -171,6 +177,7 @@ export class TaskChildrenPanel {
   readonly updated = output<void>();
 
   protected readonly children = signal<Task[]>([]);
+  private readonly formDirective = viewChild(FormGroupDirective);
   protected readonly busy = signal(false);
   protected readonly form = this.fb.group({
     title: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/\S/)]],
@@ -204,7 +211,8 @@ export class TaskChildrenPanel {
     if (this.form.invalid) return;
     await this.run(async () => {
       await this.tasks.createSubtask(this.parent(), this.form.controls.title.value);
-      this.form.reset({ title: '' });
+      // resetForm also clears the submitted state (no error outline).
+      this.formDirective()?.resetForm({ title: '' });
     });
   }
 

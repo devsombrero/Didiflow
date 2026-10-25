@@ -77,7 +77,16 @@
               [attr.data-task-id]="task.id"
             >
               <div class="card__top">
-                <a class="card__title" [routerLink]="['/tasks', task.id]">{{ task.title }}</a>
+                <a class="card__title" [routerLink]="['/tasks', task.id]">
+                  @if (task.kind === 'epic') {
+                    <mat-icon class="kind-icon" inline matTooltip="Épico">bolt</mat-icon>
+                  } @else if (task.parent_id) {
+                    <mat-icon class="kind-icon kind-icon--sub" inline matTooltip="Subtarefa"
+                      >subdirectory_arrow_right</mat-icon
+                    >
+                  }
+                  {{ task.title }}</a
+                >
                 <button
                   matIconButton
                   type="button"

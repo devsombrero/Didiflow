@@ -325,3 +325,48 @@ test('custom notifications: create in a dialog, test and see it in the bell', as
     removeDir(userDataDir);
   }
 });
+
+test('epics: subtasks roll up progress; starting a task keeps 0%', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Tarefas' }).click();
+    await page.getByRole('button', { name: 'Nova tarefa' }).first().click();
+    await page.locator('#title').fill('Lançamento do site');
+    await page.locator('#kind').click();
+    await page.getByRole('option', { name: /Épico/ }).click();
+    await page.getByRole('button', { name: 'Salvar' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Lançamento do site');
+
+    const panel = page.locator('app-task-children-panel');
+    for (const title of ['Landing page', 'E-mail marketing']) {
+      await panel.locator('#child-title').fill(title);
+      await panel.getByRole('button', { name: 'Adicionar' }).click();
+      await expect(panel.locator('.child', { hasText: title })).toBeVisible();
+    }
+    const progress = page.locator('app-task-progress-panel');
+    await expect(progress).toContainText('Calculado automaticamente a partir de 2 itens');
+
+    await panel.getByRole('button', { name: 'Concluir Landing page' }).click();
+    await expect(panel).toContainText('1 de 2 concluídas');
+    await expect(progress.locator('.progress__value')).toHaveText('50%');
+    await expect(page.locator('app-status-badge').first()).toContainText('Em andamento');
+
+    await panel.getByRole('button', { name: 'Concluir E-mail marketing' }).click();
+    await expect(page.locator('app-status-badge').first()).toContainText('Concluído');
+
+    // A subtask: starting it keeps 0%.
+    await panel.locator('.child__title', { hasText: 'Landing page' }).click();
+    await expect(page.locator('.breadcrumb')).toContainText('Lançamento do site');
+    await page.locator('#task-status').click();
+    await page.getByRole('option', { name: 'Não iniciado' }).click();
+    await page.locator('#task-status').click();
+    await page.getByRole('option', { name: 'Em andamento' }).click();
+    await expect(page.locator('#task-progress + output, output[for="task-progress"]')).toHaveText(
+      '0%',
+    );
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
