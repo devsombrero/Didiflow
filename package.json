@@ -28,7 +28,8 @@
     "icon": "node scripts/generate-icon.mjs",
     "dist": "npm run build && npm run electron:build && electron-builder --win --publish never",
     "android:build": "node scripts/build-android.mjs",
-    "android:emulator": "node scripts/android-emulator.mjs"
+    "android:emulator": "node scripts/android-emulator.mjs",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "private": true,
   "packageManager": "npm@12.2.0",
@@ -73,6 +74,7 @@
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
+    "sharp": "^0.35.5",
     "supabase": "^2.122.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "8.71.0",
