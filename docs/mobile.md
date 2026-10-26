@@ -47,6 +47,19 @@ O script `scripts/build-android.mjs`:
 
 Ferramentas: JDK 21 e Android SDK (plataforma 36). O script usa `JAVA_HOME_21`/`ANDROID_HOME` ou, se não existirem, as cópias em `%LOCALAPPDATA%\didiflow-tools` (JDK Temurin 21 e command-line tools do Android).
 
+## Emulador
+
+Para ver o app no PC sem celular:
+
+1. Gere o APK do emulador (ele acessa o Supabase local por `10.0.2.2`, que é o PC visto de dentro do emulador):
+   ```bash
+   DIDIFLOW_MOBILE_SUPABASE_URL=http://10.0.2.2:54321 npm run android:build
+   ```
+   Renomeie o resultado para `release/android/DidiFlow-<versão>-emulator-debug.apk`.
+2. Rode `npm run android:emulator`. O comando liga o dispositivo virtual **DidiFlow_Pixel** (Android 15, x86_64, aceleração WHPX), instala o APK e abre o app.
+
+O emulador e a imagem do Android ficam em `%LOCALAPPDATA%didiflow-toolsandroid-sdk`, e o dispositivo virtual em `%USERPROFILE%.androidavdDidiFlow_Pixel.avd`. O `adb` está em `platform-tools` dentro do SDK.
+
 ## Usar com o Supabase local
 
 1. PC e celular na mesma rede Wi-Fi.

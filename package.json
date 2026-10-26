@@ -27,7 +27,8 @@
     "test:e2e": "npm run build && npm run electron:build && playwright test",
     "icon": "node scripts/generate-icon.mjs",
     "dist": "npm run build && npm run electron:build && electron-builder --win --publish never",
-    "android:build": "node scripts/build-android.mjs"
+    "android:build": "node scripts/build-android.mjs",
+    "android:emulator": "node scripts/android-emulator.mjs"
   },
   "private": true,
   "packageManager": "npm@12.2.0",

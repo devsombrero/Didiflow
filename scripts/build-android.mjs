@@ -119,6 +119,7 @@ try {
   copyFileSync('android/app/build/outputs/apk/debug/app-debug.apk', target);
   console.log(`android: ${target}`);
 } finally {
-  // Back to the desktop configuration.
+  // Back to the desktop configuration and the https-only network policy.
+  writeNetworkConfig('https://localhost');
   run('node', ['scripts/write-env.mjs'], { ...process.env, DIDIFLOW_ALLOW_LAN_HTTP: '' });
 }
