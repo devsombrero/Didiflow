@@ -3,6 +3,7 @@ import type {
   AttachmentApi,
   BackupApi,
   DesktopNotification,
+  EmailApi,
   OpenFileResult,
   DidiflowApi,
   SaveFileRequest,
@@ -36,6 +37,9 @@ export class DesktopBridge {
 
   /** Task attachment files on this computer; null outside Electron. */
   readonly attachments: AttachmentApi | null = this.api?.attachments ?? null;
+
+  /** Notification e-mails through Gmail (main process); null outside Electron. */
+  readonly email: EmailApi | null = this.api?.email ?? null;
 
   async openExternal(url: string): Promise<void> {
     if (this.api) {

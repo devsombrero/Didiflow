@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>DidiFlow — Manual do usuário</title>
+    <!--
+      Source of the user manual PDF (docs/manual/DidiFlow-Manual-<version>.pdf).
+      Regenerate with: npm run manual
+      Screenshots in img/ are real captures of the desktop app (1366×860) and
+      of the Android app on the DidiFlow_Pixel emulator, using demo data.
+    -->
+    <style>
+      @font-face {
+        font-family: 'Inter Variable';
+        font-weight: 100 900;
+        src: url('../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+          format('woff2');
+      }
+      @font-face {
+        font-family: 'Inter Variable';
+        font-style: italic;
+        font-weight: 100 900;
+        src: url('../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-italic.woff2')
+          format('woff2');
+      }
+      @page {
+        size: A4;
+        margin: 18mm 16mm 20mm;
+      }
+      @page :first {
+        margin: 0;
+      }
+      :root {
+        --brand: #0284c7;
+        --brand-dark: #075985;
+        --ink: #0f172a;
+        --muted: #475569;
+        --soft: #f0f7fc;
+        --line: #d7e3ee;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        font:
+          10.5pt/1.55 'Inter Variable',
+          'Segoe UI',
+          sans-serif;
+        color: var(--ink);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      body {
+        margin: 0;
+      }
+      h1,
+      h2,
+      h3 {
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        break-after: avoid;
+      }
+      h1 {
+        font-size: 22pt;
+        font-weight: 800;
+        color: var(--brand-dark);
+        margin: 0 0 4mm;
+        padding-bottom: 3mm;
+        border-bottom: 3px solid var(--brand);
+      }
+      h1 .num {
+        color: var(--brand);
+        margin-right: 3mm;
+      }
+      h2 {
+        font-size: 14pt;
+        font-weight: 700;
+        color: var(--brand-dark);
+        margin: 7mm 0 2mm;
+      }
+      h3 {
+        font-size: 11pt;
+        font-weight: 700;
+        margin: 5mm 0 1.5mm;
+      }
+      p {
+        margin: 0 0 2.5mm;
+      }
+      ul,
+      ol {
+        margin: 0 0 3mm;
+        padding-left: 6mm;
+      }
+      li {
+        margin-bottom: 1mm;
+      }
+      code,
+      kbd {
+        font-family: Consolas, 'Cascadia Mono', monospace;
+        font-size: 9pt;
+        background: #e8f1f8;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+      kbd {
+        border-bottom-width: 2px;
+        font-weight: 600;
+      }
+      strong {
+        font-weight: 650;
+      }
+      .chapter {
+        break-before: page;
+      }
+      figure {
+        margin: 4mm 0 5mm;
+        break-inside: avoid;
+        text-align: center;
+      }
+      figure img {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      /* Screenshots are capped in height so text and image share a page. */
+      figure.desktop img {
+        width: auto;
+        max-height: 98mm;
+      }
+      figure.half img {
+        width: 78%;
+      }
+      figcaption {
+        margin-top: 2mm;
+        font-size: 8.5pt;
+        color: var(--muted);
+      }
+      figcaption b {
+        color: var(--brand-dark);
+      }
+      .phones {
+        display: flex;
+        justify-content: center;
+        gap: 6mm;
+        margin: 4mm 0 5mm;
+        break-inside: avoid;
+      }
+      .phones figure {
+        margin: 0;
+        width: 44mm;
+      }
+      .phones figure img {
+        width: 44mm;
+        border-radius: 10px;
+        border: 2px solid #1e293b;
+      }
+      .note,
+      .tip,
+      .warn {
+        margin: 3mm 0 4mm;
+        padding: 3mm 4mm;
+        border-radius: 8px;
+        border-left: 4px solid var(--brand);
+        background: var(--soft);
+        break-inside: avoid;
+      }
+      .tip {
+        border-color: #16a34a;
+        background: #effaf3;
+      }
+      .warn {
+        border-color: #d97706;
+        background: #fff7e8;
+      }
+      .note > b:first-child,
+      .tip > b:first-child,
+      .warn > b:first-child {
+        display: block;
+        margin-bottom: 1mm;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2mm 0 4mm;
+        font-size: 9.5pt;
+      }
+      tr {
+        break-inside: avoid;
+      }
+      .pair {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 6mm;
+        break-inside: avoid;
+      }
+      .pair figure {
+        margin: 0;
+      }
+      .pair .phone img {
+        width: 40mm;
+        border-radius: 10px;
+        border: 2px solid #1e293b;
+      }
+      .pair .wide img {
+        width: 118mm;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 1.5mm 3mm;
+        border-bottom: 1px solid var(--line);
+      }
+      th {
+        background: var(--soft);
+        color: var(--brand-dark);
+        font-weight: 700;
+      }
+      .steps {
+        counter-reset: step;
+        list-style: none;
+        padding-left: 0;
+      }
+      .steps > li {
+        counter-increment: step;
+        position: relative;
+        padding-left: 9mm;
+        margin-bottom: 2mm;
+      }
+      .steps > li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0.3mm;
+        width: 6mm;
+        height: 6mm;
+        border-radius: 50%;
+        background: var(--brand);
+        color: #fff;
+        font-size: 8.5pt;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+      }
+
+      /* Cover */
+      .cover {
+        height: 297mm;
+        padding: 30mm 22mm 22mm;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(160deg, #cfeafb 0%, #f5f9fd 45%, #f5f9fd 60%, #c9e8fa 100%);
+        break-after: page;
+      }
+      .cover .logo {
+        width: 125mm;
+      }
+      .cover h1 {
+        border: 0;
+        margin: 26mm 0 4mm;
+        font-size: 34pt;
+        color: var(--ink);
+      }
+      .cover .subtitle {
+        font-size: 14pt;
+        color: var(--muted);
+        max-width: 140mm;
+      }
+      .cover .shots {
+        position: relative;
+        flex: 1;
+        margin-top: 12mm;
+      }
+      .cover .shots .d {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 135mm;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .cover .shots .m {
+        position: absolute;
+        right: 4mm;
+        top: 14mm;
+        width: 42mm;
+        border-radius: 12px;
+        border: 3px solid #1e293b;
+      }
+      .cover .meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10pt;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        padding-top: 4mm;
+      }
+
+      /* Table of contents */
+      .toc ol {
+        list-style: none;
+        padding: 0;
+        columns: 2;
+        column-gap: 10mm;
+      }
+      .toc li {
+        break-inside: avoid;
+        padding: 2mm 0;
+        border-bottom: 1px dashed var(--line);
+      }
+      .toc li span {
+        display: inline-block;
+        width: 9mm;
+        color: var(--brand);
+        font-weight: 700;
+      }
+      .toc a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .lead {
+        font-size: 11.5pt;
+        color: var(--muted);
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4mm;
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 3mm 4mm;
+        background: #fbfdff;
+        break-inside: avoid;
+      }
+      .card h3 {
+        margin-top: 0;
+        color: var(--brand-dark);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ================================================================ CAPA -->
+    <section class="cover">
+      <img class="logo" src="../../assets/brand/didiflow-logo-light.svg" alt="DidiFlow" />
+      <h1>Manual do usuário</h1>
+      <p class="subtitle">
+        Guia completo de uso do DidiFlow no computador (Windows) e no celular (Android): tarefas,
+        prazos, tempo, indicadores e notificações.
+      </p>
+      <div class="shots">
+        <img class="d" src="img/desktop-02-dashboard.png" alt="" />
+        <img class="m" src="img/android-02-dashboard.png" alt="" />
+      </div>
+      <div class="meta">
+        <span>Versão 0.6.0</span>
+        <span>Desktop (Windows) · Android</span>
+        <span>Outubro de 2026</span>
+      </div>
+    </section>
+
+    <!-- ================================================================ SUMÁRIO -->
+    <section class="toc">
+      <h1>Sumário</h1>
+      <ol>
+        <li><span>1</span><a href="#intro">Conhecendo o DidiFlow</a></li>
+        <li><span>2</span><a href="#install">Instalação</a></li>
+        <li><span>3</span><a href="#login">Conta e primeiro acesso</a></li>
+        <li><span>4</span><a href="#nav">Navegando pelo aplicativo</a></li>
+        <li><span>5</span><a href="#dashboard">Dashboard</a></li>
+        <li><span>6</span><a href="#tasks">Tarefas</a></li>
+        <li><span>7</span><a href="#detail">Detalhe da tarefa</a></li>
+        <li><span>8</span><a href="#epics">Épicos e subtarefas</a></li>
+        <li><span>9</span><a href="#calendar">Calendário</a></li>
+        <li><span>10</span><a href="#today">Hoje e Modo foco</a></li>
+        <li><span>11</span><a href="#time">Registro de tempo</a></li>
+        <li><span>12</span><a href="#kpis">KPIs e Metas</a></li>
+        <li><span>13</span><a href="#org">Organização</a></li>
+        <li><span>14</span><a href="#notif">Notificações</a></li>
+        <li><span>15</span><a href="#search">Busca</a></li>
+        <li><span>16</span><a href="#settings">Configurações</a></li>
+        <li><span>17</span><a href="#backup">Backup e exportação</a></li>
+        <li><span>18</span><a href="#android">Usando no Android</a></li>
+        <li><span>19</span><a href="#shortcuts">Atalhos de teclado</a></li>
+        <li><span>20</span><a href="#trouble">Solução de problemas</a></li>
+      </ol>
+      <div class="note">
+        <b>Sobre as imagens deste manual</b>
+        Todas as telas são capturas reais do DidiFlow 0.6.0: as do computador foram feitas no
+        aplicativo para Windows e as do celular no aplicativo Android. Os dados exibidos (projetos,
+        tarefas e a usuária “Ana Souza”) são fictícios, criados só para demonstração.
+      </div>
+    </section>
+
+    <!-- ================================================================ 1 -->
+    <section class="chapter" id="intro">
+      <h1><span class="num">1</span>Conhecendo o DidiFlow</h1>
+      <p class="lead">
+        O DidiFlow é um gestor pessoal de demandas: você registra o que precisa entregar, acompanha
+        prazos e progresso, anota o tempo investido e enxerga seus indicadores de entrega.
+      </p>
+      <div class="grid2">
+        <div class="card">
+          <h3>Organize</h3>
+          Tarefas com prioridade, prazo, solicitante, projeto, categoria, tags, links do Jira e do
+          Slack. Agrupe trabalho maior em épicos e subtarefas.
+        </div>
+        <div class="card">
+          <h3>Acompanhe</h3>
+          Lista, quadro Kanban e calendário. Status e percentual de conclusão sempre coerentes (0%
+          ao iniciar, 100% ao concluir).
+        </div>
+        <div class="card">
+          <h3>Meça</h3>
+          Cronômetro, apontamentos manuais, horas por dia, dashboard e 10 KPIs pessoais com fórmula
+          e histórico.
+        </div>
+        <div class="card">
+          <h3>Seja lembrado</h3>
+          Lembretes de tarefas, resumo de prazos e notificações personalizadas (ex.: “pausa para
+          água” a cada hora).
+        </div>
+      </div>
+      <h2>Um app, duas plataformas</h2>
+      <p>
+        O mesmo DidiFlow roda no <strong>computador</strong> (aplicativo para Windows) e no
+        <strong>celular</strong> (aplicativo Android). Os dois usam a mesma conta e os mesmos dados:
+        uma tarefa criada no computador aparece no celular e vice-versa. As poucas diferenças estão
+        no capítulo <a href="#android">18 — Usando no Android</a>.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-02-dashboard.png" alt="" />
+        <figcaption>
+          <b>Figura 1.</b> DidiFlow no computador: menu lateral à esquerda e o Dashboard.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 2 -->
+    <section class="chapter" id="install">
+      <h1><span class="num">2</span>Instalação</h1>
+      <h2>No computador (Windows)</h2>
+      <ol class="steps">
+        <li>Execute o instalador <code>DidiFlow-Setup-0.6.0.exe</code>.</li>
+        <li>
+          Se o Windows SmartScreen exibir “O Windows protegeu o computador”, clique em
+          <strong>Mais informações</strong> e depois em <strong>Executar assim mesmo</strong>. O
+          aviso aparece porque o instalador ainda não tem assinatura digital.
+        </li>
+        <li>Escolha a pasta de instalação e conclua. Não é preciso ser administrador.</li>
+        <li>Abra o DidiFlow pelo atalho da área de trabalho ou do menu Iniciar.</li>
+      </ol>
+      <div class="note">
+        <b>Onde ficam seus dados</b>
+        Tarefas, tempo e configurações ficam no servidor (Supabase), ligados à sua conta. No
+        computador ficam apenas a sessão, os anexos de arquivo e os backups locais, em
+        <code>%APPDATA%\didiflow</code>. Desinstalar o app (Configurações do Windows → Aplicativos)
+        não apaga seus dados.
+      </div>
+
+      <h2>No celular (Android)</h2>
+      <ol class="steps">
+        <li>
+          Copie o arquivo <code>DidiFlow-0.6.0-debug.apk</code> para o celular (cabo USB, e-mail ou
+          nuvem).
+        </li>
+        <li>
+          Toque no arquivo. Na primeira vez o Android pede para permitir a instalação de apps
+          desconhecidos pelo app usado para abrir o arquivo (Arquivos, Chrome etc.). Permita e
+          volte.
+        </li>
+        <li>
+          Toque em <strong>Instalar</strong> e depois em <strong>Abrir</strong>. O ícone do DidiFlow
+          fica na gaveta de apps.
+        </li>
+        <li>
+          Na primeira abertura, permita as <strong>notificações</strong> e a opção
+          <strong>Alarmes e lembretes</strong>. Sem elas, os avisos não aparecem com o app fechado.
+        </li>
+      </ol>
+      <div class="phones">
+        <figure>
+          <img src="img/android-00-launcher.png" alt="" />
+          <figcaption><b>Figura 2.</b> Ícone do DidiFlow na gaveta de apps.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-03-alarms.png" alt="" />
+          <figcaption><b>Figura 3.</b> Permissão “Alarmes e lembretes”: ative a chave.</figcaption>
+        </figure>
+      </div>
+      <div class="warn">
+        <b>Servidor na rede local</b>
+        Quando o servidor do DidiFlow roda num computador da sua rede (instalação local), o celular
+        precisa estar no <strong>mesmo Wi-Fi</strong> e a porta <code>54321</code> precisa estar
+        liberada no Firewall do Windows desse computador. Veja a
+        <a href="#trouble">Solução de problemas</a>.
+      </div>
+    </section>
+
+    <!-- ================================================================ 3 -->
+    <section class="chapter" id="login">
+      <h1><span class="num">3</span>Conta e primeiro acesso</h1>
+      <h2>Criar conta</h2>
+      <ol class="steps">
+        <li>Na tela de entrada, toque em <strong>Criar conta</strong>.</li>
+        <li>
+          Informe nome, e-mail e senha. A senha precisa de pelo menos 8 caracteres, com letras
+          maiúsculas, minúsculas e números.
+        </li>
+        <li>Digite o código de 6 dígitos enviado para o seu e-mail.</li>
+      </ol>
+      <h2>Entrar e sair</h2>
+      <p>
+        Informe e-mail e senha e clique em <strong>Entrar</strong>. O ícone de olho mostra a senha
+        digitada. A sessão fica salva: na próxima vez o app já abre conectado. Para sair, clique no
+        seu nome no rodapé do menu e escolha <strong>Sair</strong>.
+      </p>
+      <h2>Esqueci minha senha</h2>
+      <p>
+        Clique em <strong>Esqueci minha senha</strong>, informe o e-mail e siga o código recebido
+        para definir uma senha nova.
+      </p>
+      <div class="pair">
+        <figure class="wide">
+          <img src="img/desktop-01-login.png" alt="" />
+          <figcaption><b>Figura 4.</b> Tela de entrada no computador.</figcaption>
+        </figure>
+        <figure class="phone">
+          <img src="img/android-01-login.png" alt="" />
+          <figcaption><b>Figura 5.</b> No Android.</figcaption>
+        </figure>
+      </div>
+      <h2>Primeiros passos recomendados</h2>
+      <ol>
+        <li>
+          <strong>Configurações:</strong> confira fuso horário, formato de data, tema e meta de
+          horas por dia.
+        </li>
+        <li>
+          <strong>Organização:</strong> cadastre seus projetos, categorias, tags e contextos
+          (opcional).
+        </li>
+        <li><strong>Tarefas → Nova tarefa:</strong> registre suas demandas atuais.</li>
+      </ol>
+    </section>
+
+    <!-- ================================================================ 4 -->
+    <section class="chapter" id="nav">
+      <h1><span class="num">4</span>Navegando pelo aplicativo</h1>
+      <p>
+        No computador, o <strong>menu lateral</strong> fica sempre visível. No topo estão o
+        logotipo, o <strong>sino</strong> de notificações e a caixa <strong>Buscar</strong>; no
+        rodapé, o seu nome (menu da conta).
+      </p>
+      <table>
+        <tr>
+          <th>Item</th>
+          <th>Para que serve</th>
+        </tr>
+        <tr>
+          <td>Dashboard</td>
+          <td>Visão geral: contadores, entregas no prazo, tempo investido e gráficos.</td>
+        </tr>
+        <tr>
+          <td>Hoje</td>
+          <td>Sua lista curta de prioridades do dia, com sugestões.</td>
+        </tr>
+        <tr>
+          <td>Foco</td>
+          <td>Sessões de foco cronometradas (25, 50 ou 90 minutos).</td>
+        </tr>
+        <tr>
+          <td>Tarefas</td>
+          <td>Lista e quadro Kanban de todas as tarefas.</td>
+        </tr>
+        <tr>
+          <td>Calendário</td>
+          <td>Tarefas por dia, semana ou mês.</td>
+        </tr>
+        <tr>
+          <td>KPIs</td>
+          <td>Seus 10 indicadores pessoais de entrega.</td>
+        </tr>
+        <tr>
+          <td>Metas</td>
+          <td>Metas SMART e registros de cursos e certificações.</td>
+        </tr>
+        <tr>
+          <td>Tempo</td>
+          <td>Cronômetro, apontamentos e horas por dia.</td>
+        </tr>
+        <tr>
+          <td>Organização</td>
+          <td>Projetos, categorias, tags, contextos e solicitantes.</td>
+        </tr>
+        <tr>
+          <td>Notificações</td>
+          <td>Avisos personalizados recorrentes.</td>
+        </tr>
+        <tr>
+          <td>Configurações</td>
+          <td>Perfil, tema, preferências, exportação e backup.</td>
+        </tr>
+      </table>
+      <p>
+        No celular, o menu fica escondido numa <strong>gaveta</strong>: toque no botão
+        <strong>☰</strong> no canto superior esquerdo para abri-la. O sino fica no canto superior
+        direito.
+      </p>
+      <div class="phones">
+        <figure>
+          <img src="img/android-04-menu.png" alt="" />
+          <figcaption><b>Figura 6.</b> Menu em gaveta no Android.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-02-dashboard.png" alt="" />
+          <figcaption><b>Figura 7.</b> Barra superior com ☰, logotipo e sino.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 5 -->
+    <section class="chapter" id="dashboard">
+      <h1><span class="num">5</span>Dashboard</h1>
+      <p>
+        É a tela inicial. Os <strong>filtros</strong> no topo (Período, Status, Prioridade, Projeto
+        e Categoria) valem para todos os cartões e gráficos. Clique em um cartão para abrir a lista
+        de tarefas já filtrada.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-02-dashboard.png" alt="" />
+        <figcaption><b>Figura 8.</b> Cartões de resumo do Dashboard.</figcaption>
+      </figure>
+      <table>
+        <tr>
+          <th>Cartão</th>
+          <th>O que mostra</th>
+        </tr>
+        <tr>
+          <td>Abertas / Em andamento / Bloqueadas</td>
+          <td>Quantidade de tarefas em cada situação.</td>
+        </tr>
+        <tr>
+          <td>Atrasadas</td>
+          <td>Tarefas abertas com entrega vencida. Fica vermelho quando há alguma.</td>
+        </tr>
+        <tr>
+          <td>Vencendo em até 2 dias</td>
+          <td>Entregas próximas que pedem atenção.</td>
+        </tr>
+        <tr>
+          <td>Concluídas no período</td>
+          <td>Tarefas concluídas dentro do período filtrado.</td>
+        </tr>
+        <tr>
+          <td>Entregas no prazo</td>
+          <td>Percentual de entregas concluídas até a data prevista.</td>
+        </tr>
+        <tr>
+          <td>Conclusão das entregas do período</td>
+          <td>Quanto das entregas previstas para o período já foi concluído.</td>
+        </tr>
+        <tr>
+          <td>Progresso médio das abertas</td>
+          <td>Média do percentual de conclusão das tarefas abertas.</td>
+        </tr>
+        <tr>
+          <td>Tempo investido</td>
+          <td>Horas registradas no período.</td>
+        </tr>
+      </table>
+      <figure class="desktop">
+        <img src="img/desktop-03-dashboard-charts.png" alt="" />
+        <figcaption>
+          <b>Figura 9.</b> Gráficos: histórico de entregas, distribuição por status e por
+          prioridade.
+        </figcaption>
+      </figure>
+      <div class="tip">
+        <b>Dica</b>
+        Abaixo de cada gráfico, <strong>Ver dados em tabela</strong> mostra os mesmos números em
+        formato de tabela. No histórico, alterne entre visão <strong>Semanal</strong> e
+        <strong>Mensal</strong>.
+      </div>
+    </section>
+
+    <!-- ================================================================ 6 -->
+    <section class="chapter" id="tasks">
+      <h1><span class="num">6</span>Tarefas</h1>
+      <h2>Lista de tarefas</h2>
+      <p>
+        A tela <strong>Tarefas</strong> reúne todas as suas demandas. Use a busca (atalho
+        <kbd>/</kbd>), os filtros (prioridade, arquivo, projeto, categoria, contexto, tag,
+        solicitante), os botões de status e a ordenação. Cada linha mostra status, prioridade,
+        progresso, entrega e solicitante; o menu <strong>⋮</strong> traz as ações rápidas (editar,
+        mudar status, arquivar, excluir).
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-04-tasks.png" alt="" />
+        <figcaption><b>Figura 10.</b> Lista de tarefas com filtros e ações por linha.</figcaption>
+      </figure>
+      <p>
+        Os ícones indicam o tipo: <strong>⚡</strong> épico e <strong>↳</strong> tarefa filha
+        (subtarefa ou tarefa de um épico).
+      </p>
+      <h2>Quadro (Kanban)</h2>
+      <p>
+        Clique no ícone de quadro, ao lado do ícone de lista, para ver as tarefas em colunas por
+        status. <strong>Arraste os cards</strong> entre colunas para mudar o status, ou use o menu
+        <strong>⋮ → Mover para</strong> (também pelo teclado). As colunas Concluído e Cancelado
+        mostram os últimos 14 dias; ative <strong>Mostrar canceladas</strong> quando precisar.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-05-board.png" alt="" />
+        <figcaption>
+          <b>Figura 11.</b> Quadro Kanban: Não iniciado, Em andamento, Bloqueado e Concluído.
+        </figcaption>
+      </figure>
+
+      <h2>Criar e editar uma tarefa</h2>
+      <p>
+        Clique em <strong>Nova tarefa</strong> (atalho <kbd>N</kbd> na lista). O formulário abre
+        numa janela sobre a tela atual e é dividido em seções:
+      </p>
+      <ul>
+        <li>
+          <strong>Demanda:</strong> título, descrição em Markdown, tipo (Tarefa ou Épico), a quem
+          pertence e prioridade.
+        </li>
+        <li><strong>Classificação:</strong> projeto, categoria, contexto e tags.</li>
+        <li>
+          <strong>Solicitação:</strong> solicitante, data do pedido e links do Jira e do Slack.
+        </li>
+        <li><strong>Prazos e esforço:</strong> início, entrega prevista e estimativa em horas.</li>
+        <li><strong>Observações</strong> livres, também em Markdown.</li>
+      </ul>
+      <figure class="desktop">
+        <img src="img/desktop-06-task-form.png" alt="" />
+        <figcaption><b>Figura 12.</b> Formulário de nova tarefa com editor de Markdown.</figcaption>
+      </figure>
+      <p>
+        Clique em <strong>Salvar</strong>. Para fechar sem salvar, use <kbd>Esc</kbd>, o
+        <strong>×</strong> ou clique fora da janela; se houver alterações, o app pergunta antes de
+        descartá-las.
+      </p>
+      <h3>Escrevendo com Markdown</h3>
+      <p>
+        Descrição e observações aceitam formatação. Use a barra do editor ou os atalhos
+        <kbd>Ctrl</kbd>+<kbd>B</kbd> (negrito), <kbd>Ctrl</kbd>+<kbd>I</kbd> (itálico) e
+        <kbd>Ctrl</kbd>+<kbd>K</kbd> (link). A aba <strong>Visualizar</strong> mostra o resultado.
+      </p>
+      <table>
+        <tr>
+          <th>Você digita</th>
+          <th>Resultado</th>
+        </tr>
+        <tr>
+          <td><code>**texto**</code></td>
+          <td><strong>negrito</strong></td>
+        </tr>
+        <tr>
+          <td><code>_texto_</code></td>
+          <td><em>itálico</em></td>
+        </tr>
+        <tr>
+          <td><code>## Título</code></td>
+          <td>título de seção</td>
+        </tr>
+        <tr>
+          <td><code>- item</code></td>
+          <td>lista com marcadores</td>
+        </tr>
+        <tr>
+          <td><code>- [ ] item</code> / <code>- [x] item</code></td>
+          <td>checklist (pendente / feito)</td>
+        </tr>
+        <tr>
+          <td><code>&gt; texto</code></td>
+          <td>citação</td>
+        </tr>
+        <tr>
+          <td><code>[nome](https://...)</code></td>
+          <td>link (abre no navegador)</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- ================================================================ 7 -->
+    <section class="chapter" id="detail">
+      <h1><span class="num">7</span>Detalhe da tarefa</h1>
+      <p>
+        Clique no título de uma tarefa para abrir o detalhe. No topo ficam o status, a prioridade e
+        os botões <strong>Editar</strong>, <strong>Focar</strong> (inicia uma sessão de foco) e
+        <strong>⋮</strong> (duplicar, arquivar, cancelar, excluir).
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-07-task-detail.png" alt="" />
+        <figcaption><b>Figura 13.</b> Detalhe: Status e progresso, Solicitação e Tempo.</figcaption>
+      </figure>
+      <h2>Status e progresso</h2>
+      <p>O percentual de conclusão acompanha o status automaticamente:</p>
+      <table>
+        <tr>
+          <th>Status</th>
+          <th>Progresso</th>
+        </tr>
+        <tr>
+          <td>Não iniciado</td>
+          <td>0%</td>
+        </tr>
+        <tr>
+          <td>Em andamento</td>
+          <td>de 0% a 99% (ao iniciar, a tarefa fica em 0%)</td>
+        </tr>
+        <tr>
+          <td>Concluído</td>
+          <td>100% — registra a data efetiva de conclusão</td>
+        </tr>
+        <tr>
+          <td>Bloqueado / Cancelado</td>
+          <td>preservam o progresso atual</td>
+        </tr>
+      </table>
+      <ul>
+        <li>
+          Mover o controle de progresso ajusta o status: sair de 0% coloca a tarefa em andamento;
+          chegar a 100% conclui.
+        </li>
+        <li><strong>Marcar como concluída</strong> leva a tarefa a 100%.</li>
+        <li>Cancelar pede confirmação; a tarefa pode ser reaberta depois.</li>
+      </ul>
+      <h2>Tempo</h2>
+      <p>
+        O cartão <strong>Tempo</strong> calcula as horas sozinho: total registrado (somando as
+        subtarefas), horas de hoje, estimativa e quanto dela já foi usado, e o
+        <strong>ritmo necessário</strong> em horas por dia útil até a entrega. O gráfico mostra os
+        últimos 14 dias. Use <strong>Iniciar cronômetro</strong> ou
+        <strong>Registrar manualmente</strong>.
+      </p>
+      <h2>Lembretes</h2>
+      <p>
+        Em <strong>Lembretes</strong>, informe data, hora e uma nota opcional e clique em
+        <strong>Adicionar</strong>. O aviso aparece no horário marcado e, ao ser clicado, abre a
+        tarefa.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-08-task-detail-hours.png" alt="" />
+        <figcaption>
+          <b>Figura 14.</b> Lembretes, Subtarefas e a descrição em Markdown já formatada.
+        </figcaption>
+      </figure>
+      <h2>Anexos: Arquivos e Recursos</h2>
+      <p>O cartão <strong>Anexos</strong> tem duas abas:</p>
+      <ul>
+        <li>
+          <strong>Arquivos</strong> (no computador): anexe documentos de até 50 MB por tarefa,
+          somando todos. Os arquivos são copiados para <code>%APPDATA%\didiflow\attachments</code>.
+          Ações: abrir com o programa padrão, mostrar na pasta, salvar uma cópia e remover.
+        </li>
+        <li>
+          <strong>Recursos</strong>: links externos (protótipos, documentos, vídeos), com título
+          opcional — até 50 por tarefa. Cada link abre no navegador, pode ser copiado ou removido.
+        </li>
+      </ul>
+      <figure class="desktop">
+        <img src="img/desktop-09-task-resources.png" alt="" />
+        <figcaption>
+          <b>Figura 15.</b> Aba Recursos com links e o histórico na Atividade.
+        </figcaption>
+      </figure>
+      <p>
+        A seção <strong>Atividade</strong> registra tudo o que mudou na tarefa: criação, alterações
+        de campos, status, links e anexos, com data e hora.
+      </p>
+    </section>
+
+    <!-- ================================================================ 8 -->
+    <section class="chapter" id="epics">
+      <h1><span class="num">8</span>Épicos e subtarefas</h1>
+      <p>
+        Trabalho grande pode ser dividido em até três níveis:
+        <strong>épico › tarefa › subtarefa</strong>. No formulário, escolha o
+        <strong>Tipo</strong> (Tarefa ou Épico) e em <strong>Pertence a</strong> o item pai.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-10-epic.png" alt="" />
+        <figcaption>
+          <b>Figura 16.</b> Épico “Lançamento do Portal 2.0” com suas tarefas e o progresso de cada
+          uma.
+        </figcaption>
+      </figure>
+      <ul>
+        <li>
+          No detalhe, o painel <strong>Tarefas do épico</strong> (ou <strong>Subtarefas</strong>)
+          lista os itens com status e progresso.
+        </li>
+        <li>
+          Digite o título em <strong>Nova subtarefa</strong> e clique em <strong>Adicionar</strong>.
+          Use <strong>Com descrição</strong> para já escrever uma descrição em Markdown.
+        </li>
+        <li>Marque o círculo à esquerda para concluir um item.</li>
+        <li>
+          O <strong>progresso do item pai é calculado automaticamente</strong> a partir dos filhos —
+          ponderado pela estimativa quando todos os itens têm estimativa. Itens cancelados ficam de
+          fora.
+        </li>
+      </ul>
+      <h2>Expandindo uma subtarefa</h2>
+      <p>
+        Clique na seta <strong>⌄</strong> de um item para expandi-lo. Ele tem três abas:
+        <strong>Descrição</strong> (Markdown, com <strong>Adicionar/Editar descrição</strong>),
+        <strong>Arquivos</strong> (até 50 MB por subtarefa, no computador) e
+        <strong>Recursos</strong> (links).
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-11-subtasks.png" alt="" />
+        <figcaption>
+          <b>Figura 17.</b> Subtarefa expandida com checklist na aba Descrição.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 9 -->
+    <section class="chapter" id="calendar">
+      <h1><span class="num">9</span>Calendário</h1>
+      <p>
+        Mostra as tarefas por <strong>Dia</strong>, <strong>Semana</strong> ou <strong>Mês</strong>,
+        usando as datas de início (▸) e de entrega (⚑). Tarefas atrasadas aparecem em vermelho e as
+        urgentes ou vencendo recebem um <strong>!</strong>. Use as setas e o botão
+        <strong>Hoje</strong> para navegar, e os filtros de prioridade e status.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-12-calendar.png" alt="" />
+        <figcaption><b>Figura 18.</b> Calendário mensal.</figcaption>
+      </figure>
+      <div class="tip">
+        <b>Planejar pelo calendário</b>
+        Clique no <strong>+</strong> de um dia para criar uma tarefa já com aquela data. No celular,
+        toque no dia para abrir a visão diária.
+      </div>
+    </section>
+
+    <!-- ================================================================ 10 -->
+    <section class="chapter" id="today">
+      <h1><span class="num">10</span>Hoje e Modo foco</h1>
+      <h2>Prioridades de hoje</h2>
+      <p>
+        Monte uma lista curta com o que vai fazer hoje. Em <strong>Sugestões</strong>, o DidiFlow
+        propõe tarefas atrasadas, vencendo em breve ou de alta prioridade — clique em
+        <strong>Adicionar</strong>. Também é possível escolher qualquer outra tarefa em
+        <strong>Adicionar outra tarefa</strong>.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-13-today.png" alt="" />
+        <figcaption><b>Figura 19.</b> Prioridades de hoje com sugestões.</figcaption>
+      </figure>
+      <h2>Modo foco</h2>
+      <p>
+        Escolha uma tarefa (ou foco livre), a duração (25, 50, 90 minutos ou personalizada) e clique
+        em <strong>Começar</strong>. Opcionalmente, a sessão é registrada no histórico e o tempo é
+        lançado como apontamento da tarefa. Ao terminar, você recebe um aviso de fim de foco.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-14-focus.png" alt="" />
+        <figcaption><b>Figura 20.</b> Nova sessão de foco.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 11 -->
+    <section class="chapter" id="time">
+      <h1><span class="num">11</span>Registro de tempo</h1>
+      <p>
+        O tempo registrado ajuda a comparar esforço estimado e realizado. Há duas formas de
+        registrar:
+      </p>
+      <ul>
+        <li>
+          <strong>Cronômetro:</strong> escolha a tarefa, descreva o que vai fazer e clique em
+          <strong>Iniciar</strong>. O cronômetro em andamento também aparece no menu lateral.
+        </li>
+        <li><strong>Registrar manualmente:</strong> informe tarefa, data, início e fim.</li>
+      </ul>
+      <figure class="desktop">
+        <img src="img/desktop-17-time.png" alt="" />
+        <figcaption>
+          <b>Figura 21.</b> Tela Tempo: cronômetro, apontamentos da semana e horas por dia.
+        </figcaption>
+      </figure>
+      <p>
+        Os apontamentos são agrupados por semana; use as setas para navegar e o lápis ou a lixeira
+        para editar ou excluir. O cartão <strong>Horas por dia</strong> compara as horas de hoje com
+        a sua meta diária (definida em Configurações → Tempo), e mostra a média por dia trabalhado e
+        os dias em que a meta foi atingida.
+      </p>
+    </section>
+
+    <!-- ================================================================ 12 -->
+    <section class="chapter" id="kpis">
+      <h1><span class="num">12</span>KPIs e Metas</h1>
+      <h2>KPIs pessoais</h2>
+      <p>
+        Dez indicadores calculados a partir das suas tarefas e do tempo registrado, sempre com a
+        comparação com o período anterior. Clique em <strong>Fórmula</strong> para ver como cada um
+        é calculado e no ícone de gráfico para ver o histórico.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-15-kpis.png" alt="" />
+        <figcaption>
+          <b>Figura 22.</b> KPIs: volume de entregas, cumprimento de prazos, atraso, lead time,
+          ciclo, previsibilidade e outros.
+        </figcaption>
+      </figure>
+      <div class="note">
+        <b>Dados insuficientes</b>
+        Os KPIs usam apenas dados registrados. Quando falta informação (por exemplo, nenhuma tarefa
+        com estimativa no período), o cartão explica o que está faltando em vez de mostrar um número
+        enganoso.
+      </div>
+      <h2>Metas e desenvolvimento</h2>
+      <p>
+        Em <strong>Metas SMART</strong>, crie metas ligadas a um indicador (ex.: “entregas no prazo
+        de pelo menos 85%”), com período, relevância e plano. O acompanhamento é automático. Em
+        <strong>Desenvolvimento pessoal</strong>, registre cursos e certificações concluídos.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-16-goals.png" alt="" />
+        <figcaption><b>Figura 23.</b> Metas SMART e registros de desenvolvimento.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 13 -->
+    <section class="chapter" id="org">
+      <h1><span class="num">13</span>Organização</h1>
+      <p>
+        Cadastre as listas usadas para classificar tarefas, cada uma em sua aba:
+        <strong>Projetos</strong>, <strong>Categorias</strong>, <strong>Tags</strong>,
+        <strong>Contextos</strong> e <strong>Solicitantes</strong>. Projetos, categorias e tags têm
+        cor, usada nos cards e gráficos. Use o lápis para editar, a caixa para arquivar e a lixeira
+        para excluir.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-18-organization.png" alt="" />
+        <figcaption><b>Figura 24.</b> Organização: projetos com cor e descrição.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 14 -->
+    <section class="chapter" id="notif">
+      <h1><span class="num">14</span>Notificações</h1>
+      <h2>Notificações personalizadas</h2>
+      <p>
+        Crie seus próprios avisos em <strong>Notificações → Nova notificação</strong>: título,
+        mensagem, som e frequência.
+      </p>
+      <ul>
+        <li><strong>Uma vez</strong> (data e hora);</li>
+        <li><strong>Todo dia</strong> ou <strong>dias úteis</strong>;</li>
+        <li><strong>Dias da semana</strong> escolhidos;</li>
+        <li>
+          <strong>A cada intervalo</strong> (15 min a 8 h), opcionalmente só dentro de um horário,
+          como das 09:00 às 18:00.
+        </li>
+      </ul>
+      <figure class="desktop">
+        <img src="img/desktop-19-notifications.png" alt="" />
+        <figcaption><b>Figura 25.</b> Avisos personalizados com a próxima ocorrência.</figcaption>
+      </figure>
+      <p>
+        Cada aviso mostra a próxima ocorrência. A chave pausa ou reativa; o menu
+        <strong>⋮</strong> permite testar, editar e excluir.
+      </p>
+      <h2>Avisos automáticos</h2>
+      <ul>
+        <li>Lembretes das tarefas;</li>
+        <li>resumo diário de tarefas atrasadas e vencendo em até 2 dias;</li>
+        <li>fim de sessão de foco.</li>
+      </ul>
+      <p>
+        No computador, com a janela em foco, os avisos aparecem como cartão no canto da tela (com o
+        botão <strong>Abrir</strong>); com a janela em segundo plano, como notificação do Windows. O
+        DidiFlow precisa estar aberto (pode estar minimizado).
+      </p>
+      <h2>O sino</h2>
+      <p>
+        O sino ao lado do logotipo lista as últimas 100 notificações, com um ponto vermelho quando
+        há não lidas. Clique em uma notificação para abrir o item relacionado;
+        <strong>Limpar</strong>
+        esvazia a lista.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-20-bell.png" alt="" />
+        <figcaption><b>Figura 26.</b> Painel do sino com as notificações recentes.</figcaption>
+      </figure>
+      <h2>Notificações por e-mail (Gmail)</h2>
+      <p>
+        No computador, as notificações também podem chegar no seu e-mail. Configure em
+        <strong>Configurações → E-mail (Gmail)</strong>:
+      </p>
+      <p>
+        Se o instalador já trouxer a <strong>conta padrão do DidiFlow</strong>, o envio vem ativado
+        e os e-mails chegam no endereço da sua conta DidiFlow, sem configurar nada. Os passos abaixo
+        servem para usar outra conta do Gmail.
+      </p>
+      <ol class="steps">
+        <li>
+          Na sua Conta Google, ative a verificação em duas etapas e crie uma
+          <strong>senha de app</strong> (o botão <strong>Criar senha de app</strong> abre a página
+          do Google). A senha normal da conta não funciona.
+        </li>
+        <li>
+          Informe a <strong>conta do Gmail</strong> e as 16 letras da senha de app. Em
+          <strong>Enviar para</strong>, informe outro destinatário se quiser.
+        </li>
+        <li>
+          Marque o que enviar: lembretes de tarefas, resumo de prazos, notificações personalizadas e
+          fim de sessão de foco. Ative <strong>Enviar notificações por e-mail</strong>.
+        </li>
+        <li>Clique em <strong>Salvar e-mail</strong> e depois em <strong>Enviar teste</strong>.</li>
+      </ol>
+      <figure class="desktop">
+        <img src="img/desktop-26-email.png" alt="" />
+        <figcaption><b>Figura 27.</b> Configuração do envio de notificações por e-mail.</figcaption>
+      </figure>
+      <div class="note">
+        <b>Bom saber</b>
+        Os e-mails saem enquanto o DidiFlow estiver aberto, como as demais notificações, com no
+        máximo 20 por hora. A senha de app fica criptografada neste computador e não é enviada ao
+        servidor. Para parar, desative o envio ou use <strong>Remover senha</strong>.
+      </div>
+    </section>
+
+    <!-- ================================================================ 15 -->
+    <section class="chapter" id="search">
+      <h1><span class="num">15</span>Busca</h1>
+      <p>
+        A caixa <strong>Buscar</strong> do menu (atalho <kbd>Ctrl</kbd>+<kbd>K</kbd>) procura no
+        título, descrição, solicitante, projeto, tags e observações, sem diferenciar acentos. Os
+        termos encontrados ficam destacados. Filtre por Todas, Abertas, Concluídas ou Alta
+        prioridade, e ative <strong>Incluir arquivadas</strong> quando precisar.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-24-search.png" alt="" />
+        <figcaption><b>Figura 28.</b> Busca por “relatório” com os termos destacados.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 16 -->
+    <section class="chapter" id="settings">
+      <h1><span class="num">16</span>Configurações</h1>
+      <figure class="desktop">
+        <img src="img/desktop-21-settings.png" alt="" />
+        <figcaption><b>Figura 29.</b> Perfil e Preferências.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Perfil:</strong> nome de exibição (usado na saudação do Dashboard).</li>
+        <li>
+          <strong>Tema:</strong> Claro, Escuro ou Seguir o sistema (acompanha o Windows ou o
+          Android).
+        </li>
+        <li>
+          <strong>Fuso horário e formato de data:</strong> usados em todas as datas e nos avisos.
+        </li>
+        <li>
+          <strong>Meta de horas por dia:</strong> usada no cartão “Horas por dia” da tela Tempo.
+        </li>
+        <li>
+          <strong>Animações e sons:</strong> transições entre telas, confete ao concluir tarefas e
+          efeitos sonoros curtos, com volume ajustável e botão para ouvir cada som. As animações
+          também são reduzidas quando o sistema está configurado para mostrar menos animações.
+        </li>
+        <li><strong>Notificações:</strong> ativar ou desativar lembretes e o resumo de prazos.</li>
+        <li>
+          <strong>E-mail (Gmail):</strong> enviar as notificações também por e-mail (veja o capítulo
+          <a href="#notif">14</a>).
+        </li>
+      </ul>
+      <figure class="desktop">
+        <img src="img/desktop-25-dashboard-dark.png" alt="" />
+        <figcaption><b>Figura 30.</b> O mesmo Dashboard com o tema Escuro.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 17 -->
+    <section class="chapter" id="backup">
+      <h1><span class="num">17</span>Backup e exportação</h1>
+      <h2>Backup e restauração (computador)</h2>
+      <p>
+        Em <strong>Configurações → Backup</strong>, os backups ficam em
+        <code>%APPDATA%\didiflow\backups</code> e contêm todos os seus dados em JSON.
+      </p>
+      <ul>
+        <li><strong>Fazer backup agora</strong> cria um backup manual.</li>
+        <li><strong>Backup automático:</strong> escolha a frequência e quantos backups manter.</li>
+        <li>
+          <strong>Restaurar</strong> (de um backup da lista ou de um arquivo), nos modos
+          <strong>Mesclar</strong> (junta com o que existe) ou <strong>Substituir</strong> (troca
+          tudo). Antes de restaurar, um backup de segurança é criado automaticamente.
+        </li>
+      </ul>
+      <figure class="desktop">
+        <img src="img/desktop-22-backup.png" alt="" />
+        <figcaption><b>Figura 31.</b> Backups locais e backup automático.</figcaption>
+      </figure>
+      <h2>Exportar dados</h2>
+      <p>
+        Em <strong>Configurações → Exportar</strong>, baixe tarefas, projetos e organização,
+        registros de tempo e KPIs em <strong>CSV</strong> (abre no Excel) ou <strong>JSON</strong>,
+        ou uma <strong>cópia completa</strong> em JSON.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-23-export.png" alt="" />
+        <figcaption><b>Figura 32.</b> Exportação em CSV e JSON.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ================================================================ 18 -->
+    <section class="chapter" id="android">
+      <h1><span class="num">18</span>Usando no Android</h1>
+      <p class="lead">
+        O app Android tem as mesmas telas e regras do computador, com o layout adaptado para a tela
+        do celular. Entre com a mesma conta para ver os mesmos dados.
+      </p>
+      <h2>Dashboard e menu</h2>
+      <p>
+        Os cartões do Dashboard ficam dois por linha e os filtros se reorganizam. Toque em
+        <strong>☰</strong> para abrir o menu e no <strong>sino</strong> para ver as notificações.
+      </p>
+      <div class="phones">
+        <figure>
+          <img src="img/android-02-dashboard.png" alt="" />
+          <figcaption><b>Figura 33.</b> Dashboard.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-04-menu.png" alt="" />
+          <figcaption><b>Figura 34.</b> Menu em gaveta.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-17-bell.png" alt="" />
+          <figcaption><b>Figura 35.</b> Notificações do sino.</figcaption>
+        </figure>
+      </div>
+
+      <h2>Tarefas</h2>
+      <p>
+        A lista vira <strong>cartões</strong> com título, status, prioridade, progresso, entrega e
+        solicitante. No <strong>quadro</strong>, cada coluna ocupa a tela: deslize para os lados
+        para trocar de coluna. O formulário de tarefa abre em <strong>tela cheia</strong>.
+      </p>
+      <div class="phones">
+        <figure>
+          <img src="img/android-06-task-cards.png" alt="" />
+          <figcaption><b>Figura 36.</b> Lista em cartões.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-07-board.png" alt="" />
+          <figcaption><b>Figura 37.</b> Quadro com colunas deslizantes.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-12-task-form.png" alt="" />
+          <figcaption><b>Figura 38.</b> Nova tarefa em tela cheia.</figcaption>
+        </figure>
+      </div>
+
+      <h2>Detalhe da tarefa</h2>
+      <p>
+        Os cartões do detalhe ficam um embaixo do outro: status e progresso, solicitação, tempo,
+        lembretes, subtarefas, descrição e anexos. Role a tela para ver todos.
+      </p>
+      <div class="phones">
+        <figure>
+          <img src="img/android-08-task-detail.png" alt="" />
+          <figcaption><b>Figura 39.</b> Status e progresso.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-09-task-detail-time.png" alt="" />
+          <figcaption><b>Figura 40.</b> Cartão Tempo.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-10-task-description.png" alt="" />
+          <figcaption><b>Figura 41.</b> Subtarefas, descrição e anexos.</figcaption>
+        </figure>
+      </div>
+
+      <h2>Épicos, calendário e Hoje</h2>
+      <div class="phones">
+        <figure>
+          <img src="img/android-11-epic.png" alt="" />
+          <figcaption><b>Figura 42.</b> Tarefas do épico.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-13-calendar.png" alt="" />
+          <figcaption><b>Figura 43.</b> Calendário mensal com marcadores.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-14-today.png" alt="" />
+          <figcaption><b>Figura 44.</b> Prioridades de hoje.</figcaption>
+        </figure>
+      </div>
+      <p>
+        No calendário mensal, cada dia mostra marcadores coloridos; toque no dia para ver as tarefas
+        dele. A semana aparece como uma lista de dias.
+      </p>
+
+      <h2>Tempo, notificações e configurações</h2>
+      <div class="phones">
+        <figure>
+          <img src="img/android-15-time.png" alt="" />
+          <figcaption><b>Figura 45.</b> Registro de tempo.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-16-notifications.png" alt="" />
+          <figcaption><b>Figura 46.</b> Notificações personalizadas.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/android-18-settings.png" alt="" />
+          <figcaption><b>Figura 47.</b> Configurações.</figcaption>
+        </figure>
+      </div>
+
+      <h2>Diferenças em relação ao computador</h2>
+      <table>
+        <tr>
+          <th>Recurso</th>
+          <th>No Android</th>
+        </tr>
+        <tr>
+          <td>Notificações</td>
+          <td>
+            Lembretes e avisos personalizados da próxima semana são agendados no próprio celular e
+            aparecem <strong>mesmo com o app fechado</strong>. Tocar na notificação abre a tela
+            correspondente.
+          </td>
+        </tr>
+        <tr>
+          <td>Botão voltar</td>
+          <td>
+            Fecha a janela aberta, depois o menu e então volta de tela. Na tela inicial, minimiza o
+            app.
+          </td>
+        </tr>
+        <tr>
+          <td>Links externos</td>
+          <td>Abrem no navegador do celular.</td>
+        </tr>
+        <tr>
+          <td>Anexos de arquivo</td>
+          <td>
+            Não disponíveis: os arquivos ficam no computador onde foram anexados. A aba
+            <strong>Recursos</strong> (links) funciona normalmente.
+          </td>
+        </tr>
+        <tr>
+          <td>Backups locais automáticos</td>
+          <td>Exclusivos do computador. Exportar dados funciona pelo celular.</td>
+        </tr>
+        <tr>
+          <td>Notificações por e-mail</td>
+          <td>Configuradas e enviadas pelo aplicativo para computador.</td>
+        </tr>
+        <tr>
+          <td>Atalhos de teclado</td>
+          <td>Não se aplicam; use os botões da tela.</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- ================================================================ 19 -->
+    <section id="shortcuts" style="margin-top: 10mm">
+      <h1><span class="num">19</span>Atalhos de teclado</h1>
+      <p>Disponíveis no aplicativo para computador.</p>
+      <table>
+        <tr>
+          <th>Atalho</th>
+          <th>Onde</th>
+          <th>Ação</th>
+        </tr>
+        <tr>
+          <td><kbd>Ctrl</kbd>+<kbd>K</kbd></td>
+          <td>Qualquer tela</td>
+          <td>Ir para a busca global</td>
+        </tr>
+        <tr>
+          <td><kbd>/</kbd></td>
+          <td>Lista de tarefas</td>
+          <td>Focar a busca da lista</td>
+        </tr>
+        <tr>
+          <td><kbd>N</kbd></td>
+          <td>Lista de tarefas</td>
+          <td>Nova tarefa</td>
+        </tr>
+        <tr>
+          <td><kbd>Esc</kbd></td>
+          <td>Janelas e formulários</td>
+          <td>Fechar (pergunta se houver alterações)</td>
+        </tr>
+        <tr>
+          <td><kbd>Ctrl</kbd>+<kbd>B</kbd></td>
+          <td>Editor de Markdown</td>
+          <td>Negrito</td>
+        </tr>
+        <tr>
+          <td><kbd>Ctrl</kbd>+<kbd>I</kbd></td>
+          <td>Editor de Markdown</td>
+          <td>Itálico</td>
+        </tr>
+        <tr>
+          <td><kbd>Ctrl</kbd>+<kbd>K</kbd></td>
+          <td>Editor de Markdown</td>
+          <td>Inserir link</td>
+        </tr>
+      </table>
+
+      <h1 style="break-before: page" id="trouble">
+        <span class="num">20</span>Solução de problemas
+      </h1>
+      <table>
+        <tr>
+          <th>Problema</th>
+          <th>O que fazer</th>
+        </tr>
+        <tr>
+          <td>Windows bloqueia o instalador (SmartScreen)</td>
+          <td>Clique em <strong>Mais informações → Executar assim mesmo</strong>.</td>
+        </tr>
+        <tr>
+          <td>Android não deixa instalar o APK</td>
+          <td>
+            Permita “instalar apps desconhecidos” para o app usado para abrir o arquivo
+            (Configurações → Apps → Acesso especial).
+          </td>
+        </tr>
+        <tr>
+          <td>Celular não conecta / “falha de rede” ao entrar</td>
+          <td>
+            Com servidor local: confirme que celular e computador estão no mesmo Wi-Fi e que a porta
+            <code>54321</code> está liberada no Firewall do Windows (rede privada). Se o IP do
+            computador mudou, peça um APK atualizado.
+          </td>
+        </tr>
+        <tr>
+          <td>Não recebo avisos no celular com o app fechado</td>
+          <td>
+            Verifique as permissões de <strong>Notificações</strong> e
+            <strong>Alarmes e lembretes</strong> do DidiFlow e se a economia de bateria não está
+            restringindo o app. Abra o app uma vez para refazer o agendamento.
+          </td>
+        </tr>
+        <tr>
+          <td>Não recebo avisos no computador</td>
+          <td>
+            O DidiFlow precisa estar aberto (pode estar minimizado). Confira as notificações em
+            Configurações e o modo “Não perturbe” do Windows.
+          </td>
+        </tr>
+        <tr>
+          <td>Anexo aparece como “arquivo não está neste computador”</td>
+          <td>
+            O arquivo foi anexado em outra máquina. Abra-o no computador de origem ou use a aba
+            Recursos para links compartilhados.
+          </td>
+        </tr>
+        <tr>
+          <td>Apaguei algo por engano</td>
+          <td>
+            Use <strong>Configurações → Backup → Restaurar</strong> no modo <strong>Mesclar</strong>
+            a partir do backup automático mais recente.
+          </td>
+        </tr>
+        <tr>
+          <td>E-mail de notificação não chega</td>
+          <td>
+            Use <strong>Enviar teste</strong> em Configurações → E-mail (Gmail). “O Gmail recusou o
+            login” indica senha errada: gere uma nova senha de app. Confira também a pasta de spam e
+            se o DidiFlow está aberto no computador.
+          </td>
+        </tr>
+        <tr>
+          <td>KPI mostra “dados insuficientes”</td>
+          <td>
+            Registre estimativas, datas de entrega e tempo nas tarefas: os KPIs usam apenas dados
+            informados.
+          </td>
+        </tr>
+      </table>
+      <div class="note">
+        <b>Precisa de mais ajuda?</b>
+        Informe a versão (0.6.0), a plataforma (Windows ou Android) e os passos que levaram ao
+        problema ao relatar um erro.
+      </div>
+    </section>
+  </body>
+</html>

@@ -23,6 +23,12 @@ import {
   type BackupStore,
 } from './backups';
 import { IPC_CHANNELS } from './contract';
+import {
+  assertEmailMessage,
+  assertEmailSettingsUpdate,
+  assertRecipient,
+  type EmailNotifier,
+} from './email';
 import type { SecureStore } from './secure-store';
 import {
   assertExternalUrl,
@@ -42,6 +48,7 @@ interface IpcDependencies {
   getWindow: () => BrowserWindow | null;
   backups: BackupStore;
   attachments: AttachmentStore;
+  email: EmailNotifier;
 }
 
 export function registerIpcHandlers({
@@ -50,6 +57,7 @@ export function registerIpcHandlers({
   getWindow,
   backups,
   attachments,
+  email,
 }: IpcDependencies): void {
   const handle = (channel: string, listener: (...args: unknown[]) => unknown) => {
     ipcMain.handle(channel, (event: IpcMainInvokeEvent, ...args: unknown[]) => {
@@ -209,6 +217,11 @@ export function registerIpcHandlers({
   handle(IPC_CHANNELS.attachmentUsage, (userId) =>
     attachments.usage(assertUuid(userId, 'user id')),
   );
+
+  handle(IPC_CHANNELS.emailStatus, () => email.status());
+  handle(IPC_CHANNELS.emailSave, (update) => email.save(assertEmailSettingsUpdate(update)));
+  handle(IPC_CHANNELS.emailTest, (to) => email.test(assertRecipient(to)));
+  handle(IPC_CHANNELS.emailSend, (message) => email.send(assertEmailMessage(message)));
 }
 
 async function mkdirSafe(directory: string): Promise<void> {

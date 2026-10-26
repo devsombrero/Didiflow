@@ -37,12 +37,14 @@ describe('DesktopBridge', () => {
         prune: vi.fn(),
         usage: vi.fn(),
       },
+      email: { status: vi.fn(), save: vi.fn(), test: vi.fn(), send: vi.fn() },
     };
 
     it('exposes the secure store and desktop flag', () => {
       const bridge = setup(api);
       expect(bridge.isDesktop).toBe(true);
       expect(bridge.secureStore).toBe(api.secureStore);
+      expect(bridge.email).toBe(api.email);
     });
 
     it('delegates openExternal to the preload API', async () => {

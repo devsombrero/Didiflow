@@ -62,6 +62,26 @@ O instalador aplica Electron Fuses: sem `RunAsNode`, sem `NODE_OPTIONS`, sem arg
 
 `electron/ipc/secure-store.ts` grava os valores criptografados com `safeStorage` em `%APPDATA%/didiflow/secure-store.json` (base64), com escrita atômica e serializada. Se a criptografia do SO não estiver disponível, os valores ficam só em memória e a sessão não sobrevive a reinicializações. Tokens nunca são gravados em texto puro.
 
+### E-mail (Gmail)
+
+O envio opcional de notificações por e-mail (`electron/ipc/email.ts`) roda só no processo principal:
+
+- **Conexão:** SMTP do Gmail (`smtp.gmail.com:465`, TLS), autenticado com uma **senha de app** do Google. A senha normal da conta não é aceita pelo Gmail nem pelo app, que valida o formato de 16 letras.
+- **Onde fica a senha:** num secure store separado, `%APPDATA%/didiflow/email-secrets.json`, criptografado com `safeStorage`. O renderer pode gravar ou remover a senha pelo IPC `email:save`, mas nunca lê o valor de volta: `email:status` informa só se há senha salva. A chave também não é acessível pelo `secureStore` exposto ao renderer. Sem criptografia do SO, a senha fica só em memória até o app fechar.
+- **Configuração:** conta, destinatário e tipos de notificação ficam em `%APPDATA%/didiflow/email-settings.json`. Nada disso vai para o Supabase.
+- **Validação:** o IPC `email:send` aceita apenas tipos conhecidos, título de até 120 caracteres e corpo de até 2.000. O texto é escapado no HTML do e-mail.
+- **Limite:** no máximo 20 e-mails de notificação por hora, para proteger a conta de regras com intervalo curto.
+- **Destinatário:** o configurado em "Enviar para"; em branco, o e-mail da conta DidiFlow conectada (enviado pelo renderer e validado); por último, a própria conta remetente. Domínios reservados de teste (`.local`, `.test`, `example.com` etc.) nunca recebem e-mail.
+
+#### Conta padrão embutida no instalador
+
+Por decisão do dono do projeto, o instalador pode trazer uma conta Gmail padrão, para o envio funcionar sem configuração:
+
+- **Origem:** `DIDIFLOW_GMAIL_ADDRESS` e `DIDIFLOW_GMAIL_APP_PASSWORD` no `.env` (ignorado pelo git). Nada vai para o repositório.
+- **Criptografia:** `electron/build.mjs` cifra a conta com AES-256-GCM, com chave e IV aleatórios a cada build, e injeta o resultado só no `main.cjs` do processo principal (`electron/ipc/builtin-email.ts`). O preload, o renderer e o APK Android não recebem nada.
+- **Uso:** só em builds empacotados; desenvolvimento e testes E2E nunca enviam. Uma conta salva pelo usuário em Configurações tem prioridade.
+- **Limite real:** a chave precisa viajar no próprio app (mascarada), então isto é **ofuscação forte, não segredo**. Quem tiver o instalador e fizer engenharia reversa do `app.asar` recupera a senha de app, que dá acesso aos e-mails da conta. Por isso: não distribua o instalador fora de quem deve ter esse acesso; prefira uma conta Gmail dedicada ao DidiFlow; e, se o instalador vazar, revogue a senha em myaccount.google.com/apppasswords e gere um build novo.
+
 ## Dados e banco
 
 - Migrations são revisadas e aplicadas manualmente em produção; nenhum SQL de schema roda automaticamente.

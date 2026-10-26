@@ -4,6 +4,14 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.6.0] - 2026-10-26
+
+### Adicionado
+
+- Notificações por e-mail (Gmail, app desktop): em Configurações → E-mail (Gmail), lembretes de tarefas, resumo de prazos, notificações personalizadas e fim de foco também podem ser enviados por e-mail, pelo SMTP do Gmail com senha de app. A senha fica criptografada no processo principal e nunca volta ao renderer; há e-mail de teste e limite de 20 e-mails por hora.
+- Conta Gmail padrão opcional para as notificações por e-mail: definida no .env no momento do build e embutida criptografada (AES-256-GCM) só no processo principal do instalador desktop. Com ela, o envio já vem ativado e cada usuário recebe no e-mail da própria conta DidiFlow.
+- Manual do usuário ilustrado em PDF (desktop e Android), gerado por `npm run manual`.
+
 ## [0.5.0] - 2026-10-26
 
 ### Adicionado
