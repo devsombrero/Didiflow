@@ -10,6 +10,7 @@ import { ToastService } from '../../shared/toast/toast.service';
 import { MatSliderModule } from '@angular/material/slider';
 import { SoundService } from '../../core/feedback/sound.service';
 import { SOUND_LABELS, type SoundName } from '../../core/feedback/sounds';
+import { EmailSettingsCard } from './email-settings-card';
 
 export const DATE_FORMATS = [
   { value: 'dd/MM/yyyy', label: '31/12/2026' },
@@ -25,7 +26,14 @@ export const THEMES: readonly { value: ThemePreference; label: string }[] = [
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ReactiveFormsModule, RouterLink, MATERIAL_FORMS, MATERIAL_UI, MatSliderModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    MATERIAL_FORMS,
+    MATERIAL_UI,
+    MatSliderModule,
+    EmailSettingsCard,
+  ],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss',
 })

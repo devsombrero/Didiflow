@@ -40,6 +40,12 @@ const api: DidiflowApi = {
     prune: (userId, keepIds) => ipcRenderer.invoke(IPC_CHANNELS.attachmentPrune, userId, keepIds),
     usage: (userId) => ipcRenderer.invoke(IPC_CHANNELS.attachmentUsage, userId),
   },
+  email: {
+    status: () => ipcRenderer.invoke(IPC_CHANNELS.emailStatus),
+    save: (update) => ipcRenderer.invoke(IPC_CHANNELS.emailSave, update),
+    test: () => ipcRenderer.invoke(IPC_CHANNELS.emailTest),
+    send: (message) => ipcRenderer.invoke(IPC_CHANNELS.emailSend, message),
+  },
   onNavigate: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, route: unknown) => {
       if (typeof route === 'string') listener(route);

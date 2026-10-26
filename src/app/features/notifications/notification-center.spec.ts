@@ -11,12 +11,22 @@ import { AppNotifier, NotificationCenter } from './notification-center';
 describe('notifications', () => {
   const user = signal<{ id: string } | null>({ id: 'u1' });
 
-  function setup(options: { desktop?: boolean; focused?: boolean } = {}) {
+  function setup(
+    options: {
+      desktop?: boolean;
+      focused?: boolean;
+      email?: { send: ReturnType<typeof vi.fn> };
+    } = {},
+  ) {
     localStorage.clear();
     user.set({ id: 'u1' });
-    const toast = { notify: vi.fn() };
+    const toast = { notify: vi.fn(), error: vi.fn() };
     const sounds = { play: vi.fn(), enabled: true };
-    const bridge = { isDesktop: options.desktop ?? true, notify: vi.fn().mockResolvedValue(true) };
+    const bridge = {
+      isDesktop: options.desktop ?? true,
+      notify: vi.fn().mockResolvedValue(true),
+      email: options.email ?? null,
+    };
     const router = { navigateByUrl: vi.fn() };
     vi.spyOn(document, 'hasFocus').mockReturnValue(options.focused ?? true);
     TestBed.configureTestingModule({
@@ -94,6 +104,31 @@ describe('notifications', () => {
     await notifier.notify({ kind: 'custom', title: 'Quieto', sound: 'none' });
     expect(sounds.play).not.toHaveBeenCalled();
     expect(bridge.notify).toHaveBeenCalledWith(expect.objectContaining({ silent: false }));
+  });
+
+  it('forwards notifications by e-mail, except system ones', async () => {
+    const email = { send: vi.fn().mockResolvedValue({ status: 'sent' }) };
+    const { notifier, toast } = setup({ email });
+    await notifier.notify({
+      kind: 'reminder',
+      title: 'Lembrete',
+      body: 'Ligar',
+      route: '/tasks/9',
+    });
+    await notifier.notify({ kind: 'system', title: 'Interno' });
+    expect(email.send).toHaveBeenCalledTimes(1);
+    expect(email.send).toHaveBeenCalledWith({ kind: 'reminder', title: 'Lembrete', body: 'Ligar' });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('reports an e-mail failure only once per session', async () => {
+    const email = { send: vi.fn().mockResolvedValue({ status: 'error', error: 'auth' }) };
+    const { notifier, toast } = setup({ email });
+    await notifier.notify({ kind: 'digest', title: 'Prazos' });
+    await notifier.notify({ kind: 'digest', title: 'Prazos de novo' });
+    await vi.waitFor(() => expect(email.send).toHaveBeenCalledTimes(2));
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error.mock.calls[0][0]).toContain('senha de app');
   });
 
   it('formats relative times', () => {

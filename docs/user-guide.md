@@ -84,6 +84,15 @@ A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, *
 
 Lembretes por tarefa e avisos diários de atrasos e vencimentos aparecem **apenas com o aplicativo aberto** (mesmo minimizado). Clicar na notificação abre a tarefa. Desative em Configurações.
 
+**Por e-mail (Gmail, app desktop):** em **Configurações → E-mail (Gmail)**, as notificações também podem ser enviadas para o seu e-mail.
+
+1. Ative a verificação em duas etapas da Conta Google e crie uma **senha de app** em myaccount.google.com/apppasswords. O botão **Criar senha de app** abre essa página.
+2. Informe a conta do Gmail e as 16 letras da senha de app. Em **Enviar para**, informe outro destinatário se quiser; em branco, o e-mail vai para a própria conta.
+3. Escolha o que enviar: lembretes de tarefas, resumo de prazos, notificações personalizadas e fim de foco.
+4. Salve e use **Enviar teste** para conferir.
+
+Como as demais notificações, os e-mails saem enquanto o DidiFlow estiver aberto, no máximo 20 por hora. A senha de app fica criptografada neste computador e não vai para o servidor. Se o Gmail recusar o login, o app avisa uma vez por sessão.
+
 ### Backup e restauração
 
 **Menu da conta → Backup e restauração:** backups automáticos locais (frequência e retenção configuráveis), backup manual e restauração a partir de um backup local ou de um arquivo, nos modos **Mesclar** ou **Substituir**. Antes de restaurar, um backup de segurança é criado automaticamente.

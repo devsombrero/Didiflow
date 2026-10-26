@@ -156,6 +156,8 @@
       </mat-card-content>
     </mat-card>
 
+    <app-email-settings-card />
+
     <mat-card appearance="outlined" class="section">
       <mat-card-header>
         <mat-icon mat-card-avatar>extension</mat-icon>
@@ -164,7 +166,8 @@
       <mat-card-content>
         <p class="muted">
           Nesta versão, Jira e Slack funcionam por links cadastrados manualmente em cada tarefa. As
-          demais integrações estão planejadas; nenhuma conta externa é acessada pelo aplicativo.
+          demais integrações estão planejadas. Além do envio opcional de e-mails pelo Gmail, nenhuma
+          conta externa é acessada pelo aplicativo.
         </p>
         <ul class="integrations">
           @for (item of integrations; track item.id) {

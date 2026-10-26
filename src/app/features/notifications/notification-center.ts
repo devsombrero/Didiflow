@@ -6,6 +6,8 @@ import type { SoundName } from '../../core/feedback/sounds';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { MobileNotifications } from '../../core/platform/mobile-platform';
 import { ToastService } from '../../shared/toast/toast.service';
+import type { EmailKind } from '../../../../electron/ipc/contract';
+import { emailResultMessage } from './email-messages';
 
 export type NotificationKind = 'reminder' | 'digest' | 'custom' | 'focus' | 'system';
 
@@ -123,11 +125,14 @@ export class AppNotifier {
   private readonly sounds = inject(SoundService);
   private readonly router = inject(Router);
   private readonly mobile = inject(MobileNotifications);
+  /** E-mail failures are reported once per session, not on every notification. */
+  private emailFailureShown = false;
 
   async notify(request: NotifyRequest): Promise<AppNotification> {
     const route = request.route ?? null;
     const body = request.body ?? '';
     const item = this.center.add({ kind: request.kind, title: request.title, body, route });
+    if (request.kind !== 'system') void this.forwardByEmail(request.kind, request.title, body);
     const sound = request.sound ?? 'notify';
     if (sound !== 'none') this.sounds.play(sound);
 
@@ -162,5 +167,23 @@ export class AppNotifier {
       });
     }
     return item;
+  }
+
+  /** Also sends the notification by e-mail when enabled for its kind (desktop only). */
+  private async forwardByEmail(kind: EmailKind, title: string, body: string): Promise<void> {
+    if (!this.bridge.email) return;
+    try {
+      const result = await this.bridge.email.send({
+        kind,
+        title: title.slice(0, 120),
+        body: body.slice(0, 2000),
+      });
+      if (result.status === 'error' && !this.emailFailureShown) {
+        this.emailFailureShown = true;
+        this.toast.error(`E-mail não enviado: ${emailResultMessage(result)}`);
+      }
+    } catch {
+      // Rejected by the main process validation: the in-app notification is enough.
+    }
   }
 }
