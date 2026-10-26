@@ -22,6 +22,11 @@ export interface BarSeries {
 export interface BarChartData {
   labels: string[];
   series: BarSeries[];
+  /**
+   * Single-series charts only: one color token per label (e.g. task statuses
+   * in their status colors). The axis labels name each bar.
+   */
+  barColorVars?: string[];
 }
 
 /** Space taken by the axes, subtracted when sizing the bars. */
@@ -128,6 +133,7 @@ const AXIS_HEIGHT = 40;
         <ngx-charts-bar-horizontal
           [results]="results"
           [scheme]="scheme()"
+          [customColors]="barColors()"
           [xAxis]="true"
           [yAxis]="true"
           [showGridLines]="true"
@@ -144,6 +150,7 @@ const AXIS_HEIGHT = 40;
         <ngx-charts-bar-vertical
           [results]="results"
           [scheme]="scheme()"
+          [customColors]="barColors()"
           [xAxis]="true"
           [yAxis]="true"
           [showGridLines]="true"
@@ -273,6 +280,15 @@ export class BarChart {
     this.data().series.map((s, i) => ({ name: s.label, value: this.resolved()[i] })),
   );
 
+  /** Per-bar colors of a single-series chart, matched by label. */
+  protected readonly barColors = computed(() => {
+    this.themeVersion();
+    const vars = this.data().barColorVars;
+    if (!vars?.length) return [];
+    const values = resolveTokens(vars);
+    return this.data().labels.map((name, i) => ({ name, value: values[i] ?? values[0] }));
+  });
+
   constructor() {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
@@ -307,14 +323,17 @@ export class BarChart {
  * Resolves CSS tokens (possibly light-dark() expressions) to concrete colors
  * through a probe element.
  */
-function resolveTokens(names: string[]): string[] {
-  const probe = document.createElement('span');
-  document.body.appendChild(probe);
-  const colors = names.map((name) => {
+export function resolveTokens(names: string[]): string[] {
+  // One probe per token: reusing a single element returned the first color for
+  // every token (the computed value of var(light-dark()) was not recalculated).
+  const probes = names.map((name) => {
+    const probe = document.createElement('span');
     probe.style.color = `var(${name})`;
-    return getComputedStyle(probe).color;
+    document.body.appendChild(probe);
+    return probe;
   });
-  probe.remove();
+  const colors = probes.map((probe) => getComputedStyle(probe).color);
+  probes.forEach((probe) => probe.remove());
   return colors;
 }
 

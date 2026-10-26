@@ -113,6 +113,7 @@ export class DashboardPage implements OnInit {
       series: [
         { label: 'Tarefas', values: TASK_STATUSES.map((s) => counts[s]), colorVar: '--series-1' },
       ],
+      barColorVars: TASK_STATUSES.map((s) => `--chart-status-${s.replace('_', '-')}`),
     };
   });
 
@@ -124,6 +125,7 @@ export class DashboardPage implements OnInit {
       series: [
         { label: 'Tarefas abertas', values: order.map((p) => counts[p]), colorVar: '--series-1' },
       ],
+      barColorVars: order.map((p) => `--priority-${p}`),
     };
   });
 

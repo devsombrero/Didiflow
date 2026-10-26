@@ -120,10 +120,22 @@ html[data-theme='dark'] {
   --space-4: 16px;
   --space-6: 24px;
 
-  // Chart palette (dataviz reference palette, validated for both surfaces).
-  --series-1: light-dark(#0284c7, #38bdf8);
+  // Chart palette, validated with the dataviz checks (lightness band, CVD and
+  // normal-vision separation, contrast) on the light and dark surfaces.
+  --series-1: light-dark(#0284c7, #1497d4);
   --series-2: light-dark(#eb6834, #d95926);
   --series-3: light-dark(#1baf7a, #199e70);
+  // Task status (bars of the status chart). Neutral grays are intentional.
+  --chart-status-not-started: #8a817c;
+  --chart-status-in-progress: var(--series-1);
+  --chart-status-blocked: light-dark(#d97706, #a8901a);
+  --chart-status-done: light-dark(#0f9d74, #12a088);
+  --chart-status-cancelled: light-dark(#57534e, #6b6560);
+  // Task priority: the same colors in badges, charts and notification e-mails.
+  --priority-urgent: light-dark(#c62828, #d93b5c);
+  --priority-high: light-dark(#d97706, #a8901a);
+  --priority-medium: var(--series-1);
+  --priority-low: #8a817c;
   --chart-grid: var(--mat-sys-outline-variant);
   --chart-axis: var(--mat-sys-outline);
   --chart-ink-muted: var(--mat-sys-on-surface-variant);
