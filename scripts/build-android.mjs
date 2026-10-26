@@ -103,7 +103,8 @@ console.log(`android: Supabase for the phone → ${url}`);
 
 try {
   run('node', ['scripts/write-env.mjs'], mobileEnv);
-  run('npx', ['ng', 'build'], mobileEnv);
+  // Separate output: the desktop build in dist/didiflow stays untouched.
+  run('npx', ['ng', 'build', '--output-path', 'dist/didiflow-mobile'], mobileEnv);
   writeNetworkConfig(url);
   writeFileSync('android/local.properties', `sdk.dir=${sdk.replaceAll('\\', '/')}\n`);
   syncVersion();

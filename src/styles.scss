@@ -715,3 +715,52 @@ a.tile:hover,
 .child-tabs .mat-mdc-tab-body-content {
   overflow: hidden;
 }
+
+/* Phones: full-screen form dialogs (formDialogConfig / task form). */
+.form-dialog--full {
+  .mat-mdc-dialog-surface {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+  }
+
+  .mat-mdc-dialog-content {
+    flex: 1;
+    max-height: none !important;
+  }
+
+  app-task-form-dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Cards inside the task form dialog lose their frame to save width. */
+  .form-dialog--full .task-form > .mat-mdc-card {
+    border: 0;
+    background: transparent;
+  }
+  .form-dialog--full .task-form > .mat-mdc-card .mat-mdc-card-header,
+  .form-dialog--full .task-form > .mat-mdc-card .mat-mdc-card-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Tighter cards and headings. */
+  .mat-mdc-card-header,
+  .mat-mdc-card-content {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  .page-header h1 {
+    font: var(--mat-sys-headline-small);
+  }
+
+  /* Form rows stack. */
+  .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

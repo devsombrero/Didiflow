@@ -4,7 +4,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'app.didiflow.mobile',
   appName: 'DidiFlow',
-  webDir: 'dist/didiflow/browser',
+  webDir: 'dist/didiflow-mobile/browser',
   android: {
     // Debug builds may talk to a local Supabase over http on the LAN (the
     // network security config limits cleartext to that host).

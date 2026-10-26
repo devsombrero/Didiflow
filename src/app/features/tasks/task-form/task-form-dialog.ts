@@ -12,6 +12,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmService } from '../../../shared/confirm/confirm.service';
+import { FULL_SCREEN_DIALOG, isCompactScreen } from '../../../shared/dialog/form-dialog';
 import type { Task } from '../task.model';
 import { TaskFormPage } from './task-form-page';
 
@@ -113,6 +114,7 @@ export class TaskFormDialogs {
       panelClass: 'form-dialog',
       disableClose: true,
       autoFocus: 'dialog',
+      ...(isCompactScreen() ? FULL_SCREEN_DIALOG : {}),
     });
     return firstValueFrom(ref.afterClosed());
   }

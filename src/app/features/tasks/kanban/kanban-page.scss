@@ -165,3 +165,16 @@
 .menu-title {
   font: var(--mat-sys-label-small);
 }
+
+@media (max-width: 768px) {
+  .board {
+    grid-auto-columns: 84%;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+
+  .column {
+    scroll-snap-align: start;
+    min-height: 50vh;
+  }
+}

@@ -173,3 +173,95 @@
   color: var(--color-warning);
   font-weight: 700;
 }
+
+.cell__weekday {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .grid--week {
+    grid-template-columns: minmax(0, 1fr);
+
+    .grid__weekday {
+      display: none;
+    }
+
+    .cell {
+      min-height: 0;
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .cell__header {
+      justify-content: flex-start;
+      gap: var(--space-2);
+    }
+
+    .cell__weekday {
+      display: inline;
+      min-width: 3ch;
+      font: var(--mat-sys-label-large);
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .cell__add {
+      margin-left: auto;
+      opacity: 1;
+    }
+
+    .ev {
+      white-space: normal;
+      padding: var(--space-1) var(--space-2);
+    }
+  }
+
+  .grid--month {
+    .grid__weekday {
+      padding: var(--space-1);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .cell {
+      min-height: 64px;
+      padding: 2px;
+    }
+
+    .cell__header {
+      justify-content: center;
+    }
+
+    .cell__add {
+      display: none;
+    }
+
+    .events {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    // Events become colored dots; tapping the date opens the day.
+    .ev {
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      font-size: 0;
+      background: var(--series-1);
+    }
+
+    .ev--start {
+      background: var(--series-3);
+    }
+
+    .ev--overdue {
+      background: var(--mat-sys-error);
+    }
+
+    .ev--done {
+      opacity: 0.5;
+    }
+  }
+}
