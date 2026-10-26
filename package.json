@@ -47,6 +47,7 @@
     "@capacitor/core": "^8.5.3",
     "@capacitor/local-notifications": "^8.3.1",
     "@capacitor/preferences": "^8.0.1",
+    "@fontsource-variable/inter": "^5.3.0",
     "@supabase/supabase-js": "^2.118.0",
     "@swimlane/ngx-charts": "^25.0.3",
     "marked": "^18.1.1",

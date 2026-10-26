@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use 'breakpoints' as bp;
 
 // ---------------------------------------------------------------------------
 // Angular Material (M3). theme-type: color-scheme emits light-dark() values,
@@ -15,12 +16,59 @@ html {
         theme-type: color-scheme,
       ),
       typography: (
-        plain-family: "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
-        brand-family: "'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif",
+        plain-family: "'Inter Variable', 'Inter', system-ui, sans-serif",
+        brand-family: "'Inter Variable', 'Inter', system-ui, sans-serif",
       ),
       density: -1,
     )
   );
+
+  // -------------------------------------------------------------------------
+  // DidiFlow palette (light | dark) on the Material system tokens. Every
+  // Material component and the app's own styles read these.
+  // -------------------------------------------------------------------------
+  // Surfaces
+  --mat-sys-surface: light-dark(hsl(210 40% 96%), hsl(240 10% 3.9%));
+  --mat-sys-background: light-dark(hsl(210 40% 96%), hsl(240 10% 3.9%));
+  --mat-sys-surface-container-lowest: light-dark(hsl(210 60% 99%), hsl(240 10% 3%));
+  --mat-sys-surface-container-low: light-dark(hsl(210 50% 98%), hsl(240 8% 6%));
+  --mat-sys-surface-container: light-dark(hsl(210 45% 95%), hsl(240 6% 8.5%));
+  --mat-sys-surface-container-high: light-dark(hsl(210 40% 92%), hsl(240 5% 11%));
+  --mat-sys-surface-container-highest: light-dark(hsl(210 38% 89%), hsl(240 4% 16%));
+  --mat-sys-surface-variant: light-dark(hsl(210 40% 90%), hsl(240 4% 16%));
+  --mat-sys-surface-bright: light-dark(hsl(210 50% 98%), hsl(240 5% 14%));
+  --mat-sys-surface-dim: light-dark(hsl(210 35% 90%), hsl(240 10% 3.9%));
+  // Text
+  --mat-sys-on-surface: light-dark(hsl(204 85% 30%), hsl(0 0% 98%));
+  --mat-sys-on-background: light-dark(hsl(204 85% 30%), hsl(0 0% 98%));
+  --mat-sys-on-surface-variant: light-dark(hsl(204 85% 40%), hsl(240 5% 65%));
+  // Brand
+  --mat-sys-primary: light-dark(hsl(204 85% 43%), hsl(204 89% 69%));
+  --mat-sys-on-primary: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
+  --mat-sys-primary-container: light-dark(hsl(204 90% 92%), hsl(204 55% 17%));
+  --mat-sys-on-primary-container: light-dark(hsl(204 85% 25%), hsl(204 89% 85%));
+  --mat-sys-secondary: light-dark(hsl(204 95% 45%), hsl(204 89% 69%));
+  --mat-sys-on-secondary: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
+  --mat-sys-secondary-container: light-dark(hsl(204 80% 90%), hsl(240 4% 16%));
+  --mat-sys-on-secondary-container: light-dark(hsl(204 85% 28%), hsl(204 89% 80%));
+  --mat-sys-tertiary: light-dark(hsl(204 95% 45%), hsl(196 94% 53%));
+  --mat-sys-on-tertiary: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
+  --mat-sys-tertiary-container: light-dark(hsl(196 90% 90%), hsl(196 60% 16%));
+  --mat-sys-on-tertiary-container: light-dark(hsl(200 85% 25%), hsl(196 94% 80%));
+  // Lines
+  --mat-sys-outline: light-dark(hsl(210 25% 68%), hsl(240 4% 32%));
+  --mat-sys-outline-variant: light-dark(hsl(210 40% 85%), hsl(240 4% 16%));
+  // Destructive
+  --mat-sys-error: light-dark(hsl(0 75% 55%), hsl(0 75% 68%));
+  --mat-sys-on-error: hsl(0 0% 98%);
+  --mat-sys-error-container: light-dark(hsl(0 85% 94%), hsl(0 63% 31%));
+  --mat-sys-on-error-container: light-dark(hsl(0 70% 35%), hsl(0 0% 98%));
+  // Inverse (tooltips, snack bars)
+  --mat-sys-inverse-surface: light-dark(hsl(204 60% 16%), hsl(0 0% 96%));
+  --mat-sys-inverse-on-surface: light-dark(hsl(210 40% 96%), hsl(240 10% 3.9%));
+  --mat-sys-inverse-primary: light-dark(hsl(204 89% 69%), hsl(204 85% 43%));
+  --mat-sys-scrim: hsl(240 10% 2%);
+  --mat-sys-shadow: light-dark(hsl(204 60% 25%), hsl(0 0% 0%));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,14 +91,29 @@ html[data-theme='dark'] {
   --color-surface-high: var(--mat-sys-surface-container);
   --color-border: var(--mat-sys-outline-variant);
   --color-text: var(--mat-sys-on-surface);
-  --color-text-muted: var(--mat-sys-on-surface-variant);
+  --color-text-muted: var(--color-muted-foreground);
   --color-primary: var(--mat-sys-primary);
   --color-primary-contrast: var(--mat-sys-on-primary);
+  --color-accent: #0284c7;
+  --color-muted-foreground: light-dark(hsl(210 30% 55%), hsl(240 5% 65%));
+  --color-button-hover: light-dark(hsl(204 90% 35%), hsl(196 94% 53%));
+  --gradient-brand: linear-gradient(135deg, var(--mat-sys-primary) 0%, var(--color-accent) 100%);
+  --gradient-brand-soft: linear-gradient(
+    135deg,
+    light-dark(hsl(204 90% 94%), hsl(204 55% 14%)) 0%,
+    light-dark(hsl(196 90% 95%), hsl(196 60% 10%)) 100%
+  );
+  --shadow-card: light-dark(0 1px 2px hsl(204 60% 25% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.4));
+  --shadow-lift: light-dark(
+    0 10px 30px -12px hsl(204 85% 35% / 0.35),
+    0 10px 30px -12px hsl(196 94% 53% / 0.25)
+  );
   --color-success: light-dark(#1f7a44, #5fd08f);
   --color-warning: light-dark(#8f5400, #f0a83a);
   --color-danger: var(--mat-sys-error);
   --radius-sm: 8px;
   --radius-md: 16px;
+  --radius-lg: 20px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -58,7 +121,7 @@ html[data-theme='dark'] {
   --space-6: 24px;
 
   // Chart palette (dataviz reference palette, validated for both surfaces).
-  --series-1: light-dark(#2a78d6, #3987e5);
+  --series-1: light-dark(#0284c7, #38bdf8);
   --series-2: light-dark(#eb6834, #d95926);
   --series-3: light-dark(#1baf7a, #199e70);
   --chart-grid: var(--mat-sys-outline-variant);
@@ -79,9 +142,23 @@ body {
 }
 
 body {
-  background: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background:
+    radial-gradient(
+      1200px 600px at 100% -10%,
+      light-dark(hsl(204 95% 85% / 0.45), hsl(204 89% 40% / 0.14)),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at -10% 110%,
+      light-dark(hsl(196 94% 80% / 0.35), hsl(196 94% 40% / 0.1)),
+      transparent 60%
+    ),
+    var(--mat-sys-surface);
+  background-attachment: fixed;
+  color: var(--mat-sys-on-surface-variant);
   font: var(--mat-sys-body-medium);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
 }
 
 :focus-visible {
@@ -92,11 +169,16 @@ body {
 h1 {
   margin: 0;
   font: var(--mat-sys-headline-small);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--mat-sys-on-surface);
 }
 
 h2 {
   margin: 0 0 var(--space-3);
   font: var(--mat-sys-title-medium);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
 }
 
 h3 {
@@ -139,8 +221,12 @@ a {
 
 .form-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0 var(--space-4);
+
+  @include bp.tablet {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 .actions {
@@ -161,14 +247,25 @@ mat-form-field,
   width: 100%;
 }
 
+// Filter fields: two per row on phones, natural width from tablets up.
 .filters mat-form-field,
-.toolbar mat-form-field {
-  width: auto;
-  min-width: 180px;
+.toolbar mat-form-field:not(.toolbar__search) {
+  flex: 1 1 calc(50% - var(--space-3));
+  min-width: 0;
+
+  @include bp.tablet {
+    flex: 0 1 190px;
+    width: auto;
+    min-width: 180px;
+  }
 }
 
 .mat-mdc-card.section {
-  padding: var(--space-2) var(--space-4) var(--space-4);
+  padding: var(--space-1) var(--space-2) var(--space-3);
+
+  @include bp.desktop {
+    padding: var(--space-2) var(--space-4) var(--space-4);
+  }
 }
 
 .hint-error {
@@ -697,20 +794,6 @@ a.tile:hover,
   overflow-x: hidden;
 }
 
-/* Phones: filter fields share the row two by two instead of fixed widths. */
-@media (max-width: 600px) {
-  .filters mat-form-field,
-  .toolbar mat-form-field:not(.toolbar__search) {
-    flex: 1 1 calc(50% - var(--space-3)) !important;
-    min-width: 0;
-  }
-
-  .page-header {
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-}
-
 /* Subtask tabs grow with their content (no inner scrollbar). */
 .child-tabs .mat-mdc-tab-body-content {
   overflow: hidden;
@@ -736,31 +819,101 @@ a.tile:hover,
   }
 }
 
-@media (max-width: 768px) {
-  /* Cards inside the task form dialog lose their frame to save width. */
-  .form-dialog--full .task-form > .mat-mdc-card {
-    border: 0;
-    background: transparent;
-  }
-  .form-dialog--full .task-form > .mat-mdc-card .mat-mdc-card-header,
-  .form-dialog--full .task-form > .mat-mdc-card .mat-mdc-card-content {
+// ---------------------------------------------------------------------------
+// Task form inside the full-screen phone dialog: cards lose their frame.
+// ---------------------------------------------------------------------------
+.form-dialog--full .task-form > .mat-mdc-card {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+
+  .mat-mdc-card-header,
+  .mat-mdc-card-content {
     padding-left: 0;
     padding-right: 0;
   }
+}
 
-  /* Tighter cards and headings. */
-  .mat-mdc-card-header,
-  .mat-mdc-card-content {
-    padding-left: var(--space-3);
-    padding-right: var(--space-3);
+// ---------------------------------------------------------------------------
+// Visual polish: rounded, softly lifted surfaces and a brand gradient on the
+// main actions.
+// ---------------------------------------------------------------------------
+.mat-mdc-card {
+  --mat-card-outlined-container-shape: var(--radius-lg);
+  --mat-card-elevated-container-shape: var(--radius-lg);
+  --mat-card-outlined-container-color: var(--mat-sys-surface-container-low);
+  --mat-card-outlined-outline-color: var(--mat-sys-outline-variant);
+  box-shadow: var(--shadow-card);
+}
+
+.mat-mdc-card-title {
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  color: var(--mat-sys-on-surface);
+}
+
+// Filled buttons: brand gradient with a soft glow.
+.mat-mdc-unelevated-button:not(:disabled):not(.danger-button) {
+  background-image: var(--gradient-brand);
+  box-shadow: 0 6px 18px -8px light-dark(hsl(204 85% 43% / 0.7), hsl(196 94% 53% / 0.55));
+  transition:
+    box-shadow var(--motion-fast) var(--ease-out),
+    filter var(--motion-fast) ease,
+    transform var(--motion-fast) var(--ease-out);
+
+  &:hover {
+    filter: brightness(1.06) saturate(1.1);
+    box-shadow: 0 10px 24px -10px light-dark(hsl(204 85% 43% / 0.8), hsl(196 94% 53% / 0.65));
   }
+}
 
-  .page-header h1 {
-    font: var(--mat-sys-headline-small);
-  }
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button,
+.mat-mdc-button,
+.mat-mdc-tonal-button {
+  font-weight: 600 !important;
+  letter-spacing: 0;
+}
 
-  /* Form rows stack. */
-  .form-row {
-    grid-template-columns: minmax(0, 1fr);
+// Outlined fields with softer corners.
+.mdc-text-field--outlined {
+  --mat-form-field-outlined-container-shape: 12px;
+  --mdc-outlined-text-field-container-shape: 12px;
+}
+
+// Menus, selects and dialogs share the popover surface.
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-lift) !important;
+}
+
+.form-dialog .mat-mdc-dialog-surface {
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+// Status/priority badges and tags read as soft pills.
+.tag {
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+// Slim, themed scrollbars.
+* {
+  scrollbar-width: thin;
+  scrollbar-color: light-dark(hsl(210 30% 75%), hsl(240 4% 26%)) transparent;
+}
+
+// Page titles get a short brand underline on desktop.
+@include bp.desktop {
+  .page-header h1::after {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin-top: 6px;
+    border-radius: 4px;
+    background: var(--gradient-brand);
   }
 }

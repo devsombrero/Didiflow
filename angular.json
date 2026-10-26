@@ -3,7 +3,9 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": ["angular-eslint"]
+    "schematicCollections": [
+      "angular-eslint"
+    ]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -30,7 +32,16 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/material-symbols/outlined.css", "src/styles.scss"]
+            "styles": [
+              "node_modules/material-symbols/outlined.css",
+              "node_modules/@fontsource-variable/inter/index.css",
+              "src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/styles"
+              ]
+            }
           },
           "configurations": {
             "production": {
