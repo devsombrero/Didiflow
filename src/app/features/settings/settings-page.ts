@@ -11,6 +11,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { SoundService } from '../../core/feedback/sound.service';
 import { SOUND_LABELS, type SoundName } from '../../core/feedback/sounds';
 import { EmailSettingsCard } from './email-settings-card';
+import { DidiBotSettingsCard } from '../didibot/didibot-settings-card';
 
 export const DATE_FORMATS = [
   { value: 'dd/MM/yyyy', label: '31/12/2026' },
@@ -33,6 +34,7 @@ export const THEMES: readonly { value: ThemePreference; label: string }[] = [
     MATERIAL_UI,
     MatSliderModule,
     EmailSettingsCard,
+    DidiBotSettingsCard,
   ],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss',
