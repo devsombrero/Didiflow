@@ -22,7 +22,7 @@ const cipher: Cipher = {
   encrypt: (plain) => Buffer.from(`enc:${[...plain].reverse().join('')}`),
   decrypt: (data) => [...data.toString().slice(4)].reverse().join(''),
 };
-const KEY = 'AIzaSyD-test_key_1234567890abcdefghijk';
+const KEY = 'test-fake-gemini-key-not-a-secret-0001';
 
 function reply(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
