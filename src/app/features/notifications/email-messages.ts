@@ -17,6 +17,8 @@ export function emailResultMessage(result: EmailSendResult): string | null {
     switch (result.reason) {
       case 'not-configured':
         return 'Informe o endereço do Gmail e a senha de app antes de enviar.';
+      case 'no-recipient':
+        return 'Informe em "Enviar para" um e-mail que receba mensagens.';
       case 'rate-limited':
         return 'Limite de e-mails por hora atingido. Tente novamente mais tarde.';
       default:

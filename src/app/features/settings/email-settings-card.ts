@@ -7,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import type { EmailKind, EmailStatus } from '../../../../electron/ipc/contract';
+import { AuthService } from '../../core/auth/auth.service';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { ToastService } from '../../shared/toast/toast.service';
@@ -48,6 +49,17 @@ export function appPasswordValidator(control: AbstractControl<string>): Validati
               Gmail com uma <strong>senha de app</strong> (a senha normal da conta não funciona) e
               acontece enquanto o DidiFlow estiver aberto, como as demais notificações.
             </p>
+            @if (current.builtInAccount) {
+              <p class="builtin" id="email_builtin">
+                <mat-icon>verified</mat-icon>
+                <span>
+                  Conta padrão do DidiFlow já configurada:
+                  <strong>{{ current.builtInAccount }}</strong
+                  >. Os e-mails vão para o endereço da sua conta DidiFlow. Preencha os campos abaixo
+                  só para usar outra conta do Gmail.
+                </span>
+              </p>
+            }
             <mat-slide-toggle id="email_enabled" formControlName="enabled">
               Enviar notificações por e-mail
             </mat-slide-toggle>
@@ -64,7 +76,13 @@ export function appPasswordValidator(control: AbstractControl<string>): Validati
                   formControlName="address"
                 />
                 <mat-icon matSuffix>alternate_email</mat-icon>
-                <mat-hint>Conta que envia os e-mails.</mat-hint>
+                <mat-hint>
+                  {{
+                    current.builtInAccount
+                      ? 'Em branco: usa a conta padrão.'
+                      : 'Conta que envia os e-mails.'
+                  }}
+                </mat-hint>
                 <mat-error>Informe um endereço de e-mail válido.</mat-error>
               </mat-form-field>
 
@@ -106,7 +124,7 @@ export function appPasswordValidator(control: AbstractControl<string>): Validati
                   autocomplete="email"
                   formControlName="recipient"
                 />
-                <mat-hint>Em branco: a própria conta do Gmail.</mat-hint>
+                <mat-hint>Em branco: o e-mail da sua conta DidiFlow.</mat-hint>
                 <mat-error>Informe um endereço de e-mail válido.</mat-error>
               </mat-form-field>
             </div>
@@ -141,7 +159,9 @@ export function appPasswordValidator(control: AbstractControl<string>): Validati
               <button
                 matButton="outlined"
                 type="button"
-                [disabled]="busy() || !current.hasPassword || !form.pristine"
+                [disabled]="
+                  busy() || !(current.hasPassword || current.builtInAccount) || !form.pristine
+                "
                 (click)="sendTest()"
               >
                 <mat-icon>send</mat-icon> Enviar teste
@@ -216,6 +236,21 @@ export function appPasswordValidator(control: AbstractControl<string>): Validati
     .warn {
       color: var(--mat-sys-error);
     }
+    .builtin {
+      display: flex;
+      gap: var(--space-2);
+      align-items: flex-start;
+      margin: 0 0 var(--space-3);
+      padding: var(--space-3);
+      border-radius: 12px;
+      background: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+      font: var(--mat-sys-body-medium);
+    }
+    .builtin mat-icon {
+      flex: none;
+      color: var(--mat-sys-primary);
+    }
     .help {
       margin-top: var(--space-3);
       font: var(--mat-sys-body-medium);
@@ -230,6 +265,7 @@ export function appPasswordValidator(control: AbstractControl<string>): Validati
 })
 export class EmailSettingsCard implements OnInit {
   private readonly bridge = inject(DesktopBridge);
+  private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(NonNullableFormBuilder);
 
@@ -272,7 +308,8 @@ export class EmailSettingsCard implements OnInit {
     }
     const { enabled, address, appPassword, recipient, kinds } = this.form.getRawValue();
     const password = appPassword.replace(/\s+/g, '');
-    if (enabled && (!address.trim() || (!password && !current.hasPassword))) {
+    const ownAccount = address.trim() !== '' && (password !== '' || current.hasPassword);
+    if (enabled && !ownAccount && !current.builtInAccount) {
       this.toast.error('Para ativar, informe a conta do Gmail e a senha de app.');
       return;
     }
@@ -294,7 +331,7 @@ export class EmailSettingsCard implements OnInit {
     const email = this.bridge.email;
     if (!email) return;
     await this.run(async () => {
-      const result = await email.test();
+      const result = await email.test(this.auth.user()?.email || undefined);
       const message = emailResultMessage(result);
       if (message) this.toast.error(message);
       else this.toast.success('E-mail de teste enviado. Confira a caixa de entrada.');
@@ -305,9 +342,22 @@ export class EmailSettingsCard implements OnInit {
     const email = this.bridge.email;
     const current = this.status();
     if (!email || !current) return;
+    // With an embedded account, removing the user's own falls back to it.
+    const fallback = current.builtInAccount !== null;
     await this.run(async () => {
-      this.apply(await email.save({ ...current.settings, enabled: false, appPassword: null }));
-      this.toast.success('Senha de app removida e envio por e-mail desativado.');
+      this.apply(
+        await email.save({
+          ...current.settings,
+          address: fallback ? '' : current.settings.address,
+          enabled: fallback && current.settings.enabled,
+          appPassword: null,
+        }),
+      );
+      this.toast.success(
+        fallback
+          ? 'Senha de app removida. O DidiFlow volta a usar a conta padrão.'
+          : 'Senha de app removida e envio por e-mail desativado.',
+      );
     }, 'Não foi possível remover a senha de app.');
   }
 

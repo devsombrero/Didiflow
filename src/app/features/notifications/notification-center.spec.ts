@@ -117,7 +117,12 @@ describe('notifications', () => {
     });
     await notifier.notify({ kind: 'system', title: 'Interno' });
     expect(email.send).toHaveBeenCalledTimes(1);
-    expect(email.send).toHaveBeenCalledWith({ kind: 'reminder', title: 'Lembrete', body: 'Ligar' });
+    expect(email.send).toHaveBeenCalledWith({
+      kind: 'reminder',
+      title: 'Lembrete',
+      body: 'Ligar',
+      to: undefined,
+    });
     expect(toast.error).not.toHaveBeenCalled();
   });
 

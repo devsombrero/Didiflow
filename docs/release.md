@@ -32,11 +32,12 @@ Por causa disso, os testes E2E rodam contra o build não empacotado (`npm run te
 
 ## Variáveis e segredos
 
-| Variável                       | Onde             | Observação                                                    |
-| ------------------------------ | ---------------- | ------------------------------------------------------------- |
-| `DIDIFLOW_SUPABASE_URL`        | build            | `https://` obrigatório (exceto Supabase local)                |
-| `DIDIFLOW_SUPABASE_ANON_KEY`   | build            | Chave pública; `write-env` recusa `service_role`/`sb_secret_` |
-| `CSC_LINK`, `CSC_KEY_PASSWORD` | build (opcional) | Certificado Authenticode (.pfx em base64) e senha             |
+| Variável                                                | Onde             | Observação                                                                                             |
+| ------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
+| `DIDIFLOW_SUPABASE_URL`                                 | build            | `https://` obrigatório (exceto Supabase local)                                                         |
+| `DIDIFLOW_SUPABASE_ANON_KEY`                            | build            | Chave pública; `write-env` recusa `service_role`/`sb_secret_`                                          |
+| `CSC_LINK`, `CSC_KEY_PASSWORD`                          | build (opcional) | Certificado Authenticode (.pfx em base64) e senha                                                      |
+| `DIDIFLOW_GMAIL_ADDRESS`, `DIDIFLOW_GMAIL_APP_PASSWORD` | build (opcional) | Conta Gmail padrão das notificações por e-mail, embutida criptografada no instalador (ver security.md) |
 
 No GitHub, ficam em _Repository secrets_:
 

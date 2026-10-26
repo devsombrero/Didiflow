@@ -147,24 +147,32 @@ export interface EmailStatus {
   hasPassword: boolean;
   /** False when the OS cannot encrypt it: the password is then kept only until the app closes. */
   canStorePassword: boolean;
+  /** Sender embedded in this build, used when no account of the user's own is saved. */
+  builtInAccount: string | null;
 }
 
 export interface EmailMessage {
   kind: EmailKind;
   title: string;
   body?: string;
+  /** Signed-in account e-mail, used when no recipient is configured. */
+  to?: string;
 }
 
 export type EmailSendResult =
   | { status: 'sent' }
-  | { status: 'skipped'; reason: 'disabled' | 'kind' | 'not-configured' | 'rate-limited' }
+  | {
+      status: 'skipped';
+      reason: 'disabled' | 'kind' | 'not-configured' | 'no-recipient' | 'rate-limited';
+    }
   | { status: 'error'; error: 'auth' | 'network' | 'unknown' };
 
 /** Notification e-mails through Gmail SMTP, sent by the main process. */
 export interface EmailApi {
   status(): Promise<EmailStatus>;
   save(update: EmailSettingsUpdate): Promise<EmailStatus>;
-  test(): Promise<EmailSendResult>;
+  /** Sends a test message; `to` is the fallback recipient (signed-in account). */
+  test(to?: string): Promise<EmailSendResult>;
   /** Sends when e-mail is enabled for the message kind (and within the hourly limit). */
   send(message: EmailMessage): Promise<EmailSendResult>;
 }
