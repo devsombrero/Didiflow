@@ -4,6 +4,16 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.7.0] - 2026-10-26
+
+### Alterado
+
+- Builds de release (`npm run dist`, `npm run android:build`) apontam por padrão para o Supabase cloud de produção, lendo `.env.production` (URL e chave publishable). Os builds contra o Supabase local passam a ser `npm run dist:local` e `npm run android:build:local`.
+
+### Adicionado
+
+- `scripts/configure-cloud-auth.mjs`: aplica no projeto cloud os e-mails com código de 6 dígitos, a política de senha e o SMTP do Gmail.
+
 ## [0.6.1] - 2026-10-26
 
 ### Alterado

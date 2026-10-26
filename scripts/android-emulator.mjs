@@ -19,7 +19,9 @@ const adb = path.join(sdk, 'platform-tools', 'adb.exe');
 const emulator = path.join(sdk, 'emulator', 'emulator.exe');
 const sysdir = path.join(sdk, 'system-images', 'android-35', 'google_apis', 'x86_64');
 const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
-const apk = `release/android/DidiFlow-${version}-emulator-debug.apk`;
+// Local-Supabase builds need the 10.0.2.2 variant; cloud builds use the regular APK.
+const emulatorApk = `release/android/DidiFlow-${version}-emulator-debug.apk`;
+const apk = existsSync(emulatorApk) ? emulatorApk : `release/android/DidiFlow-${version}-debug.apk`;
 
 for (const [label, file] of [
   ['adb', adb],

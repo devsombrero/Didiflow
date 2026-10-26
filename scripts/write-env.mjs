@@ -1,11 +1,10 @@
 // Generates src/environments/environment.ts from environment variables or a
 // local .env file. The generated file is git-ignored; only public values
 // (project URL and anon/publishable key) are accepted here.
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { loadEnv } from './load-env.mjs';
 
-if (existsSync('.env')) {
-  process.loadEnvFile('.env');
-}
+loadEnv();
 
 const url = process.env.DIDIFLOW_SUPABASE_URL?.trim();
 const anonKey = process.env.DIDIFLOW_SUPABASE_ANON_KEY?.trim();

@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img alt="Versão" src="https://img.shields.io/badge/vers%C3%A3o-0.6.1-0284c7" />
+  <img alt="Versão" src="https://img.shields.io/badge/vers%C3%A3o-0.7.0-0284c7" />
   <img alt="Plataformas" src="https://img.shields.io/badge/plataformas-Windows%20%7C%20Android-0369a1" />
   <img alt="Electron" src="https://img.shields.io/badge/Electron-44-47848f" />
   <img alt="Angular" src="https://img.shields.io/badge/Angular-22-dd0031" />
@@ -24,7 +24,7 @@ O **DidiFlow** organiza o que você precisa entregar: tarefas com prazo, priorid
 notificações — inclusive por e-mail, em formato de relatório. É o mesmo app Angular no Windows
 (Electron) e no Android (Capacitor), com os dados no Supabase protegidos por RLS.
 
-📘 **[Manual do usuário em PDF](docs/manual/DidiFlow-Manual-0.6.1.pdf)** · 📝 [CHANGELOG](CHANGELOG.md) · 🔐 [Segurança](docs/security.md)
+📘 **[Manual do usuário em PDF](docs/manual/DidiFlow-Manual-0.7.0.pdf)** · 📝 [CHANGELOG](CHANGELOG.md) · 🔐 [Segurança](docs/security.md)
 
 ---
 
@@ -227,7 +227,7 @@ flowchart TB
 | Windows    | `DidiFlow-Setup-<versão>.exe` | Sem assinatura digital: no SmartScreen, clique em **Mais informações → Executar assim mesmo**. |
 | Android    | `DidiFlow-<versão>-debug.apk` | Permita “instalar apps desconhecidos”; na primeira abertura, autorize notificações e alarmes.  |
 
-O passo a passo ilustrado está no [manual do usuário](docs/manual/DidiFlow-Manual-0.6.1.pdf).
+O passo a passo ilustrado está no [manual do usuário](docs/manual/DidiFlow-Manual-0.7.0.pdf).
 
 ## Desenvolvimento
 
@@ -253,7 +253,7 @@ npm run electron:dev  # Angular + Electron
 
 ## Documentação
 
-- [Guia de uso](docs/user-guide.md) e [manual em PDF](docs/manual/DidiFlow-Manual-0.6.1.pdf)
+- [Guia de uso](docs/user-guide.md) e [manual em PDF](docs/manual/DidiFlow-Manual-0.7.0.pdf)
 - [Arquitetura](docs/architecture.md)
 - [Modelo de dados](docs/database.md)
 - [Segurança](docs/security.md)
