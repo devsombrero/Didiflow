@@ -27,7 +27,12 @@ try {
 }
 
 const isLocal = ['127.0.0.1', 'localhost'].includes(parsed.hostname);
-if (parsed.protocol !== 'https:' && !(isLocal && parsed.protocol === 'http:')) {
+// Android debug builds (scripts/build-android.mjs) may reach a local Supabase
+// on the LAN over http; never allowed for regular builds.
+const isPrivateLan =
+  process.env.DIDIFLOW_ALLOW_LAN_HTTP === '1' &&
+  /^(10.|192.168.|172.(1[6-9]|2d|3[01]).)/.test(parsed.hostname);
+if (parsed.protocol !== 'https:' && !((isLocal || isPrivateLan) && parsed.protocol === 'http:')) {
   fail('DIDIFLOW_SUPABASE_URL must use https (http is allowed only for a local Supabase).');
 }
 

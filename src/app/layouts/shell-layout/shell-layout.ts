@@ -13,8 +13,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
+import { App as CapacitorApp } from '@capacitor/app';
+import { filter, map } from 'rxjs';
+import { isNativeMobile } from '../../core/platform/mobile-platform';
+import { MobileScheduleSync } from '../../features/notifications/mobile-schedule-sync';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from '../../core/profile/profile.service';
 import { OrganizationStore } from '../../features/organization/organization.service';
@@ -59,6 +66,16 @@ export class ShellLayout implements OnInit {
   protected readonly focus = inject(FocusStore);
   private readonly backupScheduler = inject(BackupScheduler);
   private readonly attachments = inject(AttachmentsService);
+  private readonly mobileSync = inject(MobileScheduleSync);
+  private readonly dialog = inject(MatDialog);
+  private readonly sidenav = viewChild(MatSidenav);
+  /** Phone-sized layout: drawer menu and top bar (also used by the Android app). */
+  protected readonly handset = toSignal(
+    inject(BreakpointObserver)
+      .observe('(max-width: 840px)')
+      .pipe(map((state) => state.matches)),
+    { initialValue: false },
+  );
   protected readonly focusClock = computed(() =>
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
   );
@@ -79,6 +96,12 @@ export class ShellLayout implements OnInit {
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   constructor() {
+    // On phones the drawer closes after choosing a page.
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      if (this.handset()) void this.sidenav()?.close();
+    });
+    if (isNativeMobile()) this.listenBackButton();
+
     // Session ended elsewhere (sign-out, expired refresh token): leave the shell.
     effect(() => {
       if (!this.auth.isAuthenticated()) {
@@ -88,6 +111,7 @@ export class ShellLayout implements OnInit {
         this.scheduler.stop();
         this.focus.clear();
         this.backupScheduler.stop();
+        void this.mobileSync.stop();
         void this.router.navigate(['/login']);
       }
     });
@@ -97,6 +121,7 @@ export class ShellLayout implements OnInit {
     try {
       await Promise.all([this.profileService.load(), this.timer.refresh()]);
       this.scheduler.start();
+      void this.mobileSync.start();
       void this.focus.restore().catch(() => undefined);
       this.backupScheduler.start();
       // Clean up local files of attachments removed elsewhere (best effort).
@@ -104,6 +129,22 @@ export class ShellLayout implements OnInit {
     } catch {
       this.toast.error('Não foi possível carregar seu perfil.');
     }
+  }
+
+  /** Android back button: close a dialog, then the drawer, then go back. */
+  private listenBackButton(): void {
+    void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      const dialogs = this.dialog.openDialogs;
+      if (dialogs.length) {
+        dialogs[dialogs.length - 1].close();
+      } else if (this.handset() && this.sidenav()?.opened) {
+        void this.sidenav()?.close();
+      } else if (canGoBack && this.router.url !== '/') {
+        history.back();
+      } else {
+        void CapacitorApp.minimizeApp();
+      }
+    });
   }
 
   protected search(event: Event): void {
