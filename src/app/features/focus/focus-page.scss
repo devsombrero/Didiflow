@@ -64,3 +64,9 @@
     font: var(--mat-sys-body-small);
   }
 }
+
+@media (max-width: 768px) {
+  .history li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

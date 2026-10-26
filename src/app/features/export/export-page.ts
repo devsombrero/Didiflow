@@ -121,6 +121,17 @@ const DATASETS: DatasetOption[] = [
     .export:last-child {
       border-bottom: 0;
     }
+    @media (max-width: 768px) {
+      .export {
+        flex-wrap: wrap;
+      }
+      .export__info {
+        flex-basis: calc(100% - 56px);
+      }
+      .export .actions {
+        width: 100%;
+      }
+    }
     .export__icon {
       color: var(--mat-sys-primary);
     }

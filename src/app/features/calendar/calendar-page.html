@@ -93,6 +93,7 @@
         [attr.aria-label]="day.date | appDate"
       >
         <header class="cell__header">
+          <span class="cell__weekday" aria-hidden="true">{{ weekdays[$index % 7] }}</span>
           <button type="button" class="cell__date" (click)="openDay(day.date)">
             {{ view() === 'day' ? (day.date | appDate) : day.date.slice(8) }}
           </button>
