@@ -4,6 +4,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Adicionado
+
+- Descrição em Markdown nas subtarefas: ao criar pelo painel, ao expandir o item e edição no próprio painel.
+
 ## [0.3.0] - 2026-10-25
 
 ### Adicionado
