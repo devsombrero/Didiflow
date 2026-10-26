@@ -12,6 +12,7 @@ import {
   GeminiAssistant,
   MAX_MESSAGES,
   parseSubtasks,
+  rankFallbacks,
 } from './gemini';
 import type { GoogleConnector } from './google-connect';
 import { type Cipher, SecureStore } from './secure-store';
@@ -46,7 +47,11 @@ describe('Gemini validation', () => {
 
   it('validates chat requests', () => {
     const ok = assertChatRequest({ messages: [{ role: 'user', text: 'Oi' }], context: 'ctx' });
-    expect(ok).toEqual({ messages: [{ role: 'user', text: 'Oi' }], context: 'ctx' });
+    expect(ok).toEqual({
+      messages: [{ role: 'user', text: 'Oi' }],
+      context: 'ctx',
+      allowActions: false,
+    });
     expect(() => assertChatRequest({ messages: [] })).toThrow();
     expect(() => assertChatRequest({ messages: [{ role: 'system', text: 'x' }] })).toThrow();
     expect(() => assertChatRequest({ messages: [{ role: 'model', text: 'x' }] })).toThrow();
@@ -81,6 +86,28 @@ describe('Gemini validation', () => {
     expect(classifyHttpError(404, {})).toBe('model');
     expect(classifyHttpError(503, {})).toBe('unavailable');
     expect(classifyHttpError(400, { error: { message: 'bad request' } })).toBe('unknown');
+  });
+
+  it('ranks fallback models: Flash first, newest first, no aliases or tried ones', () => {
+    expect(
+      rankFallbacks(
+        [
+          'gemini-2.5-flash',
+          'gemini-3.8-flash',
+          'gemini-3.5-flash-lite',
+          'gemini-3-flash-preview',
+          'gemini-flash-latest',
+          'gemini-3.1-pro-preview',
+          'gemini-3.7-flash',
+        ],
+        new Set(['gemini-3.7-flash']),
+      ),
+    ).toEqual([
+      'gemini-3.8-flash',
+      'gemini-2.5-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3-flash-preview',
+    ]);
   });
 
   it('parses subtask answers defensively', () => {
@@ -168,7 +195,7 @@ describe('GeminiAssistant', () => {
       ],
       context: 'Hoje: 2026-10-26\n- Gateway (urgente)',
     });
-    expect(result).toEqual({ status: 'ok', text: 'Olá!' });
+    expect(result).toEqual({ status: 'ok', text: 'Olá!', actions: [] });
     const { url, init } = calls[0];
     expect(url).toBe(`${GEMINI_BASE_URL}/models/gemini-2.5-flash:generateContent`);
     expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe(KEY);
@@ -176,6 +203,7 @@ describe('GeminiAssistant', () => {
     expect(body.systemInstruction.parts[0].text).toContain('DidiBot');
     expect(body.systemInstruction.parts[0].text).toContain('- Gateway (urgente)');
     expect(body.contents.map((c: { role: string }) => c.role)).toEqual(['user', 'model', 'user']);
+    expect(body.tools).toBeUndefined();
   });
 
   it('maps API failures', async () => {
@@ -227,12 +255,133 @@ describe('GeminiAssistant', () => {
     expect((await ai.status()).model).toBe('gemini-3.8-flash');
   });
 
+  it('tries the newest Flash models of the key when every alias is overloaded', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-flash-latest', apiKey: KEY });
+    next = () => {
+      const url = calls[calls.length - 1].url;
+      if (url.includes('/models?')) {
+        return reply({
+          models: [
+            { name: 'models/gemini-3.5-flash', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/gemini-3.8-flash', supportedGenerationMethods: ['generateContent'] },
+            {
+              name: 'models/gemini-3.8-flash-lite',
+              supportedGenerationMethods: ['generateContent'],
+            },
+          ],
+        });
+      }
+      if (url.includes('gemini-3.5-flash:')) {
+        return reply({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] });
+      }
+      return reply({ error: { status: 'UNAVAILABLE' } }, 503);
+    };
+    expect(await ai.test()).toEqual({ status: 'ok', model: 'gemini-3.5-flash' });
+    expect(calls.map((call) => call.url.split('/models')[1])).toEqual([
+      '/gemini-flash-latest:generateContent',
+      '/gemini-flash-lite-latest:generateContent',
+      '?pageSize=200',
+      '/gemini-3.8-flash:generateContent',
+      '/gemini-3.5-flash:generateContent',
+    ]);
+  });
+
   it('does not retry other models on quota or key errors', async () => {
     const ai = create();
     await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
     next = () => reply({ error: { status: 'RESOURCE_EXHAUSTED' } }, 429);
     expect((await ai.test()).status).toBe('error');
     expect(calls).toHaveLength(1);
+  });
+
+  it('offers functions only when actions are allowed and returns validated proposals', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    next = () =>
+      reply({
+        candidates: [
+          {
+            content: {
+              parts: [
+                { text: 'Preparei o projeto e duas tarefas.' },
+                {
+                  functionCall: {
+                    name: 'create_project',
+                    args: { name: 'Site novo', color: 'azul' },
+                  },
+                },
+                {
+                  functionCall: {
+                    name: 'create_task',
+                    args: {
+                      title: 'Criar layout',
+                      project: 'Site novo',
+                      priority: 'high',
+                      due_date: '2026-11-03',
+                    },
+                  },
+                },
+                { functionCall: { name: 'delete_everything', args: {} } },
+              ],
+            },
+          },
+        ],
+      });
+    const result = await ai.chat({
+      messages: [{ role: 'user', text: 'Crie um projeto' }],
+      allowActions: true,
+    });
+    expect(result).toEqual({
+      status: 'ok',
+      text: 'Preparei o projeto e duas tarefas.',
+      actions: [
+        { type: 'create_project', name: 'Site novo' },
+        {
+          type: 'create_task',
+          title: 'Criar layout',
+          project: 'Site novo',
+          priority: 'high',
+          dueDate: '2026-11-03',
+        },
+      ],
+    });
+    const body = JSON.parse(calls[0].init.body as string);
+    expect(body.tools[0].functionDeclarations.map((f: { name: string }) => f.name)).toEqual([
+      'create_project',
+      'create_task',
+      'update_task',
+    ]);
+    expect(body.systemInstruction.parts[0].text).toContain('só as aplica depois da confirmação');
+  });
+
+  it('accepts an answer made only of function calls', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    next = () =>
+      reply({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  functionCall: { name: 'update_task', args: { task: 'Gateway', status: 'done' } },
+                },
+              ],
+            },
+          },
+        ],
+      });
+    expect(
+      await ai.chat({
+        messages: [{ role: 'user', text: 'Conclua o gateway' }],
+        allowActions: true,
+      }),
+    ).toEqual({
+      status: 'ok',
+      text: '',
+      actions: [{ type: 'update_task', task: 'Gateway', status: 'done' }],
+    });
   });
 
   it('asks for structured subtasks', async () => {

@@ -91,6 +91,7 @@ O assistente opcional (`electron/ipc/gemini.ts` e `electron/ipc/google-connect.t
 - **Chamadas ao Gemini:** saem do processo principal com `x-goog-api-key`; a CSP do renderer não muda. O IPC valida tudo: até 20 mensagens, 4.000 caracteres por mensagem, 20.000 de contexto, papéis `user`/`model` e modelo com nome seguro. Respostas viram Markdown sanitizado.
 - **Dados enviados:** só com "Incluir minhas tarefas no contexto" ligado, e apenas títulos, status, prioridade, prazos, progresso, projeto, épico e horas de hoje. A tela avisa que o plano gratuito do Gemini pode usar o conteúdo.
 - **Subtarefas sugeridas:** só são criadas depois da confirmação do usuário.
+- **Ações (function calling):** com "Permitir criar e alterar projetos e tarefas", o Gemini pode chamar `create_project`, `create_task` e `update_task`. O processo principal valida e limita cada chamada (`electron/ipc/gemini-actions.ts`: funções conhecidas, tamanhos, datas, enums, até 30 ações) e descarta o resto. Nada é gravado pelo processo principal nem automaticamente: o renderer mostra as propostas e aplica só as confirmadas, com a sessão do usuário (RLS). Não existe função de exclusão.
 
 ## Dados e banco
 
