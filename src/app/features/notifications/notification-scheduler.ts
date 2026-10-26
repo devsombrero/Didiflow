@@ -89,6 +89,10 @@ export class NotificationScheduler {
         title: `Lembrete: ${reminder.tasks?.title ?? 'tarefa'}`.slice(0, 120),
         body: reminder.note ?? '',
         route: `/tasks/${reminder.task_id}`,
+        email: {
+          taskIds: [reminder.task_id],
+          intro: reminder.note?.trim() || 'Lembrete agendado para esta tarefa.',
+        },
       });
       await this.supabase
         .from('task_reminders')
@@ -119,8 +123,18 @@ export class NotificationScheduler {
 
     for (const notification of buildDigest(data, today, prefs)) {
       if (!pending.includes(notification.kind)) continue;
-      const { kind, ...payload } = notification;
-      await this.notifier.notify({ kind: 'digest', ...payload });
+      const { kind, taskIds, ...payload } = notification;
+      await this.notifier.notify({
+        kind: 'digest',
+        ...payload,
+        email: {
+          taskIds,
+          intro:
+            kind === 'overdue'
+              ? 'Estas tarefas já passaram da data de entrega prevista. Priorize ou renegocie os prazos.'
+              : `Estas tarefas vencem nos próximos ${prefs.due_soon_days} dia(s).`,
+        },
+      });
       this.markSent(userId, today, kind);
     }
   }

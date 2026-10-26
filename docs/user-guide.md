@@ -93,6 +93,8 @@ Lembretes por tarefa e avisos diários de atrasos e vencimentos aparecem **apena
 
 Quando o instalador já traz uma **conta padrão**, o card mostra "Conta padrão do DidiFlow já configurada" e o envio já vem ativado: os e-mails chegam no endereço da sua conta DidiFlow, sem preencher nada. Informe uma conta própria só se quiser enviar por outro Gmail.
 
+Os e-mails de lembretes e do resumo de prazos são relatórios: para cada tarefa mostram urgência, status, progresso, prazo, épico e tarefa-mãe, projeto, categoria, solicitante, horas contra a estimativa, subtarefas, tags, um trecho da descrição e o link do Jira. O resumo lista até 10 tarefas, das mais urgentes para as menos, com totais no topo.
+
 Como as demais notificações, os e-mails saem enquanto o DidiFlow estiver aberto, no máximo 20 por hora. A senha de app fica criptografada neste computador e não vai para o servidor. Se o Gmail recusar o login, o app avisa uma vez por sessão.
 
 ### Backup e restauração

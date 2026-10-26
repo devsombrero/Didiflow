@@ -3,12 +3,14 @@ import path from 'node:path';
 import type {
   EmailKind,
   EmailMessage,
+  EmailReport,
   EmailSendResult,
   EmailSettings,
   EmailSettingsUpdate,
   EmailStatus,
 } from './contract';
 import type { BuiltInAccount } from './builtin-email';
+import { assertEmailReport, renderEmail } from './email-template';
 import type { SecureStore } from './secure-store';
 import { IpcValidationError } from './validation';
 
@@ -115,7 +117,7 @@ export function assertEmailMessage(value: unknown): EmailMessage {
   if (typeof value !== 'object' || value === null) {
     throw new IpcValidationError('Invalid e-mail message');
   }
-  const { kind, title, body, to } = value as Record<string, unknown>;
+  const { kind, title, body, to, report } = value as Record<string, unknown>;
   if (!EMAIL_KINDS.includes(kind as EmailKind)) {
     throw new IpcValidationError('Invalid e-mail kind');
   }
@@ -130,57 +132,11 @@ export function assertEmailMessage(value: unknown): EmailMessage {
     title: title.trim(),
     body: body ?? '',
     to: assertRecipient(to),
+    report: assertEmailReport(report),
   };
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-const KIND_LABELS: Record<EmailKind | 'test', string> = {
-  reminder: 'Lembrete de tarefa',
-  digest: 'Resumo de prazos',
-  custom: 'Notificação personalizada',
-  focus: 'Modo foco',
-  test: 'E-mail de teste',
-};
-
-/** Plain-text and HTML versions of a notification e-mail (all user text escaped). */
-export function renderEmail(
-  kind: EmailKind | 'test',
-  title: string,
-  body: string,
-  sentAt: Date,
-): { subject: string; text: string; html: string } {
-  const when = sentAt.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-  const footer = 'Enviado pelo DidiFlow. Para parar, desative em Configurações → E-mail (Gmail).';
-  const text = [title, body, '', `${KIND_LABELS[kind]} · ${when}`, footer]
-    .filter((line, index) => index !== 1 || line !== '')
-    .join('\n');
-  const paragraphs = body
-    .split(/\n+/)
-    .filter((line) => line.trim() !== '')
-    .map((line) => `<p style="margin:0 0 8px">${escapeHtml(line)}</p>`)
-    .join('');
-  const html = `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f0f7fc;font-family:Segoe UI,Arial,sans-serif;color:#0f172a">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:24px 12px"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #d7e3ee;border-radius:14px">
-<tr><td style="padding:18px 22px;border-bottom:3px solid #0284c7;font-size:20px;font-weight:800;letter-spacing:-0.5px">Didi<span style="color:#0284c7">Flow</span></td></tr>
-<tr><td style="padding:20px 22px">
-<p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#0369a1;text-transform:uppercase;letter-spacing:0.5px">${escapeHtml(KIND_LABELS[kind])}</p>
-<h1 style="margin:0 0 12px;font-size:18px;line-height:1.3">${escapeHtml(title)}</h1>
-${paragraphs}
-<p style="margin:16px 0 0;font-size:12px;color:#64748b">${escapeHtml(when)}</p>
-</td></tr>
-<tr><td style="padding:14px 22px;background:#f8fbfe;border-top:1px solid #e2ecf5;border-radius:0 0 14px 14px;font-size:11px;color:#64748b">${escapeHtml(footer)}</td></tr>
-</table></td></tr></table></body></html>`;
-  return { subject: `DidiFlow · ${title}`, text, html };
-}
+export { renderEmail };
 
 /** Maps SMTP/network failures to a category the renderer can explain. */
 export function classifyError(error: unknown): 'auth' | 'network' | 'unknown' {
@@ -261,7 +217,13 @@ export class EmailNotifier {
     if (this.sentAt.length >= MAX_EMAILS_PER_HOUR) {
       return { status: 'skipped', reason: 'rate-limited' };
     }
-    return this.deliver(message.kind, message.title, message.body ?? '', message.to);
+    return this.deliver(
+      message.kind,
+      message.title,
+      message.body ?? '',
+      message.to,
+      message.report,
+    );
   }
 
   /** The user's own account when complete, otherwise the embedded one. */
@@ -276,6 +238,7 @@ export class EmailNotifier {
     title: string,
     body: string,
     to?: string,
+    report?: EmailReport,
   ): Promise<EmailSendResult> {
     const settings = await this.load();
     const account = await this.credentials(settings);
@@ -284,7 +247,7 @@ export class EmailNotifier {
     const recipient = settings.recipient || to || account.address;
     if (!isDeliverable(recipient)) return { status: 'skipped', reason: 'no-recipient' };
 
-    const mail = renderEmail(kind, title, body, new Date(this.now()));
+    const mail = renderEmail(kind, title, body, new Date(this.now()), report);
     try {
       await this.createTransport({ user: account.address, pass: account.pass }).sendMail({
         from: `DidiFlow <${account.address}>`,

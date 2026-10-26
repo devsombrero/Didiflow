@@ -64,6 +64,7 @@ describe('NotificationScheduler', () => {
       title: '1 tarefa atrasada',
       body: 'Atrasada',
       route: '/tasks/t1',
+      email: { taskIds: ['t1'], intro: expect.stringContaining('passaram da data de entrega') },
     });
   });
 

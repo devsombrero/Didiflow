@@ -4,6 +4,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Alterado
+
+- E-mails de notificação viraram relatórios: cada tarefa aparece com nível de urgência (prioridade), status, progresso em barra, prazo (vence hoje/amanhã, atrasada há N dias), épico e tarefa-mãe, projeto, categoria, solicitante, horas registradas contra a estimativa, subtarefas concluídas, tags, trecho da descrição e botão para o card do Jira. O resumo de prazos traz totais (atrasadas, urgentes/altas, progresso médio) e lista as tarefas mais urgentes primeiro.
+
 ## [0.6.0] - 2026-10-26
 
 ### Adicionado
