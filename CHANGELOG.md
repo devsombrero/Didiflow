@@ -4,6 +4,8 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.5.0] - 2026-10-26
+
 ### Adicionado
 
 - Identidade visual: símbolo DidiFlow (D aberto com check em fluxo), logotipo, ícones do app para Windows, macOS, Linux e Android (adaptativo e monocromático), notificação, abertura, favicon e tela de carregamento. Ícones gerados por `npm run icons` (ver docs/brand.md).
