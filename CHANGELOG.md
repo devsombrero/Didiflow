@@ -6,6 +6,7 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Adicionado
 
+- Aplicativo Android (APK) com Capacitor: o mesmo app em layout responsivo, sessão no armazenamento privado do app e notificações agendadas no Android (funcionam com o app fechado).
 - Descrição em Markdown nas subtarefas: ao criar pelo painel, ao expandir o item e edição no próprio painel.
 
 ## [0.3.0] - 2026-10-25
