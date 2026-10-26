@@ -27,6 +27,14 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
 import { ProgressBar, StatusBadge } from './task-badges';
 import { TaskLinksPanel } from './task-links-panel';
+import { MatDialog } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
+import { aiErrorMessage } from '../../didibot/ai-messages';
+import { DidiBotService } from '../../didibot/didibot.service';
+import {
+  SubtaskSuggestionsDialog,
+  type SubtaskSuggestionsData,
+} from '../../didibot/subtask-suggestions-dialog';
 
 /**
  * Tasks of an epic / subtasks of a task: list with status and progress,
@@ -194,6 +202,17 @@ import { TaskLinksPanel } from './task-links-panel';
           <button matButton="tonal" type="submit" [disabled]="busy() || form.invalid">
             <mat-icon>add</mat-icon> Adicionar
           </button>
+          @if (bot.available) {
+            <button
+              matButton
+              type="button"
+              id="didibot-suggest"
+              [disabled]="busy()"
+              (click)="suggest()"
+            >
+              <mat-icon>smart_toy</mat-icon> Sugerir com DidiBot
+            </button>
+          }
         </div>
         @if (withDescription()) {
           <app-markdown-editor
@@ -326,6 +345,8 @@ export class TaskChildrenPanel {
   private readonly tasks = inject(TasksService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly dialog = inject(MatDialog);
+  protected readonly bot = inject(DidiBotService);
 
   readonly parent = input.required<Task>();
   /** Depth of the parent (0 = top level); subtasks of a subtask are not allowed. */
@@ -406,6 +427,61 @@ export class TaskChildrenPanel {
       // resetForm also clears the submitted state (no error outline).
       this.formDirective()?.resetForm({ title: '', description: '' });
       this.withDescription.set(false);
+    });
+  }
+
+  /** DidiBot proposes items; only the ones the user confirms are created. */
+  protected async suggest(): Promise<void> {
+    const parent = this.parent();
+    const status = await this.bot.refreshStatus().catch(() => null);
+    if (!status?.hasKey) {
+      this.toast.error(aiErrorMessage('not-configured'));
+      return;
+    }
+    this.busy.set(true);
+    let items: string[];
+    try {
+      const result = await this.bot.suggestSubtasks(parent);
+      if (result.status === 'error') {
+        this.toast.error(aiErrorMessage(result.error));
+        return;
+      }
+      const existing = new Set(this.children().map((child) => child.title.toLowerCase()));
+      items = result.items.filter((item) => !existing.has(item.toLowerCase()));
+    } catch {
+      this.toast.error(aiErrorMessage('unknown'));
+      return;
+    } finally {
+      this.busy.set(false);
+    }
+    if (items.length === 0) {
+      this.toast.success('O DidiBot não encontrou novas sugestões para esta tarefa.', null);
+      return;
+    }
+    const chosen = await firstValueFrom(
+      this.dialog
+        .open<SubtaskSuggestionsDialog, SubtaskSuggestionsData, string[]>(
+          SubtaskSuggestionsDialog,
+          {
+            data: {
+              parentTitle: parent.title,
+              items,
+              noun: parent.kind === 'epic' ? 'Tarefas do épico' : 'Subtarefas',
+            },
+            width: '520px',
+            maxWidth: '95vw',
+          },
+        )
+        .afterClosed(),
+    );
+    if (!chosen?.length) return;
+    await this.run(async () => {
+      for (const title of chosen) await this.tasks.createSubtask(parent, title, '');
+      this.toast.success(
+        chosen.length === 1
+          ? '1 item criado pelo DidiBot.'
+          : `${chosen.length} itens criados pelo DidiBot.`,
+      );
     });
   }
 

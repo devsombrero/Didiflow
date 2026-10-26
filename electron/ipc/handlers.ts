@@ -29,6 +29,12 @@ import {
   assertRecipient,
   type EmailNotifier,
 } from './email';
+import {
+  assertAiSettingsUpdate,
+  assertChatRequest,
+  assertSubtaskRequest,
+  type GeminiAssistant,
+} from './gemini';
 import type { SecureStore } from './secure-store';
 import {
   assertExternalUrl,
@@ -49,6 +55,7 @@ interface IpcDependencies {
   backups: BackupStore;
   attachments: AttachmentStore;
   email: EmailNotifier;
+  ai: GeminiAssistant;
 }
 
 export function registerIpcHandlers({
@@ -58,6 +65,7 @@ export function registerIpcHandlers({
   backups,
   attachments,
   email,
+  ai,
 }: IpcDependencies): void {
   const handle = (channel: string, listener: (...args: unknown[]) => unknown) => {
     ipcMain.handle(channel, (event: IpcMainInvokeEvent, ...args: unknown[]) => {
@@ -222,6 +230,16 @@ export function registerIpcHandlers({
   handle(IPC_CHANNELS.emailSave, (update) => email.save(assertEmailSettingsUpdate(update)));
   handle(IPC_CHANNELS.emailTest, (to) => email.test(assertRecipient(to)));
   handle(IPC_CHANNELS.emailSend, (message) => email.send(assertEmailMessage(message)));
+
+  handle(IPC_CHANNELS.aiStatus, () => ai.status());
+  handle(IPC_CHANNELS.aiSave, (update) => ai.save(assertAiSettingsUpdate(update)));
+  handle(IPC_CHANNELS.aiTest, () => ai.test());
+  handle(IPC_CHANNELS.aiModels, () => ai.models());
+  handle(IPC_CHANNELS.aiChat, (request) => ai.chat(assertChatRequest(request)));
+  handle(IPC_CHANNELS.aiConnectGoogle, () => ai.connectGoogle());
+  handle(IPC_CHANNELS.aiSuggestSubtasks, (request) =>
+    ai.suggestSubtasks(assertSubtaskRequest(request)),
+  );
 }
 
 async function mkdirSafe(directory: string): Promise<void> {

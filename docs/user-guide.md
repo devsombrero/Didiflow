@@ -1,6 +1,6 @@
 # Guia de uso
 
-Manual ilustrado em PDF, com capturas do desktop e do Android: [manual/DidiFlow-Manual-0.7.0.pdf](manual/DidiFlow-Manual-0.7.0.pdf). Para regerar a partir de `manual/manual.html`, rode `npm run manual`.
+Manual ilustrado em PDF, com capturas do desktop e do Android: [manual/DidiFlow-Manual-0.8.0.pdf](manual/DidiFlow-Manual-0.8.0.pdf). Para regerar a partir de `manual/manual.html`, rode `npm run manual`.
 
 ## Instalação
 
@@ -96,6 +96,16 @@ Quando o instalador já traz uma **conta padrão**, o card mostra "Conta padrão
 Os e-mails de lembretes e do resumo de prazos são relatórios: para cada tarefa mostram urgência, status, progresso, prazo, épico e tarefa-mãe, projeto, categoria, solicitante, horas contra a estimativa, subtarefas, tags, um trecho da descrição e o link do Jira. O resumo lista até 10 tarefas, das mais urgentes para as menos, com totais no topo.
 
 Como as demais notificações, os e-mails saem enquanto o DidiFlow estiver aberto, no máximo 20 por hora. A senha de app fica criptografada neste computador e não vai para o servidor. Se o Gmail recusar o login, o app avisa uma vez por sessão.
+
+### DidiBot (assistente com IA)
+
+O **DidiBot** usa a API Gemini gratuita do Google e é opcional (app desktop):
+
+1. **Conectar:** menu **DidiBot** → **Entrar com Google**. O navegador abre o login do Google; aceite a permissão do Google Cloud. O DidiFlow cria sozinho, na sua conta, o projeto "DidiFlow DidiBot", ativa a API Gemini e gera uma chave restrita a ela, que fica criptografada neste computador. Alternativa: **Usar uma chave própria** (Configurações → DidiBot) e colar uma chave criada em aistudio.google.com/apikey.
+2. **Conversar:** pergunte sobre suas tarefas ou use os atalhos "Resumo do meu dia", "O que priorizar agora?", "Planejar a semana" e "Tarefas em risco". Com **Incluir minhas tarefas no contexto** ligado, o DidiBot recebe um resumo das tarefas abertas (título, status, prioridade, prazo, progresso, projeto e épico) e as horas de hoje; descrições e observações não são enviadas.
+3. **Sugerir subtarefas:** no detalhe da tarefa, painel de subtarefas → **Sugerir com DidiBot**. Marque as sugestões que quer e confirme; nada é criado sem confirmação.
+
+O modelo padrão é o Gemini Flash mais recente. Se o modelo escolhido for descontinuado ou estiver sobrecarregado, o DidiBot tenta outro automaticamente. No plano gratuito, o Google pode usar o conteúdo enviado para melhorar seus produtos: não envie dados sensíveis. Enquanto o app estiver em modo de teste no Google Cloud, só contas cadastradas como usuários de teste conseguem entrar com Google.
 
 ### Backup e restauração
 

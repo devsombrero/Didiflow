@@ -38,6 +38,15 @@ describe('DesktopBridge', () => {
         usage: vi.fn(),
       },
       email: { status: vi.fn(), save: vi.fn(), test: vi.fn(), send: vi.fn() },
+      ai: {
+        status: vi.fn(),
+        save: vi.fn(),
+        test: vi.fn(),
+        models: vi.fn(),
+        chat: vi.fn(),
+        suggestSubtasks: vi.fn(),
+        connectGoogle: vi.fn(),
+      },
     };
 
     it('exposes the secure store and desktop flag', () => {

@@ -63,6 +63,11 @@ export const routes: Routes = [
           import('./features/organization/organization-page').then((m) => m.OrganizationPage),
       },
       {
+        path: 'didibot',
+        title: 'DidiBot · DidiFlow',
+        loadComponent: () => import('./features/didibot/didibot-page').then((m) => m.DidiBotPage),
+      },
+      {
         path: 'notifications',
         title: 'Notificações · DidiFlow',
         loadComponent: () =>

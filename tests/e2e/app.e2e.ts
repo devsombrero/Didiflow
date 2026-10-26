@@ -24,6 +24,7 @@ test('security: renderer is isolated from Node and only exposes the preload API'
       require: 'undefined',
       process: 'undefined',
       api: [
+        'ai',
         'attachments',
         'backups',
         'email',
@@ -466,6 +467,74 @@ test('resources: attach external links in the Recursos tab', async () => {
     await panel.getByRole('button', { name: 'Remover Protótipo' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Remover' }).click();
     await expect(panel).toContainText('Nenhum recurso');
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('didibot: optional Google account, key never readable, no calls without a key', async () => {
+  const { app, page, close, userDataDir } = await launchApp();
+  try {
+    await app.evaluate(({ shell }) => {
+      const opened: string[] = [];
+      (globalThis as unknown as { opened: string[] }).opened = opened;
+      shell.openExternal = (async (url: string) => {
+        opened.push(url);
+      }) as typeof shell.openExternal;
+    });
+    await login(page, email);
+    await page.getByRole('link', { name: 'DidiBot' }).click();
+    await expect(page.locator('#didibot-connect')).toBeVisible();
+    const opened = () => app.evaluate(() => (globalThis as unknown as { opened: string[] }).opened);
+
+    const api = await page.evaluate(async () => {
+      const ai = (
+        window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
+      ).didiflow.ai;
+      const googleSignIn = (await ai.status()).googleSignIn;
+      const chat = await ai.chat({ messages: [{ role: 'user', text: 'Oi' }] });
+      // Without an OAuth client the call fails fast; with one it would open the browser.
+      const google = googleSignIn ? null : await ai.connectGoogle();
+      const badKey = await ai.save({ model: 'gemini-flash-latest', apiKey: 'senha' }).then(
+        () => false,
+        () => true,
+      );
+      const saved = await ai.save({
+        model: 'gemini-flash-latest',
+        apiKey: 'AIzaSyD-e2e_fake_key_1234567890abcdefgh',
+      });
+      const removed = await ai.save({ model: 'gemini-flash-latest', apiKey: null });
+      return { googleSignIn, chat, google, badKey, saved: JSON.stringify(saved), removed };
+    });
+    expect(api.chat).toEqual({ status: 'error', error: 'not-configured' });
+    expect(api.badKey).toBe(true);
+    expect(api.saved).toContain('"hasKey":true');
+    expect(api.saved).not.toContain('e2e_fake_key');
+    expect(api.removed.hasKey).toBe(false);
+
+    if (api.googleSignIn) {
+      // Google sign-in: the system browser gets an OAuth URL with PKCE and a loopback redirect.
+      await page.getByRole('button', { name: 'Entrar com Google' }).click();
+      await expect.poll(async () => (await opened())[0] ?? '').toContain('accounts.google.com');
+      const auth = new URL((await opened())[0]);
+      expect(auth.searchParams.get('code_challenge_method')).toBe('S256');
+      expect(auth.searchParams.get('redirect_uri')).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+      expect(auth.searchParams.get('scope')).toContain('cloud-platform');
+      await page.getByRole('link', { name: 'Usar uma chave própria' }).click();
+      const card = page.locator('app-didibot-settings-card');
+      await card.getByRole('button', { name: 'Criar chave no AI Studio' }).click();
+      await expect
+        .poll(async () => (await opened()).at(-1))
+        .toBe('https://aistudio.google.com/apikey');
+    } else {
+      expect(api.google).toEqual({ status: 'error', error: 'not-configured' });
+      await page.getByRole('link', { name: 'Conectar conta Google' }).click();
+      const card = page.locator('app-didibot-settings-card');
+      await expect(card).toContainText('Nenhuma conta Google conectada');
+      await card.getByRole('button', { name: 'Conectar conta Google' }).click();
+      await expect.poll(opened).toEqual(['https://aistudio.google.com/apikey']);
+    }
   } finally {
     await close();
     removeDir(userDataDir);

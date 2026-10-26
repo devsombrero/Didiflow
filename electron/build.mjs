@@ -62,6 +62,15 @@ const common = {
   define: {
     __SUPABASE_ORIGIN__: JSON.stringify(supabaseOrigin),
     __BUILTIN_EMAIL__: JSON.stringify(sealBuiltInEmail()),
+    // Desktop OAuth client for DidiBot's "Conectar conta Google" (not a secret for installed apps).
+    __GOOGLE_OAUTH__: JSON.stringify(
+      process.env.DIDIFLOW_GOOGLE_CLIENT_ID && process.env.DIDIFLOW_GOOGLE_CLIENT_SECRET
+        ? JSON.stringify({
+            clientId: process.env.DIDIFLOW_GOOGLE_CLIENT_ID.trim(),
+            clientSecret: process.env.DIDIFLOW_GOOGLE_CLIENT_SECRET.trim(),
+          })
+        : '',
+    ),
   },
 };
 
