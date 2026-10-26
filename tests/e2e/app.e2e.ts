@@ -502,7 +502,7 @@ test('didibot: optional Google account, key never readable, no calls without a k
       );
       const saved = await ai.save({
         model: 'gemini-flash-latest',
-        apiKey: 'AIzaSyD-e2e_fake_key_1234567890abcdefgh',
+        apiKey: 'e2e-fake-gemini-key-not-a-secret-0001',
       });
       const removed = await ai.save({ model: 'gemini-flash-latest', apiKey: null });
       return { googleSignIn, chat, google, badKey, saved: JSON.stringify(saved), removed };
@@ -510,7 +510,7 @@ test('didibot: optional Google account, key never readable, no calls without a k
     expect(api.chat).toEqual({ status: 'error', error: 'not-configured' });
     expect(api.badKey).toBe(true);
     expect(api.saved).toContain('"hasKey":true');
-    expect(api.saved).not.toContain('e2e_fake_key');
+    expect(api.saved).not.toContain('e2e-fake-gemini-key');
     expect(api.removed.hasKey).toBe(false);
 
     // With a key (fake, never used here) the chat shows the prompt library.
@@ -519,7 +519,7 @@ test('didibot: optional Google account, key never readable, no calls without a k
         window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
       ).didiflow.ai.save({
         model: 'gemini-flash-latest',
-        apiKey: 'AIzaSyD-e2e_fake_key_1234567890abcdefgh',
+        apiKey: 'e2e-fake-gemini-key-not-a-secret-0001',
       }),
     );
     await page.getByRole('link', { name: 'Hoje' }).click();
