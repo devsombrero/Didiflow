@@ -4,6 +4,8 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.9.0] - 2026-10-26
+
 ### Adicionado
 
 - DidiBot cria e altera projetos e tarefas: pelo chat, propõe projetos, tarefas, épicos com subtarefas (prioridade, prazo, estimativa, projeto, categoria e tags) e atualizações de status, progresso, prazo e prioridade; o usuário marca o que quer e só o confirmado é aplicado, com o resultado de cada item.
