@@ -12,10 +12,11 @@ const KIND_LABELS: Record<EmailKind | 'test', string> = {
 };
 
 const PRIORITY: Record<EmailTaskPriority, { label: string; color: string; bg: string }> = {
-  urgent: { label: 'Urgente', color: '#dc2626', bg: '#fee2e2' },
-  high: { label: 'Alta', color: '#ea580c', bg: '#ffedd5' },
+  // Same hues as the app's priority tokens (--priority-*), darkened for legible text.
+  urgent: { label: 'Urgente', color: '#c62828', bg: '#fde8e8' },
+  high: { label: 'Alta', color: '#b45309', bg: '#fef3c7' },
   medium: { label: 'Média', color: '#0284c7', bg: '#e0f2fe' },
-  low: { label: 'Baixa', color: '#64748b', bg: '#f1f5f9' },
+  low: { label: 'Baixa', color: '#6b6560', bg: '#f1efed' },
 };
 const PRIORITY_ORDER: EmailTaskPriority[] = ['urgent', 'high', 'medium', 'low'];
 

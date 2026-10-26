@@ -4,6 +4,14 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [1.0.0] - 2026-10-26
+
+Primeira versão estável: gestão de tarefas, épicos e subtarefas, tempo, KPIs, notificações (app, sistema e e-mail), Supabase cloud, DidiBot com Gemini, aplicativo Android e manual do usuário.
+
+### Corrigido
+
+- Gráficos nas cores certas: no histórico de entregas, "Com atraso" e "Sem prazo definido" apareciam em azul, diferente da legenda. Os gráficos de status e prioridade usam as mesmas cores dos selos e da prioridade das tarefas, nos temas claro e escuro, com a paleta validada para daltonismo e contraste.
+
 ## [0.9.0] - 2026-10-26
 
 ### Adicionado
