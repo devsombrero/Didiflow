@@ -1,5 +1,7 @@
 # Guia de uso
 
+Manual ilustrado em PDF, com capturas do desktop e do Android: [manual/DidiFlow-Manual-0.5.0.pdf](manual/DidiFlow-Manual-0.5.0.pdf). Para regerar a partir de `manual/manual.html`, rode `npm run manual`.
+
 ## Instalação
 
 1. Execute `DidiFlow-Setup-<versão>.exe` e escolha a pasta de instalação. Não é necessário ser administrador.

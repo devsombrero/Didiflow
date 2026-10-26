@@ -29,6 +29,7 @@
     "dist": "npm run build && npm run electron:build && electron-builder --win --publish never",
     "android:build": "node scripts/build-android.mjs",
     "android:emulator": "node scripts/android-emulator.mjs",
+    "manual": "electron scripts/build-manual.cjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "private": true,
