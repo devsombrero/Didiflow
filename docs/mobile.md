@@ -13,7 +13,8 @@ Como o objetivo é ter o app no celular com as mesmas funções, o Capacitor ent
 
 ## O que muda no Android
 
-- **Layout:** abaixo de 840 px de largura, o menu lateral vira gaveta (botão ☰) e aparece uma barra superior com o sino de notificações. Os filtros ficam dois por linha.
+- **Layout:** abaixo de 769 px de largura, o menu lateral vira gaveta (botão ☰) e aparece uma barra superior com o sino de notificações. Os filtros ficam dois por linha.
+- **Mobile-first:** os estilos partem do celular e acrescentam o layout maior a partir de 769 px (`@include bp.desktop`), com o mesmo ponto de corte do menu.
 - **Telas de até 768 px:**
   - lista de tarefas em cartões (título, status, prioridade, progresso, entrega e solicitante);
   - Kanban com uma coluna por tela, deslizando para os lados;

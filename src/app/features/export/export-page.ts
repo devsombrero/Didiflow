@@ -108,11 +108,13 @@ const DATASETS: DatasetOption[] = [
     </mat-card>
   `,
   styles: `
+    @use 'breakpoints' as bp;
     .exports {
       max-width: 960px;
     }
     .export {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--space-4);
       padding: var(--space-4) 0;
@@ -121,22 +123,25 @@ const DATASETS: DatasetOption[] = [
     .export:last-child {
       border-bottom: 0;
     }
-    @media (max-width: 768px) {
-      .export {
-        flex-wrap: wrap;
-      }
-      .export__info {
-        flex-basis: calc(100% - 56px);
-      }
-      .export .actions {
-        width: 100%;
-      }
-    }
     .export__icon {
       color: var(--mat-sys-primary);
     }
     .export__info {
-      flex: 1;
+      flex: 1 1 calc(100% - 56px);
+    }
+    .export .actions {
+      width: 100%;
+    }
+    @include bp.desktop {
+      .export {
+        flex-wrap: nowrap;
+      }
+      .export__info {
+        flex: 1;
+      }
+      .export .actions {
+        width: auto;
+      }
     }
     .export h2 {
       margin: 0 0 var(--space-1);

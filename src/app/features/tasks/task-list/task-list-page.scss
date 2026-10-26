@@ -1,3 +1,5 @@
+@use 'breakpoints' as bp;
+
 .filters-card {
   margin-bottom: var(--space-4);
 }
@@ -11,10 +13,6 @@
 
 .toolbar__search {
   flex: 1 1 280px;
-}
-
-.toolbar mat-form-field:not(.toolbar__search) {
-  flex: 0 1 190px;
 }
 
 .status-filter {
@@ -37,12 +35,76 @@
   width: 100%;
   border-collapse: collapse;
 
-  th,
-  td {
+  // Phones: every row is a card.
+  &,
+  tbody {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'title title actions'
+      'status priority actions'
+      'progress progress progress'
+      'due requester requester';
+    gap: var(--space-2) var(--space-3);
+    align-items: center;
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--mat-sys-outline-variant);
-    text-align: left;
-    vertical-align: middle;
+    transition: background var(--motion-fast) ease;
+  }
+
+  tbody tr:hover {
+    background: var(--mat-sys-surface-container-high);
+  }
+
+  tbody td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  tbody td:nth-child(1) {
+    grid-area: title;
+  }
+  tbody td:nth-child(2) {
+    grid-area: status;
+  }
+  tbody td:nth-child(3) {
+    grid-area: priority;
+  }
+  tbody td:nth-child(4) {
+    grid-area: progress;
+  }
+  tbody td:nth-child(5) {
+    grid-area: due;
+  }
+  tbody td:nth-child(6) {
+    grid-area: requester;
+    text-align: right;
+  }
+  tbody td:nth-child(7) {
+    grid-area: actions;
+    align-self: start;
+  }
+
+  tbody td:nth-child(5)::before,
+  tbody td:nth-child(6)::before {
+    color: var(--color-text-muted);
+    font: var(--mat-sys-label-small);
+  }
+  tbody td:nth-child(5)::before {
+    content: 'Entrega: ';
+  }
+  tbody td:nth-child(6)::before {
+    content: 'Solicitante: ';
   }
 
   th {
@@ -50,12 +112,45 @@
     color: var(--mat-sys-on-surface-variant);
   }
 
-  tbody tr:hover {
-    background: var(--mat-sys-surface-container-high);
+  // Desktop: a regular table.
+  @include bp.desktop {
+    display: table;
+
+    thead {
+      display: table-header-group;
+    }
+
+    tbody {
+      display: table-row-group;
+    }
+
+    tbody tr {
+      display: table-row;
+      padding: 0;
+    }
+
+    th,
+    tbody td {
+      display: table-cell;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    tbody td:nth-child(5)::before,
+    tbody td:nth-child(6)::before {
+      content: none;
+    }
+
+    tbody td:nth-child(6) {
+      text-align: left;
+    }
   }
 }
 
 .table__title {
+  font: var(--mat-sys-title-small);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-title-small);
   text-decoration: none;
@@ -106,77 +201,4 @@
   height: 48px;
   font-size: 48px;
   color: var(--mat-sys-primary);
-}
-
-@media (max-width: 768px) {
-  .table thead {
-    display: none;
-  }
-
-  .table,
-  .table tbody {
-    display: block;
-    width: 100%;
-  }
-
-  .table tbody tr {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      'title title actions'
-      'status priority actions'
-      'progress progress progress'
-      'due requester requester';
-    gap: var(--space-2) var(--space-3);
-    align-items: center;
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
-  }
-
-  .table tbody td {
-    display: block;
-    padding: 0;
-    border: 0;
-    min-width: 0;
-  }
-
-  .table tbody td:nth-child(1) {
-    grid-area: title;
-  }
-  .table tbody td:nth-child(2) {
-    grid-area: status;
-  }
-  .table tbody td:nth-child(3) {
-    grid-area: priority;
-  }
-  .table tbody td:nth-child(4) {
-    grid-area: progress;
-  }
-  .table tbody td:nth-child(5) {
-    grid-area: due;
-  }
-  .table tbody td:nth-child(6) {
-    grid-area: requester;
-    text-align: right;
-  }
-  .table tbody td:nth-child(7) {
-    grid-area: actions;
-    align-self: start;
-  }
-
-  .table tbody td:nth-child(5)::before,
-  .table tbody td:nth-child(6)::before {
-    color: var(--color-text-muted);
-    font: var(--mat-sys-label-small);
-  }
-  .table tbody td:nth-child(5)::before {
-    content: 'Entrega: ';
-  }
-  .table tbody td:nth-child(6)::before {
-    content: 'Solicitante: ';
-  }
-
-  .table__title {
-    font: var(--mat-sys-title-small);
-  }
 }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>DidiFlow</title>
+  <!-- Round launcher icon (legacy Android round icons). -->
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="0.55" stop-color="#0284c7"/><stop offset="1" stop-color="#075985"/></linearGradient><radialGradient id="glow" cx="0.25" cy="0.15" r="0.75"><stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs>
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="256" fill="url(#glow)"/>
+  <g transform="translate(26 26) scale(0.9)"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="42"><path d="M206 132 H262 C350 132 408 190 408 256 C408 322 350 380 262 380 H206" stroke="#ffffff"/><path d="M120 262 L196 334 L320 206" stroke="#e0f2fe"/></g></g>
+</svg>

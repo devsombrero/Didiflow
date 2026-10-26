@@ -1,0 +1,26 @@
+// Mobile-first breakpoints: base styles target phones; these mixins add the
+// larger-screen layout. Use with `@use 'breakpoints' as bp;`.
+$tablet: 600px;
+$desktop: 769px;
+$wide: 1200px;
+
+/// Screens of at least 600px (large phones in landscape, small tablets).
+@mixin tablet {
+  @media (min-width: $tablet) {
+    @content;
+  }
+}
+
+/// Screens of at least 769px: sidebar layout, tables and multi-column grids.
+@mixin desktop {
+  @media (min-width: $desktop) {
+    @content;
+  }
+}
+
+/// Screens of at least 1200px.
+@mixin wide {
+  @media (min-width: $wide) {
+    @content;
+  }
+}

@@ -5,9 +5,59 @@
     <title>DidiFlow</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0284c7" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="brand/didiflow-icon.svg" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <style>
+      /* Boot screen until Angular starts (replaced by the app). */
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 16px;
+        background: light-dark(hsl(210 40% 96%), hsl(240 10% 3.9%));
+        color-scheme: light dark;
+        font:
+          800 28px/1 'Inter Variable',
+          Inter,
+          'Segoe UI',
+          system-ui,
+          sans-serif;
+        letter-spacing: -0.03em;
+        color: light-dark(hsl(204 85% 30%), hsl(0 0% 98%));
+      }
+      .boot img {
+        width: 88px;
+        height: 88px;
+        border-radius: 24px;
+        box-shadow: 0 16px 40px -16px hsl(204 85% 40% / 0.6);
+        animation: boot-pulse 1.4s ease-in-out infinite;
+      }
+      .boot span span {
+        color: light-dark(#0284c7, #38bdf8);
+      }
+      @keyframes boot-pulse {
+        50% {
+          transform: scale(0.94);
+          opacity: 0.85;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot img {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body class="mat-typography">
-    <app-root></app-root>
+    <app-root>
+      <div class="boot" aria-label="Carregando DidiFlow">
+        <img src="brand/didiflow-icon.svg" alt="" width="88" height="88" />
+        <span>Didi<span>Flow</span></span>
+      </div>
+    </app-root>
   </body>
 </html>

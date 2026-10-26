@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="96 108 336 296" width="336" height="296">
+  <title>DidiFlow</title>
+  <!-- Mark only, white: for colored backgrounds, notifications and monochrome icons. -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="42">
+    <path d="M206 132 H262 C350 132 408 190 408 256 C408 322 350 380 262 380 H206"/>
+    <path d="M120 262 L196 334 L320 206"/>
+  </g>
+</svg>

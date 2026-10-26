@@ -69,12 +69,15 @@ export class ShellLayout implements OnInit {
   private readonly mobileSync = inject(MobileScheduleSync);
   private readonly dialog = inject(MatDialog);
   private readonly sidenav = viewChild(MatSidenav);
-  /** Phone-sized layout: drawer menu and top bar (also used by the Android app). */
+  /**
+   * Phone layout (drawer menu and top bar) unless the screen is at least
+   * 769px wide — mobile-first, same breakpoint as the styles.
+   */
   protected readonly handset = toSignal(
     inject(BreakpointObserver)
-      .observe('(max-width: 840px)')
-      .pipe(map((state) => state.matches)),
-    { initialValue: false },
+      .observe('(min-width: 769px)')
+      .pipe(map((state) => !state.matches)),
+    { initialValue: !matchMedia('(min-width: 769px)').matches },
   );
   protected readonly focusClock = computed(() =>
     formatClock(this.focus.remaining()).replace(/^00:/, ''),
