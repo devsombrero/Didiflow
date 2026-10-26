@@ -18,12 +18,16 @@ import {
   PRIVACY_NOTICE,
   QUICK_PROMPTS,
 } from './ai-messages';
-import { DidiBotService } from './didibot.service';
+import { type ChatEntry, DidiBotService, type ProposedAction } from './didibot.service';
+import { MyPrompts } from './didibot-prompts';
+import { PromptLibraryDialog } from './prompt-library-dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
 
 /** DidiBot chat: questions about the user's work, answered by Gemini. */
 @Component({
   selector: 'app-didibot-page',
-  imports: [FormsModule, RouterLink, MarkdownView, MATERIAL_FORMS, MATERIAL_UI],
+  imports: [FormsModule, RouterLink, MarkdownView, MATERIAL_FORMS, MATERIAL_UI, MatDialogModule],
   template: `
     <header class="page-header">
       <h1>DidiBot</h1>
@@ -102,6 +106,65 @@ import { DidiBotService } from './didibot.service';
                 <p>{{ entry.text }}</p>
               } @else if (entry.role === 'model') {
                 <app-markdown-view [text]="entry.text" />
+                @if (entry.actions?.length) {
+                  <div class="actions-card" [attr.data-state]="entry.actionsState">
+                    <p class="actions-card__title">
+                      <mat-icon>task_alt</mat-icon> Ações propostas pelo DidiBot
+                    </p>
+                    <ul>
+                      @for (item of entry.actions; track $index) {
+                        <li>
+                          @if (entry.actionsState === 'pending') {
+                            <mat-checkbox
+                              [checked]="item.selected"
+                              (change)="bot.toggleAction(entry.id, $index, $event.checked)"
+                            >
+                              {{ item.label }}
+                            </mat-checkbox>
+                          } @else {
+                            <span class="result" [attr.data-ok]="item.result?.ok">
+                              <mat-icon>{{ resultIcon(item) }}</mat-icon>
+                              <span>
+                                {{ item.label }}
+                                @if (item.result) {
+                                  <span class="muted">— {{ item.result.message }}</span>
+                                  @if (item.result.route) {
+                                    <a [routerLink]="item.result.route">Abrir</a>
+                                  }
+                                }
+                              </span>
+                            </span>
+                          }
+                        </li>
+                      }
+                    </ul>
+                    @switch (entry.actionsState) {
+                      @case ('pending') {
+                        <div class="actions-card__buttons">
+                          <button
+                            matButton="filled"
+                            type="button"
+                            [disabled]="selectedCount(entry) === 0"
+                            (click)="apply(entry.id)"
+                          >
+                            <mat-icon>done_all</mat-icon> Aplicar {{ selectedCount(entry) }}
+                          </button>
+                          <button matButton type="button" (click)="bot.dismissActions(entry.id)">
+                            Descartar
+                          </button>
+                        </div>
+                      }
+                      @case ('applying') {
+                        <p class="muted applying">
+                          <mat-spinner diameter="18" /> Aplicando no DidiFlow…
+                        </p>
+                      }
+                      @case ('dismissed') {
+                        <p class="muted">Ações descartadas. Nada foi alterado.</p>
+                      }
+                    }
+                  </div>
+                }
               } @else {
                 <p><mat-icon inline>error</mat-icon> {{ entry.text }}</p>
               }
@@ -125,6 +188,9 @@ import { DidiBotService } from './didibot.service';
               <mat-icon>{{ quick.icon }}</mat-icon> {{ quick.label }}
             </button>
           }
+          <button matButton type="button" id="didibot-library" (click)="openLibrary()">
+            <mat-icon>menu_book</mat-icon> Biblioteca de prompts
+          </button>
         </div>
 
         <form class="composer" (ngSubmit)="ask(question())">
@@ -158,6 +224,16 @@ import { DidiBotService } from './didibot.service';
           >
             Incluir minhas tarefas no contexto
           </mat-slide-toggle>
+          <mat-slide-toggle
+            id="didibot-actions"
+            [checked]="bot.allowActions()"
+            (change)="bot.setAllowActions($event.checked)"
+          >
+            Permitir criar e alterar projetos e tarefas
+          </mat-slide-toggle>
+          <button matButton type="button" [disabled]="!question().trim()" (click)="savePrompt()">
+            <mat-icon>bookmark_add</mat-icon> Salvar prompt
+          </button>
           <span class="notice">{{ privacy }}</span>
         </div>
       </section>
@@ -278,6 +354,58 @@ import { DidiBotService } from './didibot.service';
         opacity: 0.25;
       }
     }
+    .actions-card {
+      margin-top: var(--space-3);
+      padding: var(--space-3);
+      border: 1px solid var(--mat-sys-outline-variant);
+      border-radius: 12px;
+      background: var(--mat-sys-surface);
+    }
+    .actions-card__title {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      margin: 0 0 var(--space-2);
+      font-weight: 700;
+      color: var(--mat-sys-primary);
+    }
+    .actions-card ul {
+      margin: 0 0 var(--space-2);
+      padding: 0;
+      list-style: none;
+    }
+    .actions-card li {
+      padding: 2px 0;
+    }
+    .actions-card__buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .result {
+      display: flex;
+      gap: var(--space-2);
+      align-items: flex-start;
+    }
+    .result mat-icon {
+      flex: none;
+      color: var(--mat-sys-outline);
+    }
+    .result[data-ok='true'] mat-icon {
+      color: var(--color-success);
+    }
+    .result[data-ok='false'] mat-icon {
+      color: var(--mat-sys-error);
+    }
+    .result a {
+      margin-left: var(--space-1);
+      font-weight: 600;
+    }
+    .applying {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
     .prompts {
       display: flex;
       flex-wrap: wrap;
@@ -306,14 +434,20 @@ import { DidiBotService } from './didibot.service';
     @include bp.desktop {
       .footer {
         flex-direction: row;
+        flex-wrap: wrap;
         align-items: center;
-        justify-content: space-between;
+        gap: var(--space-2) var(--space-4);
+      }
+      .footer .notice {
+        flex-basis: 100%;
       }
     }
   `,
 })
 export class DidiBotPage implements OnInit {
   protected readonly bot = inject(DidiBotService);
+  private readonly dialog = inject(MatDialog);
+  private readonly myPrompts = inject(MyPrompts);
   protected readonly quickPrompts = QUICK_PROMPTS;
   protected readonly privacy = PRIVACY_NOTICE;
   protected readonly connectingMessage = CONNECTING_MESSAGE;
@@ -352,6 +486,51 @@ export class DidiBotPage implements OnInit {
     if ((event as KeyboardEvent).shiftKey) return;
     event.preventDefault();
     void this.ask(this.question());
+  }
+
+  protected selectedCount(entry: ChatEntry): number {
+    return entry.actions?.filter((item) => item.selected).length ?? 0;
+  }
+
+  protected resultIcon(item: ProposedAction): string {
+    if (!item.result) return 'remove_circle_outline';
+    return item.result.ok ? 'check_circle' : 'error';
+  }
+
+  protected async apply(entryId: number): Promise<void> {
+    const results = await this.bot.applyActions(entryId);
+    const failed = results.filter((result) => !result.ok).length;
+    if (results.length && !failed) this.toast.success('Pronto! O DidiBot atualizou o DidiFlow.');
+    else if (failed) this.toast.error(`${failed} ação(ões) não puderam ser aplicadas.`);
+  }
+
+  protected async openLibrary(): Promise<void> {
+    const prompt = await firstValueFrom(
+      this.dialog
+        .open<PromptLibraryDialog, void, string>(PromptLibraryDialog, {
+          width: '760px',
+          maxWidth: '95vw',
+        })
+        .afterClosed(),
+    );
+    if (!prompt) return;
+    this.question.set(prompt);
+    // Focus the message box with the first [placeholder] selected, ready to type over.
+    setTimeout(() => {
+      const input = document.getElementById('didibot-input') as HTMLTextAreaElement | null;
+      if (!input) return;
+      input.focus();
+      const start = prompt.indexOf('[');
+      const end = prompt.indexOf(']', start);
+      if (start >= 0 && end > start) input.setSelectionRange(start, end + 1);
+    });
+  }
+
+  protected savePrompt(): void {
+    const text = this.question().trim();
+    if (!text) return;
+    this.myPrompts.save(text.slice(0, 60), text);
+    this.toast.success('Prompt salvo em Biblioteca de prompts → Meus prompts.');
   }
 
   protected async ask(text: string): Promise<void> {

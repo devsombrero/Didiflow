@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type {
+  AiAction,
   AiChatMessage,
   AiChatRequest,
   AiConnectResult,
@@ -11,6 +12,7 @@ import type {
   AiStatus,
   AiSubtaskRequest,
 } from './contract';
+import { ACTION_DECLARATIONS, ACTIONS_PROMPT, extractActions } from './gemini-actions';
 import type { GoogleConnector } from './google-connect';
 import type { SecureStore } from './secure-store';
 import { IpcValidationError } from './validation';
@@ -35,7 +37,9 @@ export const AI_STUDIO_KEYS_URL = 'https://aistudio.google.com/apikey';
 export const MAX_MESSAGES = 20;
 export const MAX_MESSAGE_LENGTH = 4000;
 export const MAX_CONTEXT_LENGTH = 20_000;
-const REQUEST_TIMEOUT_MS = 45_000;
+const REQUEST_TIMEOUT_MS = 60_000;
+/** Extra Flash models tried (from the key's model list) when the aliases fail. */
+const DYNAMIC_FALLBACKS = 3;
 
 const MODEL_PATTERN = /^[a-z0-9][a-z0-9.-]{1,63}$/;
 const API_KEY_PATTERN = /^[A-Za-z0-9_-]{30,80}$/;
@@ -112,7 +116,12 @@ export function assertChatRequest(value: unknown): AiChatRequest {
   if (valid[valid.length - 1].role !== 'user') {
     throw new IpcValidationError('The last chat message must come from the user');
   }
-  return { messages: valid, context: text(context, MAX_CONTEXT_LENGTH, 'chat context', true) };
+  const { allowActions } = value as Record<string, unknown>;
+  return {
+    messages: valid,
+    context: text(context, MAX_CONTEXT_LENGTH, 'chat context', true),
+    allowActions: allowActions === true,
+  };
 }
 
 export function assertSubtaskRequest(value: unknown): AiSubtaskRequest {
@@ -147,8 +156,21 @@ export function classifyHttpError(status: number, body: unknown): AiError {
 }
 
 interface GenerateResponse {
-  candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
+  candidates?: {
+    content?: { parts?: { text?: string; functionCall?: { name?: unknown; args?: unknown } }[] };
+    finishReason?: string;
+  }[];
   promptFeedback?: { blockReason?: string };
+}
+
+/** Flash before Flash-Lite, newest version first; previews and tried models last/out. */
+export function rankFallbacks(models: readonly string[], tried: ReadonlySet<string>): string[] {
+  const version = (id: string) => Number(/gemini-(\d+(?:\.\d+)?)/.exec(id)?.[1] ?? 0);
+  const score = (id: string) =>
+    (id.includes('preview') ? 2 : 0) + (id.includes('lite') ? 1 : 0) + (id.includes('pro') ? 3 : 0);
+  return models
+    .filter((id) => id.includes('flash') && !tried.has(id) && !/latest/.test(id))
+    .sort((a, b) => score(a) - score(b) || version(b) - version(a));
 }
 
 export function extractText(response: GenerateResponse): string | null {
@@ -269,26 +291,36 @@ export class GeminiAssistant {
     return { status: 'ok', model: result.model };
   }
 
-  async chat(request: AiChatRequest): Promise<AiResult<{ text: string }>> {
+  async chat(request: AiChatRequest): Promise<AiResult<{ text: string; actions: AiAction[] }>> {
     const context = request.context?.trim();
-    const result = await this.generate({
-      systemInstruction: {
-        parts: [
-          {
-            text: context
-              ? `${SYSTEM_PROMPT}\n\nContexto do usuário (dados do DidiFlow):\n${context}`
-              : SYSTEM_PROMPT,
-          },
-        ],
+    const system = request.allowActions ? `${SYSTEM_PROMPT}\n\n${ACTIONS_PROMPT}` : SYSTEM_PROMPT;
+    const result = await this.generate(
+      {
+        systemInstruction: {
+          parts: [
+            {
+              text: context
+                ? `${system}\n\nContexto do usuário (dados do DidiFlow):\n${context}`
+                : system,
+            },
+          ],
+        },
+        contents: request.messages.map((message) => ({
+          role: message.role,
+          parts: [{ text: message.text }],
+        })),
+        generationConfig: { temperature: 0.4, maxOutputTokens: 4096 },
+        ...(request.allowActions
+          ? {
+              tools: [{ functionDeclarations: ACTION_DECLARATIONS }],
+              toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+            }
+          : {}),
       },
-      contents: request.messages.map((message) => ({
-        role: message.role,
-        parts: [{ text: message.text }],
-      })),
-      generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
-    });
+      request.allowActions === true,
+    );
     if (result.status === 'error') return result;
-    return { status: 'ok', text: result.text };
+    return { status: 'ok', text: result.text, actions: result.actions };
   }
 
   async suggestSubtasks(request: AiSubtaskRequest): Promise<AiResult<{ items: string[] }>> {
@@ -319,22 +351,44 @@ export class GeminiAssistant {
   }
 
   /** Chosen model first, then the Flash aliases when it is retired or overloaded. */
-  private async generate(payload: object): Promise<AiResult<{ text: string; model: string }>> {
+  private async generate(
+    payload: object,
+    withActions = false,
+  ): Promise<AiResult<{ text: string; model: string; actions: AiAction[] }>> {
     const key = await this.secrets.get(API_KEY_KEY);
     if (!key) return { status: 'error', error: 'not-configured' };
     const { model: chosen } = await this.load();
     const candidates = [...new Set([chosen, ...FALLBACK_MODELS])];
-    let last: AiResult<{ text: string; model: string }> = { status: 'error', error: 'unknown' };
+    let last: AiResult<{ text: string; model: string; actions: AiAction[] }> = {
+      status: 'error',
+      error: 'unknown',
+    };
     let retired = false;
-    for (const model of candidates) {
-      last = await this.generateWith(model, key, payload);
+    const tried = new Set<string>();
+    const attempt = async (model: string): Promise<boolean> => {
+      tried.add(model);
+      last = await this.generateWith(model, key, payload, withActions);
       if (last.status === 'ok') {
         // The chosen model was retired by Google: keep the one that answered.
         if (retired && model !== chosen) await this.rememberModel(model);
-        break;
+        return true;
       }
       if (model === chosen && last.error === 'model') retired = true;
-      if (last.error !== 'model' && last.error !== 'unavailable') break;
+      // Only retired or overloaded models are worth replacing.
+      return last.error !== 'model' && last.error !== 'unavailable';
+    };
+    for (const model of candidates) {
+      if (await attempt(model)) return last;
+    }
+    // Aliases overloaded too: try the newest Flash models this key can use.
+    const listed = await this.models().catch(() => null);
+    if (listed?.status === 'ok') {
+      for (const model of rankFallbacks(
+        listed.models.map((m) => m.id),
+        tried,
+      ).slice(0, DYNAMIC_FALLBACKS)) {
+        if (await attempt(model)) return last;
+      }
     }
     return last;
   }
@@ -349,7 +403,8 @@ export class GeminiAssistant {
     model: string,
     key: string,
     payload: object,
-  ): Promise<AiResult<{ text: string; model: string }>> {
+    withActions: boolean,
+  ): Promise<AiResult<{ text: string; model: string; actions: AiAction[] }>> {
     const response = await this.request(
       `${GEMINI_BASE_URL}/models/${encodeURIComponent(model)}:generateContent`,
       key,
@@ -359,11 +414,12 @@ export class GeminiAssistant {
     const body = response.body as GenerateResponse;
     if (body.promptFeedback?.blockReason) return { status: 'error', error: 'blocked' };
     const output = extractText(body);
-    if (!output) {
+    const actions = withActions ? extractActions(body.candidates?.[0]?.content?.parts ?? []) : [];
+    if (!output && actions.length === 0) {
       const reason = body.candidates?.[0]?.finishReason;
       return { status: 'error', error: reason === 'SAFETY' ? 'blocked' : 'unknown' };
     }
-    return { status: 'ok', text: output, model };
+    return { status: 'ok', text: output ?? '', model, actions };
   }
 
   private async request(

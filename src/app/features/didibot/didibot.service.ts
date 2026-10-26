@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { AiChatMessage, AiStatus } from '../../../../electron/ipc/contract';
+import type { AiAction, AiChatMessage, AiStatus } from '../../../../electron/ipc/contract';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { ProfileService } from '../../core/profile/profile.service';
 import { UserClock } from '../../core/profile/user-clock';
@@ -8,15 +8,32 @@ import { addDays } from '../../shared/utils/dates';
 import { OrganizationStore } from '../organization/organization.service';
 import { OPEN_STATUSES, type Task } from '../tasks/task.model';
 import { aiErrorMessage } from './ai-messages';
-import { buildContext, type ContextTask } from './didibot-context';
+import { type ActionResult, DidiBotActions } from './didibot-actions';
+import {
+  buildContext,
+  type ContextTask,
+  type OrganizationNames,
+  organizationLines,
+} from './didibot-context';
+
+/** An action proposed by DidiBot, waiting for (or after) the user's decision. */
+export interface ProposedAction {
+  action: AiAction;
+  label: string;
+  selected: boolean;
+  result?: ActionResult;
+}
 
 export interface ChatEntry {
   id: number;
   role: 'user' | 'model' | 'error';
   text: string;
+  actions?: ProposedAction[];
+  actionsState?: 'pending' | 'applying' | 'applied' | 'dismissed';
 }
 
 const CONTEXT_PREF_KEY = 'didiflow:didibot:include-context';
+const ACTIONS_PREF_KEY = 'didiflow:didibot:allow-actions';
 /** Turns sent to Gemini (the main process accepts up to 20 messages). */
 const HISTORY_LIMIT = 16;
 
@@ -28,13 +45,16 @@ export class DidiBotService {
   private readonly clock = inject(UserClock);
   private readonly profile = inject(ProfileService);
   private readonly org = inject(OrganizationStore);
+  private readonly actions = inject(DidiBotActions);
 
   readonly available = this.bridge.ai !== null;
   readonly status = signal<AiStatus | null>(null);
   readonly entries = signal<ChatEntry[]>([]);
   readonly busy = signal(false);
   readonly connecting = signal(false);
-  readonly includeContext = signal(readPreference());
+  readonly includeContext = signal(readPreference(CONTEXT_PREF_KEY));
+  /** DidiBot may propose projects and tasks (applied only after confirmation). */
+  readonly allowActions = signal(readPreference(ACTIONS_PREF_KEY));
   readonly connected = computed(() => this.status()?.hasKey === true);
   private nextId = 1;
 
@@ -61,11 +81,44 @@ export class DidiBotService {
 
   setIncludeContext(value: boolean): void {
     this.includeContext.set(value);
-    try {
-      localStorage.setItem(CONTEXT_PREF_KEY, value ? '1' : '0');
-    } catch {
-      // Storage unavailable: the choice lasts for this session.
-    }
+    writePreference(CONTEXT_PREF_KEY, value);
+  }
+
+  setAllowActions(value: boolean): void {
+    this.allowActions.set(value);
+    writePreference(ACTIONS_PREF_KEY, value);
+  }
+
+  toggleAction(entryId: number, index: number, selected: boolean): void {
+    this.updateEntry(entryId, (entry) => ({
+      ...entry,
+      actions: entry.actions?.map((item, i) => (i === index ? { ...item, selected } : item)),
+    }));
+  }
+
+  dismissActions(entryId: number): void {
+    this.updateEntry(entryId, (entry) => ({ ...entry, actionsState: 'dismissed' }));
+  }
+
+  /** Applies the selected proposals and tells DidiBot what happened. */
+  async applyActions(entryId: number): Promise<ActionResult[]> {
+    const entry = this.entries().find((item) => item.id === entryId);
+    const chosen = entry?.actions?.filter((item) => item.selected) ?? [];
+    if (!entry || entry.actionsState !== 'pending' || chosen.length === 0) return [];
+    this.updateEntry(entryId, (current) => ({ ...current, actionsState: 'applying' }));
+    const results = await this.actions.apply(chosen.map((item) => item.action));
+    let next = 0;
+    this.updateEntry(entryId, (current) => ({
+      ...current,
+      actionsState: 'applied',
+      actions: current.actions?.map((item) =>
+        item.selected ? { ...item, result: results[next++] } : item,
+      ),
+    }));
+    // Keeps the conversation aware of what now exists in DidiFlow.
+    const summary = results.map((result) => `- ${result.message}`).join('\n');
+    this.push('model', `Ações aplicadas no DidiFlow:\n${summary}`);
+    return results;
   }
 
   reset(): void {
@@ -91,10 +144,33 @@ export class DidiBotService {
         }, []);
       // The history must start with the user (Gemini alternates user/model).
       while (history.length > 1 && history[0].role !== 'user') history.shift();
-      const context = this.includeContext() ? await this.context() : undefined;
-      const result = await ai.chat({ messages: history, context });
-      if (result.status === 'ok') this.push('model', result.text);
-      else this.push('error', aiErrorMessage(result.error));
+      const allowActions = this.allowActions();
+      const context = this.includeContext()
+        ? await this.context()
+        : allowActions
+          ? await this.organizationContext()
+          : undefined;
+      const result = await ai.chat({ messages: history, context, allowActions });
+      if (result.status !== 'ok') {
+        this.push('error', aiErrorMessage(result.error));
+      } else if (result.actions.length) {
+        this.entries.update((entries) => [
+          ...entries,
+          {
+            id: this.nextId++,
+            role: 'model',
+            text: result.text || 'Preparei estas ações para você revisar:',
+            actions: result.actions.map((action) => ({
+              action,
+              label: this.actions.describe(action),
+              selected: true,
+            })),
+            actionsState: 'pending',
+          },
+        ]);
+      } else {
+        this.push('model', result.text);
+      }
     } catch {
       this.push('error', aiErrorMessage('unknown'));
     } finally {
@@ -171,7 +247,30 @@ export class DidiBotService {
       secondsToday: (hoursResult.data ?? []).reduce((sum, row) => sum + row.seconds, 0),
       dailyTargetHours: this.profile.preferences()?.daily_hours_target ?? null,
       completedLast30Days: doneResult.count ?? 0,
+      organization: this.organizationNames(),
     });
+  }
+
+  /** Only the names of projects, categories and tags (when tasks stay out of the context). */
+  private async organizationContext(): Promise<string> {
+    await this.org.ensureLoaded();
+    const lines = [`Hoje: ${this.clock.today()}`, ...organizationLines(this.organizationNames())];
+    return lines.join('\n');
+  }
+
+  private organizationNames(): OrganizationNames {
+    const items = this.org.items();
+    return {
+      projects: items.projects.filter((p) => !p.archived_at).map((p) => p.name),
+      categories: items.categories.map((c) => c.name),
+      tags: items.tags.map((t) => t.name),
+    };
+  }
+
+  private updateEntry(id: number, change: (entry: ChatEntry) => ChatEntry): void {
+    this.entries.update((entries) =>
+      entries.map((entry) => (entry.id === id ? change(entry) : entry)),
+    );
   }
 
   private push(role: ChatEntry['role'], text: string): void {
@@ -179,10 +278,18 @@ export class DidiBotService {
   }
 }
 
-function readPreference(): boolean {
+function readPreference(key: string): boolean {
   try {
-    return localStorage.getItem(CONTEXT_PREF_KEY) !== '0';
+    return localStorage.getItem(key) !== '0';
   } catch {
     return true;
+  }
+}
+
+function writePreference(key: string, value: boolean): void {
+  try {
+    localStorage.setItem(key, value ? '1' : '0');
+  } catch {
+    // Storage unavailable: the choice lasts for this session.
   }
 }

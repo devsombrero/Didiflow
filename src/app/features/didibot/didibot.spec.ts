@@ -7,6 +7,7 @@ import { OrganizationStore } from '../organization/organization.service';
 import { aiErrorMessage } from './ai-messages';
 import { buildContext, type ContextInput, type ContextTask } from './didibot-context';
 import { apiKeyValidator } from './didibot-settings-card';
+import { DidiBotActions } from './didibot-actions';
 import { DidiBotService } from './didibot.service';
 import { FormControl } from '@angular/forms';
 
@@ -96,6 +97,12 @@ describe('DidiBot settings', () => {
 describe('DidiBotService', () => {
   function setup(chat: ReturnType<typeof vi.fn>) {
     localStorage.clear();
+    const actions = {
+      describe: (action: { type: string }) => `label ${action.type}`,
+      apply: vi
+        .fn()
+        .mockResolvedValue([{ ok: true, message: 'Projeto “X” criado.', route: '/organization' }]),
+    };
     const ai = {
       chat,
       status: vi.fn().mockResolvedValue({ hasKey: true, canStoreKey: true, model: 'm' }),
@@ -107,19 +114,21 @@ describe('DidiBotService', () => {
         { provide: UserClock, useValue: {} },
         { provide: ProfileService, useValue: {} },
         { provide: OrganizationStore, useValue: {} },
+        { provide: DidiBotActions, useValue: actions },
       ],
     });
     const service = TestBed.inject(DidiBotService);
     service.setIncludeContext(false);
+    service.setAllowActions(false);
     return service;
   }
 
   it('sends the conversation and records the answer', async () => {
     const chat = vi
       .fn()
-      .mockResolvedValueOnce({ status: 'ok', text: 'Priorize o contrato.' })
+      .mockResolvedValueOnce({ status: 'ok', text: 'Priorize o contrato.', actions: [] })
       .mockResolvedValueOnce({ status: 'error', error: 'quota' })
-      .mockResolvedValueOnce({ status: 'ok', text: 'Combinado.' });
+      .mockResolvedValueOnce({ status: 'ok', text: 'Combinado.', actions: [] });
     const bot = setup(chat);
     await bot.send('O que priorizar?');
     await bot.send('E depois?');
@@ -140,6 +149,7 @@ describe('DidiBotService', () => {
         { role: 'user', text: 'E depois?\n\nOk' },
       ],
       context: undefined,
+      allowActions: false,
     });
     bot.reset();
     expect(bot.entries()).toEqual([]);
@@ -159,6 +169,52 @@ describe('DidiBotService', () => {
     expect(ai['status']).toHaveBeenCalled();
     expect(bot.connecting()).toBe(false);
     expect(bot.connected()).toBe(true);
+  });
+
+  it('shows proposed actions and applies only the selected ones', async () => {
+    const chat = vi.fn().mockResolvedValue({
+      status: 'ok',
+      text: '',
+      actions: [
+        { type: 'create_project', name: 'X' },
+        { type: 'create_task', title: 'Y', project: 'X' },
+      ],
+    });
+    const bot = setup(chat);
+    const actions = TestBed.inject(DidiBotActions) as unknown as {
+      apply: ReturnType<typeof vi.fn>;
+    };
+    await bot.send('Crie um projeto X');
+    const entry = bot.entries()[1];
+    expect(entry.text).toBe('Preparei estas ações para você revisar:');
+    expect(entry.actionsState).toBe('pending');
+    expect(entry.actions!.map((item) => item.label)).toEqual([
+      'label create_project',
+      'label create_task',
+    ]);
+
+    bot.toggleAction(entry.id, 1, false);
+    await bot.applyActions(entry.id);
+    expect(actions.apply).toHaveBeenCalledWith([{ type: 'create_project', name: 'X' }]);
+    const applied = bot.entries()[1];
+    expect(applied.actionsState).toBe('applied');
+    expect(applied.actions![0].result).toMatchObject({ ok: true });
+    expect(applied.actions![1].result).toBeUndefined();
+    expect(bot.entries()[2].text).toContain('Ações aplicadas no DidiFlow');
+    // Applying twice does nothing.
+    expect(await bot.applyActions(entry.id)).toEqual([]);
+  });
+
+  it('can discard proposals', async () => {
+    const chat = vi.fn().mockResolvedValue({
+      status: 'ok',
+      text: 'Ok',
+      actions: [{ type: 'create_project', name: 'X' }],
+    });
+    const bot = setup(chat);
+    await bot.send('Crie');
+    bot.dismissActions(bot.entries()[1].id);
+    expect(bot.entries()[1].actionsState).toBe('dismissed');
   });
 
   it('remembers the context choice', () => {
