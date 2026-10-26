@@ -1,17 +1,29 @@
+@use 'breakpoints' as bp;
+
 .intro {
   margin-top: calc(-1 * var(--space-2));
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include bp.desktop {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
   gap: var(--space-4);
   align-items: start;
 }
 
 .inline-form {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include bp.desktop {
+    grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
+  }
+
   gap: var(--space-3) var(--space-2);
   align-items: start;
 
@@ -39,7 +51,23 @@
 
   li {
     display: grid;
-    grid-template-columns: 110px minmax(0, 1fr) auto auto;
+    // Phones: time range on its own line above the description.
+    grid-template-columns: minmax(0, 1fr) auto auto;
+
+    > :first-child {
+      grid-column: 1 / -1;
+      color: var(--color-text-muted);
+    }
+
+    @include bp.desktop {
+      grid-template-columns: 110px minmax(0, 1fr) auto auto;
+
+      > :first-child {
+        grid-column: auto;
+        color: inherit;
+      }
+    }
+
     gap: var(--space-3);
     align-items: center;
     padding: var(--space-1) 0;
@@ -87,21 +115,5 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-}
-
-@media (max-width: 768px) {
-  .layout,
-  .inline-form {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .entries li {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-
-    > :first-child {
-      grid-column: 1 / -1;
-      color: var(--color-text-muted);
-    }
   }
 }

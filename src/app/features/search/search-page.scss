@@ -48,9 +48,3 @@
 .deadline {
   color: var(--color-warning);
 }
-
-@media (max-width: 768px) {
-  mat-form-field {
-    width: 100%;
-  }
-}

@@ -8,7 +8,7 @@
   >
     <div class="sidebar__inner">
       <div class="sidebar__brand">
-        <mat-icon class="sidebar__logo">task_alt</mat-icon>
+        <span class="sidebar__logo"><mat-icon inline>task_alt</mat-icon></span>
         <span class="sidebar__title">DidiFlow</span>
         <app-notification-bell />
       </div>
@@ -90,6 +90,7 @@
         <button matIconButton type="button" aria-label="Abrir menu" (click)="sidenav.open()">
           <mat-icon>menu</mat-icon>
         </button>
+        <span class="sidebar__logo topbar__logo"><mat-icon inline>task_alt</mat-icon></span>
         <span class="topbar__title">DidiFlow</span>
         <app-notification-bell />
       </header>

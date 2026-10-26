@@ -1,6 +1,13 @@
+@use 'breakpoints' as bp;
+
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr);
+
+  @include bp.desktop {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
   gap: var(--space-4);
   align-items: start;
 }
@@ -73,10 +80,4 @@
 
 .empty {
   justify-content: center;
-}
-
-@media (max-width: 768px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }

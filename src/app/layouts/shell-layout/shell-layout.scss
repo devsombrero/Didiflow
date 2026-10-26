@@ -1,12 +1,22 @@
+@use 'breakpoints' as bp;
+
+// Mobile-first: drawer menu + top bar on phones; fixed sidebar from 769px.
+
 .shell {
   height: 100%;
+  background: transparent;
 }
 
 .sidebar {
-  width: 248px;
+  width: min(300px, 86vw);
   border-right: 1px solid var(--mat-sys-outline-variant);
-  background: var(--mat-sys-surface-container-low);
+  background: light-dark(hsl(210 50% 98% / 0.92), hsl(240 8% 6% / 0.94));
+  backdrop-filter: blur(12px);
   --mat-sidenav-container-shape: 0;
+
+  @include bp.desktop {
+    width: 256px;
+  }
 }
 
 .sidebar__inner {
@@ -14,7 +24,7 @@
   flex-direction: column;
   gap: var(--space-2);
   height: 100%;
-  padding: var(--space-4) var(--space-2) var(--space-3);
+  padding: calc(var(--space-4) + env(safe-area-inset-top, 0px)) var(--space-2) var(--space-3);
 }
 
 .sidebar__brand {
@@ -23,17 +33,28 @@
   gap: var(--space-2);
   padding: 0 var(--space-3);
   font: var(--mat-sys-title-large);
-  color: var(--mat-sys-primary);
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .sidebar__title {
   flex: 1;
+  background: var(--gradient-brand);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 .sidebar__logo {
-  font-size: 28px;
-  width: 28px;
-  height: 28px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--gradient-brand);
+  color: var(--mat-sys-on-primary);
+  font-size: 22px;
+  box-shadow: var(--shadow-lift);
 }
 
 .sidebar__search {
@@ -41,15 +62,27 @@
 }
 
 .sidebar__nav {
-  --mat-list-active-indicator-shape: 999px;
+  --mat-list-active-indicator-shape: 12px;
+  --mat-list-active-indicator-color: var(--mat-sys-primary-container);
   padding: 0;
+
+  ::ng-deep .mdc-list-item--activated {
+    .mat-icon {
+      color: var(--mat-sys-primary);
+    }
+
+    .mdc-list-item__primary-text {
+      color: var(--mat-sys-on-primary-container);
+      font-weight: 600;
+    }
+  }
 }
 
 .nav-badge {
   margin-left: var(--space-1);
   padding: 0 var(--space-2);
   border-radius: 999px;
-  background: var(--mat-sys-primary);
+  background: var(--gradient-brand);
   color: var(--mat-sys-on-primary);
   font: var(--mat-sys-label-small);
   font-variant-numeric: tabular-nums;
@@ -57,7 +90,8 @@
 
 .sidebar__user {
   margin-top: auto;
-  padding: 0 var(--space-1);
+  padding: var(--space-2) var(--space-1) env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--mat-sys-outline-variant);
 }
 
 .sidebar__account {
@@ -72,15 +106,23 @@
 }
 
 .content {
-  background: var(--mat-sys-surface);
+  background: transparent;
 }
 
 .content__inner {
   max-width: 1400px;
-  padding: var(--space-6);
+  padding: var(--space-4) var(--space-3) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+
+  @include bp.tablet {
+    padding: var(--space-4) var(--space-4) var(--space-6);
+  }
+
+  @include bp.desktop {
+    padding: var(--space-6);
+  }
 }
 
-/* Phones (Android app or a narrow window): top bar + drawer menu. */
+// Phones: translucent top bar with the menu button and the bell.
 .topbar {
   position: sticky;
   top: 0;
@@ -89,22 +131,25 @@
   align-items: center;
   gap: var(--space-2);
   padding: calc(var(--space-1) + env(safe-area-inset-top, 0px)) var(--space-2) var(--space-1);
-  background: var(--mat-sys-surface-container);
+  background: light-dark(hsl(210 50% 98% / 0.8), hsl(240 10% 3.9% / 0.75));
+  backdrop-filter: saturate(160%) blur(14px);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
 .topbar__title {
   flex: 1;
   font: var(--mat-sys-title-large);
-  color: var(--mat-sys-primary);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: var(--gradient-brand);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
-@media (max-width: 840px) {
-  .content__inner {
-    padding: var(--space-4) var(--space-3) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
-  }
-
-  .sidebar {
-    width: min(300px, 86vw);
-  }
+.topbar__logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  font-size: 20px;
 }

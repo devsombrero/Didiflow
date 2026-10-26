@@ -4,6 +4,11 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Alterado
+
+- Nova identidade visual: paleta azul DidiFlow (claro e escuro), fonte Inter empacotada, cartões arredondados com sombra suave, botões principais com gradiente, blocos do dashboard com ícones em destaque e tela de login com fundo em gradiente.
+- Estilos refeitos em mobile-first: o layout de celular é a base e telas a partir de 769 px acrescentam a barra lateral, tabelas e grades com várias colunas.
+
 ## [0.4.1] - 2026-10-25
 
 ### Alterado
