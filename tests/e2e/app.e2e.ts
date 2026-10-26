@@ -363,7 +363,12 @@ test('epics: subtasks roll up progress; starting a task keeps 0%', async () => {
 
     // A subtask: starting it keeps 0%.
     await panel.locator('#child-title').fill('Revisão final');
-    await panel.getByRole('button', { name: 'Adicionar' }).click();
+    await panel.getByRole('button', { name: 'Com descrição' }).click();
+    await panel.locator('#child-description').fill('**Checklist** de publicação\n- [ ] SEO');
+    await panel.getByRole('button', { name: 'Adicionar', exact: true }).click();
+    await panel.getByRole('button', { name: 'Expandir Revisão final' }).click();
+    await expect(panel.locator('.child__details strong')).toHaveText('Checklist');
+    await expect(panel.locator('.child__details .md-check')).toHaveCount(1);
     await panel.locator('.child__title', { hasText: 'Revisão final' }).click();
     await expect(page.locator('.breadcrumb')).toContainText('Lançamento do site');
     await expect(page.locator('app-status-badge').first()).toContainText('Não iniciado');

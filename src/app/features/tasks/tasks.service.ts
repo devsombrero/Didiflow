@@ -257,9 +257,11 @@ export class TasksService {
   createSubtask(
     parent: Pick<Task, 'id' | 'project_id' | 'priority'>,
     title: string,
+    description = '',
   ): Promise<Task> {
     return this.create({
       title: title.trim().slice(0, 200),
+      description: description.trim() || null,
       parent_id: parent.id,
       project_id: parent.project_id,
       priority: parent.priority,
