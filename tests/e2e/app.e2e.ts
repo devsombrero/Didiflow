@@ -568,3 +568,32 @@ test('didibot: optional Google account, key never readable, no calls without a k
     removeDir(userDataDir);
   }
 });
+
+test('dashboard: chart bars use the legend and status colors', async () => {
+  const { page, close, userDataDir } = await launchApp();
+  try {
+    await login(page, email);
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+    const charts = page.locator('app-bar-chart');
+    await expect(charts.first()).toBeVisible();
+    const audit = await page.evaluate(() =>
+      [...document.querySelectorAll('app-bar-chart')].map((chart) => ({
+        legend: [...chart.querySelectorAll('.legend__dot')].map(
+          (dot) => getComputedStyle(dot).backgroundColor,
+        ),
+        bars: [
+          ...new Set([...chart.querySelectorAll('path.bar')].map((p) => p.getAttribute('fill'))),
+        ],
+      })),
+    );
+    // History: every bar color is one of the legend colors, and they are all different.
+    const [history, status] = audit;
+    expect(new Set(history.legend).size).toBe(3);
+    for (const fill of history.bars) expect(history.legend).toContain(fill);
+    // Status: bars follow the status colors (not a single series color).
+    expect(status.bars.length).toBeGreaterThan(1);
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});

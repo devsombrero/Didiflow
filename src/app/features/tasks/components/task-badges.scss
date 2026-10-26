@@ -44,16 +44,16 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--mat-sys-outline);
+  background: var(--priority-low);
 
   [data-priority='medium'] & {
-    background: var(--mat-sys-primary);
+    background: var(--priority-medium);
   }
   [data-priority='high'] & {
-    background: var(--color-warning);
+    background: var(--priority-high);
   }
   [data-priority='urgent'] & {
-    background: var(--mat-sys-error);
+    background: var(--priority-urgent);
   }
 }
 
