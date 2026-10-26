@@ -1,3 +1,5 @@
+@use 'breakpoints' as bp;
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -178,90 +180,181 @@
   display: none;
 }
 
-@media (max-width: 768px) {
+// Phones (base): week as an agenda, month with dots.
+
+.grid--week {
+  grid-template-columns: minmax(0, 1fr);
+
+  .grid__weekday {
+    display: none;
+  }
+
+  .cell {
+    min-height: 0;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .cell__header {
+    justify-content: flex-start;
+    gap: var(--space-2);
+  }
+
+  .cell__weekday {
+    display: inline;
+    min-width: 3ch;
+    font: var(--mat-sys-label-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .cell__add {
+    margin-left: auto;
+    opacity: 1;
+  }
+
+  .ev {
+    white-space: normal;
+    padding: var(--space-1) var(--space-2);
+  }
+}
+
+.grid--month {
+  .grid__weekday {
+    padding: var(--space-1);
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .cell {
+    min-height: 64px;
+    padding: 2px;
+  }
+
+  .cell__header {
+    justify-content: center;
+  }
+
+  .cell__add {
+    display: none;
+  }
+
+  .events {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  // Events become colored dots; tapping the date opens the day.
+  .ev {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    font-size: 0;
+    background: var(--series-1);
+  }
+
+  .ev--start {
+    background: var(--series-3);
+  }
+
+  .ev--overdue {
+    background: var(--mat-sys-error);
+  }
+
+  .ev--done {
+    opacity: 0.5;
+  }
+}
+
+@include bp.desktop {
   .grid--week {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
 
     .grid__weekday {
-      display: none;
+      display: block;
     }
 
     .cell {
-      min-height: 0;
-      padding: var(--space-2) var(--space-3);
+      min-height: 320px;
+      padding: var(--space-1) var(--space-2);
     }
 
     .cell__header {
-      justify-content: flex-start;
-      gap: var(--space-2);
+      justify-content: space-between;
+      gap: 0;
     }
 
     .cell__weekday {
-      display: inline;
-      min-width: 3ch;
-      font: var(--mat-sys-label-large);
-      color: var(--mat-sys-on-surface-variant);
+      display: none;
     }
 
     .cell__add {
-      margin-left: auto;
+      margin-left: 0;
+      opacity: 0;
+    }
+
+    .cell:hover .cell__add,
+    .cell__add:focus-visible {
       opacity: 1;
     }
 
     .ev {
-      white-space: normal;
-      padding: var(--space-1) var(--space-2);
+      white-space: nowrap;
+      padding: 2px var(--space-2);
     }
   }
 
   .grid--month {
     .grid__weekday {
-      padding: var(--space-1);
-      font-size: 10px;
-      text-align: center;
+      padding: var(--space-2);
+      font: var(--mat-sys-label-medium);
+      text-align: left;
     }
 
     .cell {
-      min-height: 64px;
-      padding: 2px;
+      min-height: 112px;
+      padding: var(--space-1) var(--space-2);
     }
 
     .cell__header {
-      justify-content: center;
+      justify-content: space-between;
     }
 
     .cell__add {
-      display: none;
+      display: inline-flex;
     }
 
     .events {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 3px;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      gap: 2px;
     }
 
-    // Events become colored dots; tapping the date opens the day.
     .ev {
-      width: 8px;
-      height: 8px;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      font-size: 0;
-      background: var(--series-1);
+      width: auto;
+      height: auto;
+      padding: 2px var(--space-2);
+      border-left: 3px solid var(--mat-sys-outline-variant);
+      border-radius: 4px;
+      font: var(--mat-sys-body-small);
+      background: var(--mat-sys-surface-container);
     }
 
     .ev--start {
-      background: var(--series-3);
+      border-left-color: var(--series-3);
+      background: var(--mat-sys-surface-container);
+    }
+
+    .ev--due {
+      border-left-color: var(--series-1);
     }
 
     .ev--overdue {
-      background: var(--mat-sys-error);
-    }
-
-    .ev--done {
-      opacity: 0.5;
+      border-left-color: var(--mat-sys-error);
+      background: var(--mat-sys-surface-container);
     }
   }
 }

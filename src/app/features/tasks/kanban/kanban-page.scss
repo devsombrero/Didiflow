@@ -1,3 +1,5 @@
+@use 'breakpoints' as bp;
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -5,7 +7,9 @@
   gap: var(--space-3) var(--space-4);
 
   mat-form-field {
-    width: 200px;
+    @include bp.tablet {
+      width: 200px;
+    }
   }
 }
 
@@ -15,7 +19,16 @@
 
 .board {
   display: grid;
-  grid-auto-columns: minmax(220px, 1fr);
+  // Phones: one column per screen, swiped sideways with snapping.
+  grid-auto-columns: 84%;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+
+  @include bp.desktop {
+    grid-auto-columns: minmax(220px, 1fr);
+    scroll-snap-type: none;
+  }
+
   grid-auto-flow: column;
   gap: var(--space-3);
   overflow-x: auto;
@@ -25,7 +38,13 @@
 .column {
   display: flex;
   flex-direction: column;
-  min-height: 60vh;
+  min-height: 50vh;
+  scroll-snap-align: start;
+
+  @include bp.desktop {
+    min-height: 60vh;
+  }
+
   border-radius: var(--radius-md);
   background: var(--mat-sys-surface-container-low);
   border-top: 4px solid var(--mat-sys-outline-variant);
@@ -164,17 +183,4 @@
 
 .menu-title {
   font: var(--mat-sys-label-small);
-}
-
-@media (max-width: 768px) {
-  .board {
-    grid-auto-columns: 84%;
-    scroll-snap-type: x mandatory;
-    overscroll-behavior-x: contain;
-  }
-
-  .column {
-    scroll-snap-align: start;
-    min-height: 50vh;
-  }
 }

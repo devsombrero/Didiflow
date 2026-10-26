@@ -1,3 +1,5 @@
+@use 'breakpoints' as bp;
+
 .settings {
   display: flex;
   flex-direction: column;
@@ -28,7 +30,20 @@ h3 {
 
   li {
     display: grid;
-    grid-template-columns: 140px 120px 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    > :last-child {
+      grid-column: 1 / -1;
+    }
+
+    @include bp.desktop {
+      grid-template-columns: 140px 120px 1fr;
+
+      > :last-child {
+        grid-column: auto;
+      }
+    }
+
     gap: var(--space-3);
     align-items: center;
     padding: var(--space-2) 0;
@@ -68,14 +83,4 @@ h3 {
 
 .sound-row__select {
   width: 200px;
-}
-
-@media (max-width: 768px) {
-  .integrations li {
-    grid-template-columns: minmax(0, 1fr) auto;
-
-    > :last-child {
-      grid-column: 1 / -1;
-    }
-  }
 }

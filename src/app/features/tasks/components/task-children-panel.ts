@@ -207,6 +207,7 @@ import { TaskLinksPanel } from './task-links-panel';
     }
   `,
   styles: `
+    @use 'breakpoints' as bp;
     :host {
       display: flex;
       flex-direction: column;
@@ -233,7 +234,7 @@ import { TaskLinksPanel } from './task-links-panel';
     }
     .child__row {
       display: grid;
-      grid-template-columns: auto 1fr auto auto 120px auto;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-1) 0;
@@ -262,7 +263,7 @@ import { TaskLinksPanel } from './task-links-panel';
       display: flex;
       flex-direction: column;
       gap: var(--space-2);
-      margin: 0 0 var(--space-3) 52px;
+      margin: 0 0 var(--space-3);
       padding: var(--space-3) var(--space-4);
       border-radius: 12px;
       background: var(--mat-sys-surface-container);
@@ -275,6 +276,27 @@ import { TaskLinksPanel } from './task-links-panel';
       flex-direction: column;
       gap: var(--space-2);
       padding-top: var(--space-3);
+    }
+    // Phones: title, check and expand only; desktop adds notes icon, status and progress.
+    .child__row app-status-badge,
+    .child__progress,
+    .child__has-notes,
+    .child__row > span:empty {
+      display: none;
+    }
+    @include bp.desktop {
+      .child__row {
+        grid-template-columns: auto 1fr auto auto 120px auto;
+      }
+      .child__row app-status-badge,
+      .child__progress,
+      .child__has-notes,
+      .child__row > span:empty {
+        display: initial;
+      }
+      .child__details {
+        margin-left: 52px;
+      }
     }
     .details__actions {
       display: flex;
@@ -297,20 +319,6 @@ import { TaskLinksPanel } from './task-links-panel';
     }
     .add__row mat-form-field {
       flex: 1 1 260px;
-    }
-    @media (max-width: 640px) {
-      .child__row {
-        grid-template-columns: auto 1fr auto;
-      }
-      .child__row app-status-badge,
-      .child__progress,
-      .child__has-notes,
-      .child__row > span:empty {
-        display: none;
-      }
-      .child__details {
-        margin-left: 0;
-      }
     }
   `,
 })
