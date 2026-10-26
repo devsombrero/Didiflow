@@ -23,6 +23,10 @@ export const IPC_CHANNELS = {
   attachmentExists: 'attachment:exists',
   attachmentPrune: 'attachment:prune',
   attachmentUsage: 'attachment:usage',
+  emailStatus: 'email:status',
+  emailSave: 'email:save',
+  emailTest: 'email:test',
+  emailSend: 'email:send',
   /** Main → renderer: navigate to an in-app route (notification click). */
   navigate: 'app:navigate',
 } as const;
@@ -120,6 +124,51 @@ export interface AttachmentApi {
   usage(userId: string): Promise<AttachmentUsage>;
 }
 
+/** Notification kinds that can also be sent by e-mail. */
+export type EmailKind = 'reminder' | 'digest' | 'custom' | 'focus';
+
+export interface EmailSettings {
+  enabled: boolean;
+  /** Gmail (or Google Workspace) account that sends the messages. */
+  address: string;
+  /** Destination; empty = the sending address itself. */
+  recipient: string;
+  kinds: EmailKind[];
+}
+
+export interface EmailSettingsUpdate extends EmailSettings {
+  /** New app password; undefined keeps the stored one, null removes it. */
+  appPassword?: string | null;
+}
+
+export interface EmailStatus {
+  settings: EmailSettings;
+  /** Whether an app password is stored (its value never leaves the main process). */
+  hasPassword: boolean;
+  /** False when the OS cannot encrypt it: the password is then kept only until the app closes. */
+  canStorePassword: boolean;
+}
+
+export interface EmailMessage {
+  kind: EmailKind;
+  title: string;
+  body?: string;
+}
+
+export type EmailSendResult =
+  | { status: 'sent' }
+  | { status: 'skipped'; reason: 'disabled' | 'kind' | 'not-configured' | 'rate-limited' }
+  | { status: 'error'; error: 'auth' | 'network' | 'unknown' };
+
+/** Notification e-mails through Gmail SMTP, sent by the main process. */
+export interface EmailApi {
+  status(): Promise<EmailStatus>;
+  save(update: EmailSettingsUpdate): Promise<EmailStatus>;
+  test(): Promise<EmailSendResult>;
+  /** Sends when e-mail is enabled for the message kind (and within the hourly limit). */
+  send(message: EmailMessage): Promise<EmailSendResult>;
+}
+
 /** API exposed to the renderer as `window.didiflow`. */
 export interface DidiflowApi {
   readonly platform: string;
@@ -136,4 +185,5 @@ export interface DidiflowApi {
   openBackupFile(): Promise<OpenFileResult>;
   readonly backups: BackupApi;
   readonly attachments: AttachmentApi;
+  readonly email: EmailApi;
 }

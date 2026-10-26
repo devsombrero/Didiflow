@@ -62,6 +62,16 @@ O instalador aplica Electron Fuses: sem `RunAsNode`, sem `NODE_OPTIONS`, sem arg
 
 `electron/ipc/secure-store.ts` grava os valores criptografados com `safeStorage` em `%APPDATA%/didiflow/secure-store.json` (base64), com escrita atômica e serializada. Se a criptografia do SO não estiver disponível, os valores ficam só em memória e a sessão não sobrevive a reinicializações. Tokens nunca são gravados em texto puro.
 
+### E-mail (Gmail)
+
+O envio opcional de notificações por e-mail (`electron/ipc/email.ts`) roda só no processo principal:
+
+- **Conexão:** SMTP do Gmail (`smtp.gmail.com:465`, TLS), autenticado com uma **senha de app** do Google. A senha normal da conta não é aceita pelo Gmail nem pelo app, que valida o formato de 16 letras.
+- **Onde fica a senha:** num secure store separado, `%APPDATA%/didiflow/email-secrets.json`, criptografado com `safeStorage`. O renderer pode gravar ou remover a senha pelo IPC `email:save`, mas nunca lê o valor de volta: `email:status` informa só se há senha salva. A chave também não é acessível pelo `secureStore` exposto ao renderer. Sem criptografia do SO, a senha fica só em memória até o app fechar.
+- **Configuração:** conta, destinatário e tipos de notificação ficam em `%APPDATA%/didiflow/email-settings.json`. Nada disso vai para o Supabase.
+- **Validação:** o IPC `email:send` aceita apenas tipos conhecidos, título de até 120 caracteres e corpo de até 2.000. O texto é escapado no HTML do e-mail.
+- **Limite:** no máximo 20 e-mails de notificação por hora, para proteger a conta de regras com intervalo curto.
+
 ## Dados e banco
 
 - Migrations são revisadas e aplicadas manualmente em produção; nenhum SQL de schema roda automaticamente.

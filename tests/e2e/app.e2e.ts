@@ -26,6 +26,7 @@ test('security: renderer is isolated from Node and only exposes the preload API'
       api: [
         'attachments',
         'backups',
+        'email',
         'notify',
         'onNavigate',
         'openBackupFile',
@@ -42,6 +43,43 @@ test('security: renderer is isolated from Node and only exposes the preload API'
         ).didiflow.openExternal('file:///C:/Windows/System32/calc.exe'),
       ),
     ).rejects.toThrow();
+
+    // The Gmail app password can be stored but never read back by the renderer.
+    const email = await page.evaluate(async () => {
+      const api = (
+        window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
+      ).didiflow;
+      const status = await api.email.save({
+        enabled: false,
+        address: 'e2e@example.com',
+        recipient: '',
+        kinds: ['reminder'],
+        appPassword: 'abcd efgh ijkl mnop',
+      });
+      const rejected = await api.email
+        .save({
+          enabled: true,
+          address: 'e2e@example.com',
+          recipient: '',
+          kinds: [],
+          appPassword: 'senha123',
+        })
+        .then(
+          () => false,
+          () => true,
+        );
+      return {
+        status: JSON.stringify(status),
+        viaSecureStore: await api.secureStore.get('gmail-app-password'),
+        skipped: await api.email.send({ kind: 'reminder', title: 'x' }),
+        rejected,
+      };
+    });
+    expect(email.status).toContain('"hasPassword":true');
+    expect(email.status).not.toContain('abcdefghijklmnop');
+    expect(email.viaSecureStore).toBeNull();
+    expect(email.skipped).toEqual({ status: 'skipped', reason: 'disabled' });
+    expect(email.rejected).toBe(true);
   } finally {
     await close();
     removeDir(userDataDir);

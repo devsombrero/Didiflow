@@ -4,7 +4,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { APP_HOST, APP_ORIGIN, APP_SCHEME, buildContentSecurityPolicy } from './config';
 import { AttachmentStore } from './ipc/attachments';
+import nodemailer from 'nodemailer';
 import { BackupStore } from './ipc/backups';
+import { EmailNotifier, GMAIL_SMTP } from './ipc/email';
 import { registerIpcHandlers } from './ipc/handlers';
 import { SecureStore } from './ipc/secure-store';
 import { assertExternalUrl, isTrustedOrigin } from './ipc/validation';
@@ -146,16 +148,32 @@ if (!app.requestSingleInstanceLock()) {
     registerAppProtocol();
     // Windows needs an AppUserModelID for toast notifications.
     if (process.platform === 'win32') app.setAppUserModelId('com.didiflow.app');
+    const cipher = {
+      isAvailable: () => safeStorage.isEncryptionAvailable(),
+      encrypt: (plainText: string) => safeStorage.encryptString(plainText),
+      decrypt: (encrypted: Buffer) => safeStorage.decryptString(encrypted),
+    };
+    const userData = app.getPath('userData');
     registerIpcHandlers({
-      store: new SecureStore(path.join(app.getPath('userData'), 'secure-store.json'), {
-        isAvailable: () => safeStorage.isEncryptionAvailable(),
-        encrypt: (plainText) => safeStorage.encryptString(plainText),
-        decrypt: (encrypted) => safeStorage.decryptString(encrypted),
-      }),
+      store: new SecureStore(path.join(userData, 'secure-store.json'), cipher),
       trustedOrigins,
       getWindow: () => mainWindow,
-      backups: new BackupStore(path.join(app.getPath('userData'), 'backups')),
-      attachments: new AttachmentStore(path.join(app.getPath('userData'), 'attachments')),
+      backups: new BackupStore(path.join(userData, 'backups')),
+      attachments: new AttachmentStore(path.join(userData, 'attachments')),
+      // Separate store: the renderer can read secure-store.json keys, never this password.
+      email: new EmailNotifier(
+        path.join(userData, 'email-settings.json'),
+        new SecureStore(path.join(userData, 'email-secrets.json'), cipher),
+        (auth) =>
+          nodemailer.createTransport({
+            ...GMAIL_SMTP,
+            auth,
+            connectionTimeout: 15_000,
+            greetingTimeout: 15_000,
+            socketTimeout: 30_000,
+          }),
+        cipher.isAvailable,
+      ),
     });
     createMainWindow();
 
