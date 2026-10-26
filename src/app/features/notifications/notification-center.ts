@@ -125,6 +125,7 @@ export class AppNotifier {
   private readonly sounds = inject(SoundService);
   private readonly router = inject(Router);
   private readonly mobile = inject(MobileNotifications);
+  private readonly auth = inject(AuthService);
   /** E-mail failures are reported once per session, not on every notification. */
   private emailFailureShown = false;
 
@@ -177,6 +178,7 @@ export class AppNotifier {
         kind,
         title: title.slice(0, 120),
         body: body.slice(0, 2000),
+        to: this.auth.user()?.email || undefined,
       });
       if (result.status === 'error' && !this.emailFailureShown) {
         this.emailFailureShown = true;

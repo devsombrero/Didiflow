@@ -43,7 +43,7 @@ const api: DidiflowApi = {
   email: {
     status: () => ipcRenderer.invoke(IPC_CHANNELS.emailStatus),
     save: (update) => ipcRenderer.invoke(IPC_CHANNELS.emailSave, update),
-    test: () => ipcRenderer.invoke(IPC_CHANNELS.emailTest),
+    test: (to) => ipcRenderer.invoke(IPC_CHANNELS.emailTest, to),
     send: (message) => ipcRenderer.invoke(IPC_CHANNELS.emailSend, message),
   },
   onNavigate: (listener) => {

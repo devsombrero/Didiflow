@@ -8,6 +8,7 @@ import type {
   EmailSettingsUpdate,
   EmailStatus,
 } from './contract';
+import type { BuiltInAccount } from './builtin-email';
 import type { SecureStore } from './secure-store';
 import { IpcValidationError } from './validation';
 
@@ -27,6 +28,21 @@ export const DEFAULT_EMAIL_SETTINGS: EmailSettings = {
   recipient: '',
   kinds: ['reminder', 'digest'],
 };
+
+/** Defaults when the build embeds a Gmail account: on, for every kind. */
+export const BUILT_IN_DEFAULT_SETTINGS: EmailSettings = {
+  enabled: true,
+  address: '',
+  recipient: '',
+  kinds: [...EMAIL_KINDS],
+};
+
+/** Reserved/test domains (RFC 2606/6761) never receive real mail. */
+const UNDELIVERABLE = /(\.(local|localhost|test|invalid|example)|@example\.(com|net|org))$/i;
+
+export function isDeliverable(address: string): boolean {
+  return isEmail(address) && !UNDELIVERABLE.test(address);
+}
 
 export interface MailTransport {
   sendMail(mail: {
@@ -88,11 +104,18 @@ export function assertEmailSettingsUpdate(value: unknown): EmailSettingsUpdate {
   };
 }
 
+/** Optional fallback recipient (the signed-in account e-mail). */
+export function assertRecipient(value: unknown): string | undefined {
+  return value === undefined || value === null || value === ''
+    ? undefined
+    : assertEmail(value, 'recipient');
+}
+
 export function assertEmailMessage(value: unknown): EmailMessage {
   if (typeof value !== 'object' || value === null) {
     throw new IpcValidationError('Invalid e-mail message');
   }
-  const { kind, title, body } = value as Record<string, unknown>;
+  const { kind, title, body, to } = value as Record<string, unknown>;
   if (!EMAIL_KINDS.includes(kind as EmailKind)) {
     throw new IpcValidationError('Invalid e-mail kind');
   }
@@ -102,7 +125,12 @@ export function assertEmailMessage(value: unknown): EmailMessage {
   if (body !== undefined && (typeof body !== 'string' || body.length > 2000)) {
     throw new IpcValidationError('Invalid e-mail body');
   }
-  return { kind: kind as EmailKind, title: title.trim(), body: body ?? '' };
+  return {
+    kind: kind as EmailKind,
+    title: title.trim(),
+    body: body ?? '',
+    to: assertRecipient(to),
+  };
 }
 
 function escapeHtml(text: string): string {
@@ -178,7 +206,9 @@ export function classifyError(error: unknown): 'auth' | 'network' | 'unknown' {
 /**
  * Sends DidiFlow notifications by e-mail through Gmail SMTP, authenticated
  * with an app password. Settings live in a JSON file; the password lives in
- * a separate OS-encrypted store that only the main process reads.
+ * a separate OS-encrypted store that only the main process reads. Packaged
+ * builds may embed a default account (builtin-email.ts), used whenever the
+ * user has not saved an account of their own.
  */
 export class EmailNotifier {
   private settings: Promise<EmailSettings> | null = null;
@@ -190,6 +220,7 @@ export class EmailNotifier {
     private readonly secrets: SecureStore,
     private readonly createTransport: TransportFactory,
     private readonly canStorePassword: () => boolean,
+    private readonly builtIn: BuiltInAccount | null = null,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -198,6 +229,7 @@ export class EmailNotifier {
       settings: await this.load(),
       hasPassword: (await this.secrets.get(APP_PASSWORD_KEY)) !== null,
       canStorePassword: this.canStorePassword(),
+      builtInAccount: this.builtIn?.address ?? null,
     };
   }
 
@@ -211,8 +243,13 @@ export class EmailNotifier {
   }
 
   /** Sends a test message regardless of the enabled flag and kinds. */
-  test(): Promise<EmailSendResult> {
-    return this.deliver('test', 'E-mail de teste', 'As notificações por e-mail estão funcionando.');
+  test(to?: string): Promise<EmailSendResult> {
+    return this.deliver(
+      'test',
+      'E-mail de teste',
+      'As notificações por e-mail estão funcionando.',
+      to,
+    );
   }
 
   async send(message: EmailMessage): Promise<EmailSendResult> {
@@ -224,23 +261,34 @@ export class EmailNotifier {
     if (this.sentAt.length >= MAX_EMAILS_PER_HOUR) {
       return { status: 'skipped', reason: 'rate-limited' };
     }
-    return this.deliver(message.kind, message.title, message.body ?? '');
+    return this.deliver(message.kind, message.title, message.body ?? '', message.to);
+  }
+
+  /** The user's own account when complete, otherwise the embedded one. */
+  private async credentials(settings: EmailSettings): Promise<BuiltInAccount | null> {
+    const pass = await this.secrets.get(APP_PASSWORD_KEY);
+    if (settings.address && pass) return { address: settings.address, pass };
+    return this.builtIn;
   }
 
   private async deliver(
     kind: EmailKind | 'test',
     title: string,
     body: string,
+    to?: string,
   ): Promise<EmailSendResult> {
     const settings = await this.load();
-    const pass = await this.secrets.get(APP_PASSWORD_KEY);
-    if (!settings.address || !pass) return { status: 'skipped', reason: 'not-configured' };
+    const account = await this.credentials(settings);
+    if (!account) return { status: 'skipped', reason: 'not-configured' };
+    // Explicit recipient, else the signed-in account, else the sender itself.
+    const recipient = settings.recipient || to || account.address;
+    if (!isDeliverable(recipient)) return { status: 'skipped', reason: 'no-recipient' };
 
     const mail = renderEmail(kind, title, body, new Date(this.now()));
     try {
-      await this.createTransport({ user: settings.address, pass }).sendMail({
-        from: `DidiFlow <${settings.address}>`,
-        to: settings.recipient || settings.address,
+      await this.createTransport({ user: account.address, pass: account.pass }).sendMail({
+        from: `DidiFlow <${account.address}>`,
+        to: recipient,
         ...mail,
       });
       this.sentAt.push(this.now());
@@ -263,7 +311,7 @@ export class EmailNotifier {
             : DEFAULT_EMAIL_SETTINGS.kinds,
         };
       })
-      .catch(() => ({ ...DEFAULT_EMAIL_SETTINGS }));
+      .catch(() => ({ ...(this.builtIn ? BUILT_IN_DEFAULT_SETTINGS : DEFAULT_EMAIL_SETTINGS) }));
     return this.settings;
   }
 

@@ -13,6 +13,7 @@ import {
   normalizeAppPassword,
   renderEmail,
 } from './email';
+import { type BuiltInAccount, openBuiltInAccount, sealBuiltInAccount } from './builtin-email';
 import { type Cipher, SecureStore } from './secure-store';
 
 const cipher: Cipher = {
@@ -103,7 +104,7 @@ describe('EmailNotifier', () => {
   let failWith: unknown;
   let clock: number;
 
-  const create = () =>
+  const create = (builtIn: BuiltInAccount | null = null) =>
     new EmailNotifier(
       path.join(dir, 'email-settings.json'),
       new SecureStore(path.join(dir, 'email-secrets.json'), cipher),
@@ -117,6 +118,7 @@ describe('EmailNotifier', () => {
         };
       },
       () => true,
+      builtIn,
       () => clock,
     );
 
@@ -144,7 +146,12 @@ describe('EmailNotifier', () => {
   it('stores the password encrypted, apart from the settings file', async () => {
     const notifier = create();
     const status = await notifier.save({ ...settings, appPassword: 'abcdefghijklmnop' });
-    expect(status).toEqual({ settings, hasPassword: true, canStorePassword: true });
+    expect(status).toEqual({
+      settings,
+      hasPassword: true,
+      canStorePassword: true,
+      builtInAccount: null,
+    });
 
     expect(await readFile(path.join(dir, 'email-settings.json'), 'utf8')).not.toContain('abcd');
     expect(await readFile(path.join(dir, 'email-secrets.json'), 'utf8')).not.toContain(
@@ -222,5 +229,118 @@ describe('EmailNotifier', () => {
     await notifier.save({ ...settings, appPassword: 'abcdefghijklmnop' });
     expect(JSON.stringify(await notifier.status())).not.toContain('abcdefghijklmnop');
     expect(APP_PASSWORD_KEY).toBe('gmail-app-password');
+  });
+});
+
+describe('built-in account', () => {
+  const account = { address: 'didiflow.app@gmail.com', pass: 'abcdefghijklmnop' };
+
+  it('seals without plaintext and opens back', () => {
+    const sealed = sealBuiltInAccount(account);
+    const decoded = Buffer.from(sealed, 'base64').toString('utf8');
+    expect(decoded).not.toContain('abcdefghijklmnop');
+    expect(decoded).not.toContain('didiflow.app');
+    expect(openBuiltInAccount(sealed)).toEqual(account);
+  });
+
+  it('rejects missing or tampered payloads', () => {
+    expect(openBuiltInAccount('')).toBeNull();
+    const payload = JSON.parse(Buffer.from(sealBuiltInAccount(account), 'base64').toString());
+    payload.data = Buffer.from('tampered').toString('base64');
+    expect(openBuiltInAccount(Buffer.from(JSON.stringify(payload)).toString('base64'))).toBeNull();
+    expect(openBuiltInAccount('not base64 json')).toBeNull();
+  });
+});
+
+describe('EmailNotifier with a built-in account', () => {
+  const account = { address: 'didiflow.app@gmail.com', pass: 'builtinpassword' };
+  let dir: string;
+  let sent: { from: string; to: string }[];
+  let auths: { user: string; pass: string }[];
+
+  const create = () =>
+    new EmailNotifier(
+      path.join(dir, 'email-settings.json'),
+      new SecureStore(path.join(dir, 'email-secrets.json'), cipher),
+      (auth) => {
+        auths.push(auth);
+        return { sendMail: async (mail) => void sent.push(mail) };
+      },
+      () => true,
+      account,
+    );
+
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'didiflow-email-builtin-'));
+    sent = [];
+    auths = [];
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('is on by default and sends to the signed-in account', async () => {
+    const notifier = create();
+    const status = await notifier.status();
+    expect(status.settings.enabled).toBe(true);
+    expect(status.settings.kinds).toEqual(['reminder', 'digest', 'custom', 'focus']);
+    expect(status.builtInAccount).toBe('didiflow.app@gmail.com');
+    expect(JSON.stringify(status)).not.toContain('builtinpassword');
+
+    expect(await notifier.send({ kind: 'custom', title: 'Água', to: 'diego@empresa.com' })).toEqual(
+      { status: 'sent' },
+    );
+    expect(auths).toEqual([{ user: 'didiflow.app@gmail.com', pass: 'builtinpassword' }]);
+    expect(sent[0]).toMatchObject({
+      from: 'DidiFlow <didiflow.app@gmail.com>',
+      to: 'diego@empresa.com',
+    });
+  });
+
+  it('prefers the account saved by the user', async () => {
+    const notifier = create();
+    await notifier.save({
+      enabled: true,
+      address: 'ana@gmail.com',
+      recipient: '',
+      kinds: ['reminder'],
+      appPassword: 'abcdefghijklmnop',
+    });
+    await notifier.send({ kind: 'reminder', title: 'x', to: 'ana@empresa.com' });
+    expect(auths[0].user).toBe('ana@gmail.com');
+
+    // Removing the password falls back to the embedded account.
+    await notifier.save({
+      enabled: true,
+      address: '',
+      recipient: '',
+      kinds: ['reminder'],
+      appPassword: null,
+    });
+    await notifier.send({ kind: 'reminder', title: 'y', to: 'ana@empresa.com' });
+    expect(auths[1].user).toBe('didiflow.app@gmail.com');
+  });
+
+  it('never mails reserved test domains', async () => {
+    const notifier = create();
+    expect(await notifier.send({ kind: 'digest', title: 'x', to: 'e2e.1@test.local' })).toEqual({
+      status: 'skipped',
+      reason: 'no-recipient',
+    });
+    expect(await notifier.test('qa@example.com')).toEqual({
+      status: 'skipped',
+      reason: 'no-recipient',
+    });
+    expect(sent).toEqual([]);
+  });
+
+  it('respects the user turning e-mails off', async () => {
+    const notifier = create();
+    await notifier.save({ enabled: false, address: '', recipient: '', kinds: ['digest'] });
+    expect(await notifier.send({ kind: 'digest', title: 'x', to: 'ana@empresa.com' })).toEqual({
+      status: 'skipped',
+      reason: 'disabled',
+    });
   });
 });

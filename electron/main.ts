@@ -6,6 +6,7 @@ import { APP_HOST, APP_ORIGIN, APP_SCHEME, buildContentSecurityPolicy } from './
 import { AttachmentStore } from './ipc/attachments';
 import nodemailer from 'nodemailer';
 import { BackupStore } from './ipc/backups';
+import { openBuiltInAccount } from './ipc/builtin-email';
 import { EmailNotifier, GMAIL_SMTP } from './ipc/email';
 import { registerIpcHandlers } from './ipc/handlers';
 import { SecureStore } from './ipc/secure-store';
@@ -173,6 +174,8 @@ if (!app.requestSingleInstanceLock()) {
             socketTimeout: 30_000,
           }),
         cipher.isAvailable,
+        // Only packaged builds use the embedded account: development and tests never send.
+        app.isPackaged ? openBuiltInAccount() : null,
       ),
     });
     createMainWindow();

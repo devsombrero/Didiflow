@@ -91,6 +91,8 @@ Lembretes por tarefa e avisos diários de atrasos e vencimentos aparecem **apena
 3. Escolha o que enviar: lembretes de tarefas, resumo de prazos, notificações personalizadas e fim de foco.
 4. Salve e use **Enviar teste** para conferir.
 
+Quando o instalador já traz uma **conta padrão**, o card mostra "Conta padrão do DidiFlow já configurada" e o envio já vem ativado: os e-mails chegam no endereço da sua conta DidiFlow, sem preencher nada. Informe uma conta própria só se quiser enviar por outro Gmail.
+
 Como as demais notificações, os e-mails saem enquanto o DidiFlow estiver aberto, no máximo 20 por hora. A senha de app fica criptografada neste computador e não vai para o servidor. Se o Gmail recusar o login, o app avisa uma vez por sessão.
 
 ### Backup e restauração

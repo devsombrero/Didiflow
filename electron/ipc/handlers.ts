@@ -23,7 +23,12 @@ import {
   type BackupStore,
 } from './backups';
 import { IPC_CHANNELS } from './contract';
-import { assertEmailMessage, assertEmailSettingsUpdate, type EmailNotifier } from './email';
+import {
+  assertEmailMessage,
+  assertEmailSettingsUpdate,
+  assertRecipient,
+  type EmailNotifier,
+} from './email';
 import type { SecureStore } from './secure-store';
 import {
   assertExternalUrl,
@@ -215,7 +220,7 @@ export function registerIpcHandlers({
 
   handle(IPC_CHANNELS.emailStatus, () => email.status());
   handle(IPC_CHANNELS.emailSave, (update) => email.save(assertEmailSettingsUpdate(update)));
-  handle(IPC_CHANNELS.emailTest, () => email.test());
+  handle(IPC_CHANNELS.emailTest, (to) => email.test(assertRecipient(to)));
   handle(IPC_CHANNELS.emailSend, (message) => email.send(assertEmailMessage(message)));
 }
 
