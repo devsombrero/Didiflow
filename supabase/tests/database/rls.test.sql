@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(29);
+select plan(30);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: two users (Alice, Bob) created as the auth service would.
@@ -53,7 +53,8 @@ select is((select owner_id from public.tasks where id = 'a0000000-0000-0000-0000
   '11111111-1111-1111-1111-111111111111'::uuid, 'owner_id defaults to auth.uid()');
 select is((select count(*)::int from public.tasks), 1, 'Alice sees only her tasks');
 select is((select count(*)::int from public.projects), 0, 'Alice does not see Bob projects');
-select is((select count(*)::int from public.tags), 0, 'Alice does not see Bob tags');
+select is((select count(*)::int from public.tags where name = 'bob-tag'), 0, 'Alice does not see Bob tags');
+select is((select count(*)::int from public.tags where owner_id <> '11111111-1111-1111-1111-111111111111'), 0, 'Alice sees only her own tags');
 select is((select count(*)::int from public.profiles), 1, 'Alice sees only her profile');
 select is((select count(*)::int from public.user_preferences), 1, 'Alice sees only her preferences');
 

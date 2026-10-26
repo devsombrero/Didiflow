@@ -4,6 +4,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Adicionado
+
+- Categorias e tags padrão para todas as contas (sem tarefas): 10 categorias (Desenvolvimento, Análise, Design, Reunião, Suporte, Documentação, Testes e QA, Infraestrutura, Planejamento, Pesquisa) e 16 tags (urgente, bug, melhoria, nova-funcionalidade, frontend, backend, mobile, banco-de-dados, segurança, desempenho, cliente, interno, bloqueio-externo, aguardando-retorno, documentação, dívida-técnica), com cores. Novas contas recebem no cadastro; contas existentes receberam as que faltavam, sem duplicar nem alterar as suas.
+
 ## [0.7.0] - 2026-10-26
 
 ### Alterado

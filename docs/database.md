@@ -35,6 +35,10 @@ Testes de banco (pgTAP) ficam em `supabase/tests/database/` e rodam com `npm run
 
 O trigger `on_auth_user_created` (`handle_new_user`, `security definer`) cria `profiles` e `user_preferences` no cadastro. O nome de exibição vem de `raw_user_meta_data.display_name`. O fuso horário é validado por trigger contra `pg_timezone_names`, porque essa view não é imutável e não pode entrar em um CHECK.
 
+## Organização padrão
+
+O trigger `on_auth_user_created_organization` chama `seed_default_organization(owner)` (`security definer`, sem permissão de execução para usuários) e cria 10 categorias e 16 tags com cores para cada nova conta, sem tarefas. A função usa `on conflict (owner_id, lower(name)) do nothing`: nunca duplica nem altera itens que a conta já tem. A migration `20261026150000_default_organization` também preencheu as contas existentes.
+
 ## Política de retenção do histórico
 
 - O padrão é exclusão lógica (`deleted_at`) e arquivamento (`archived_at`): o histórico fica intacto.
