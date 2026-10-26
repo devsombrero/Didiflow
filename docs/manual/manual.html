@@ -382,12 +382,13 @@
         <li><span>12</span><a href="#kpis">KPIs e Metas</a></li>
         <li><span>13</span><a href="#org">Organização</a></li>
         <li><span>14</span><a href="#notif">Notificações</a></li>
-        <li><span>15</span><a href="#search">Busca</a></li>
-        <li><span>16</span><a href="#settings">Configurações</a></li>
-        <li><span>17</span><a href="#backup">Backup e exportação</a></li>
-        <li><span>18</span><a href="#android">Usando no Android</a></li>
-        <li><span>19</span><a href="#shortcuts">Atalhos de teclado</a></li>
-        <li><span>20</span><a href="#trouble">Solução de problemas</a></li>
+        <li><span>15</span><a href="#didibot">DidiBot (assistente com IA)</a></li>
+        <li><span>16</span><a href="#search">Busca</a></li>
+        <li><span>17</span><a href="#settings">Configurações</a></li>
+        <li><span>18</span><a href="#backup">Backup e exportação</a></li>
+        <li><span>19</span><a href="#android">Usando no Android</a></li>
+        <li><span>20</span><a href="#shortcuts">Atalhos de teclado</a></li>
+        <li><span>21</span><a href="#trouble">Solução de problemas</a></li>
       </ol>
       <div class="note">
         <b>Sobre as imagens deste manual</b>
@@ -431,7 +432,7 @@
         O mesmo DidiFlow roda no <strong>computador</strong> (aplicativo para Windows) e no
         <strong>celular</strong> (aplicativo Android). Os dois usam a mesma conta e os mesmos dados:
         uma tarefa criada no computador aparece no celular e vice-versa. As poucas diferenças estão
-        no capítulo <a href="#android">18 — Usando no Android</a>.
+        no capítulo <a href="#android">19 — Usando no Android</a>.
       </p>
       <figure class="desktop">
         <img src="img/desktop-02-dashboard.png" alt="" />
@@ -1135,8 +1136,73 @@
     </section>
 
     <!-- ================================================================ 15 -->
+    <section class="chapter" id="didibot">
+      <h1><span class="num">15</span>DidiBot (assistente com IA)</h1>
+      <p class="lead">
+        O DidiBot é um assistente opcional que conversa sobre o seu trabalho e ajuda a planejar,
+        usando a API Gemini gratuita do Google. Ele funciona no aplicativo para computador.
+      </p>
+      <h2>Conectar com a conta Google</h2>
+      <ol class="steps">
+        <li>
+          Abra <strong>DidiBot</strong> no menu e clique em <strong>Entrar com Google</strong>.
+        </li>
+        <li>
+          No navegador, escolha a conta Google e autorize o acesso ao Google Cloud. Enquanto o app
+          estiver em teste, o Google mostra o aviso “O Google não verificou este app”: clique em
+          <strong>Continuar</strong>.
+        </li>
+        <li>
+          Pronto: o DidiFlow cria na sua conta o projeto “DidiFlow DidiBot”, ativa a API Gemini e
+          gera uma chave só para ela, guardada criptografada no computador. O acesso do Google é
+          descartado em seguida.
+        </li>
+      </ol>
+      <figure class="desktop">
+        <img src="img/desktop-28-didibot-settings.png" alt="" />
+        <figcaption>
+          <b>Figura 28.</b> Configurações → DidiBot: entrar com Google ou usar uma chave própria.
+        </figcaption>
+      </figure>
+      <div class="note">
+        <b>Chave própria</b>
+        Se preferir, crie uma chave em aistudio.google.com/apikey e cole em Configurações → DidiBot
+        → <strong>Ou use uma chave própria</strong>. Contas de empresa podem bloquear a criação de
+        projetos; nesse caso, use esta opção.
+      </div>
+      <h2>Conversar</h2>
+      <p>
+        Escreva a pergunta e pressione <kbd>Enter</kbd> (<kbd>Shift</kbd>+<kbd>Enter</kbd> quebra a
+        linha) ou use os atalhos <strong>Resumo do meu dia</strong>,
+        <strong>O que priorizar agora?</strong>, <strong>Planejar a semana</strong> e
+        <strong>Tarefas em risco</strong>. Com
+        <strong>Incluir minhas tarefas no contexto</strong> ligado, o DidiBot responde com base nas
+        suas tarefas abertas, prazos e horas de hoje.
+      </p>
+      <figure class="desktop">
+        <img src="img/desktop-27-didibot.png" alt="" />
+        <figcaption>
+          <b>Figura 29.</b> DidiBot sugerindo prioridades com base nas tarefas reais.
+        </figcaption>
+      </figure>
+      <h2>Sugerir subtarefas</h2>
+      <p>
+        No detalhe de uma tarefa ou épico, no painel de subtarefas, clique em
+        <strong>Sugerir com DidiBot</strong>. Marque as sugestões que quer e clique em
+        <strong>Criar</strong>: só as escolhidas viram subtarefas.
+      </p>
+      <div class="warn">
+        <b>Privacidade</b>
+        No plano gratuito, o Google pode usar o conteúdo enviado para melhorar seus produtos. O
+        DidiBot envia só títulos, status, prioridade, prazos, progresso, projeto e épico das tarefas
+        abertas (nunca descrições ou observações), e apenas com a opção de contexto ligada. Não
+        envie dados sensíveis.
+      </div>
+    </section>
+
+    <!-- ================================================================ 16 -->
     <section class="chapter" id="search">
-      <h1><span class="num">15</span>Busca</h1>
+      <h1><span class="num">16</span>Busca</h1>
       <p>
         A caixa <strong>Buscar</strong> do menu (atalho <kbd>Ctrl</kbd>+<kbd>K</kbd>) procura no
         título, descrição, solicitante, projeto, tags e observações, sem diferenciar acentos. Os
@@ -1145,16 +1211,16 @@
       </p>
       <figure class="desktop">
         <img src="img/desktop-24-search.png" alt="" />
-        <figcaption><b>Figura 28.</b> Busca por “relatório” com os termos destacados.</figcaption>
+        <figcaption><b>Figura 30.</b> Busca por “relatório” com os termos destacados.</figcaption>
       </figure>
     </section>
 
     <!-- ================================================================ 16 -->
     <section class="chapter" id="settings">
-      <h1><span class="num">16</span>Configurações</h1>
+      <h1><span class="num">17</span>Configurações</h1>
       <figure class="desktop">
         <img src="img/desktop-21-settings.png" alt="" />
-        <figcaption><b>Figura 29.</b> Perfil e Preferências.</figcaption>
+        <figcaption><b>Figura 31.</b> Perfil e Preferências.</figcaption>
       </figure>
       <ul>
         <li><strong>Perfil:</strong> nome de exibição (usado na saudação do Dashboard).</li>
@@ -1175,19 +1241,23 @@
         </li>
         <li><strong>Notificações:</strong> ativar ou desativar lembretes e o resumo de prazos.</li>
         <li>
+          <strong>DidiBot (Gemini):</strong> conectar a conta Google ou uma chave própria e escolher
+          o modelo (veja o capítulo <a href="#didibot">15</a>).
+        </li>
+        <li>
           <strong>E-mail (Gmail):</strong> enviar as notificações também por e-mail (veja o capítulo
           <a href="#notif">14</a>).
         </li>
       </ul>
       <figure class="desktop">
         <img src="img/desktop-25-dashboard-dark.png" alt="" />
-        <figcaption><b>Figura 30.</b> O mesmo Dashboard com o tema Escuro.</figcaption>
+        <figcaption><b>Figura 32.</b> O mesmo Dashboard com o tema Escuro.</figcaption>
       </figure>
     </section>
 
     <!-- ================================================================ 17 -->
     <section class="chapter" id="backup">
-      <h1><span class="num">17</span>Backup e exportação</h1>
+      <h1><span class="num">18</span>Backup e exportação</h1>
       <h2>Backup e restauração (computador)</h2>
       <p>
         Em <strong>Configurações → Backup</strong>, os backups ficam em
@@ -1204,7 +1274,7 @@
       </ul>
       <figure class="desktop">
         <img src="img/desktop-22-backup.png" alt="" />
-        <figcaption><b>Figura 31.</b> Backups locais e backup automático.</figcaption>
+        <figcaption><b>Figura 33.</b> Backups locais e backup automático.</figcaption>
       </figure>
       <h2>Exportar dados</h2>
       <p>
@@ -1214,13 +1284,13 @@
       </p>
       <figure class="desktop">
         <img src="img/desktop-23-export.png" alt="" />
-        <figcaption><b>Figura 32.</b> Exportação em CSV e JSON.</figcaption>
+        <figcaption><b>Figura 34.</b> Exportação em CSV e JSON.</figcaption>
       </figure>
     </section>
 
     <!-- ================================================================ 18 -->
     <section class="chapter" id="android">
-      <h1><span class="num">18</span>Usando no Android</h1>
+      <h1><span class="num">19</span>Usando no Android</h1>
       <p class="lead">
         O app Android tem as mesmas telas e regras do computador, com o layout adaptado para a tela
         do celular. Entre com a mesma conta para ver os mesmos dados.
@@ -1233,15 +1303,15 @@
       <div class="phones">
         <figure>
           <img src="img/android-02-dashboard.png" alt="" />
-          <figcaption><b>Figura 33.</b> Dashboard.</figcaption>
+          <figcaption><b>Figura 35.</b> Dashboard.</figcaption>
         </figure>
         <figure>
           <img src="img/android-04-menu.png" alt="" />
-          <figcaption><b>Figura 34.</b> Menu em gaveta.</figcaption>
+          <figcaption><b>Figura 36.</b> Menu em gaveta.</figcaption>
         </figure>
         <figure>
           <img src="img/android-17-bell.png" alt="" />
-          <figcaption><b>Figura 35.</b> Notificações do sino.</figcaption>
+          <figcaption><b>Figura 37.</b> Notificações do sino.</figcaption>
         </figure>
       </div>
 
@@ -1254,15 +1324,15 @@
       <div class="phones">
         <figure>
           <img src="img/android-06-task-cards.png" alt="" />
-          <figcaption><b>Figura 36.</b> Lista em cartões.</figcaption>
+          <figcaption><b>Figura 38.</b> Lista em cartões.</figcaption>
         </figure>
         <figure>
           <img src="img/android-07-board.png" alt="" />
-          <figcaption><b>Figura 37.</b> Quadro com colunas deslizantes.</figcaption>
+          <figcaption><b>Figura 39.</b> Quadro com colunas deslizantes.</figcaption>
         </figure>
         <figure>
           <img src="img/android-12-task-form.png" alt="" />
-          <figcaption><b>Figura 38.</b> Nova tarefa em tela cheia.</figcaption>
+          <figcaption><b>Figura 40.</b> Nova tarefa em tela cheia.</figcaption>
         </figure>
       </div>
 
@@ -1274,15 +1344,15 @@
       <div class="phones">
         <figure>
           <img src="img/android-08-task-detail.png" alt="" />
-          <figcaption><b>Figura 39.</b> Status e progresso.</figcaption>
+          <figcaption><b>Figura 41.</b> Status e progresso.</figcaption>
         </figure>
         <figure>
           <img src="img/android-09-task-detail-time.png" alt="" />
-          <figcaption><b>Figura 40.</b> Cartão Tempo.</figcaption>
+          <figcaption><b>Figura 42.</b> Cartão Tempo.</figcaption>
         </figure>
         <figure>
           <img src="img/android-10-task-description.png" alt="" />
-          <figcaption><b>Figura 41.</b> Subtarefas, descrição e anexos.</figcaption>
+          <figcaption><b>Figura 43.</b> Subtarefas, descrição e anexos.</figcaption>
         </figure>
       </div>
 
@@ -1290,15 +1360,15 @@
       <div class="phones">
         <figure>
           <img src="img/android-11-epic.png" alt="" />
-          <figcaption><b>Figura 42.</b> Tarefas do épico.</figcaption>
+          <figcaption><b>Figura 44.</b> Tarefas do épico.</figcaption>
         </figure>
         <figure>
           <img src="img/android-13-calendar.png" alt="" />
-          <figcaption><b>Figura 43.</b> Calendário mensal com marcadores.</figcaption>
+          <figcaption><b>Figura 45.</b> Calendário mensal com marcadores.</figcaption>
         </figure>
         <figure>
           <img src="img/android-14-today.png" alt="" />
-          <figcaption><b>Figura 44.</b> Prioridades de hoje.</figcaption>
+          <figcaption><b>Figura 46.</b> Prioridades de hoje.</figcaption>
         </figure>
       </div>
       <p>
@@ -1310,15 +1380,15 @@
       <div class="phones">
         <figure>
           <img src="img/android-15-time.png" alt="" />
-          <figcaption><b>Figura 45.</b> Registro de tempo.</figcaption>
+          <figcaption><b>Figura 47.</b> Registro de tempo.</figcaption>
         </figure>
         <figure>
           <img src="img/android-16-notifications.png" alt="" />
-          <figcaption><b>Figura 46.</b> Notificações personalizadas.</figcaption>
+          <figcaption><b>Figura 48.</b> Notificações personalizadas.</figcaption>
         </figure>
         <figure>
           <img src="img/android-18-settings.png" alt="" />
-          <figcaption><b>Figura 47.</b> Configurações.</figcaption>
+          <figcaption><b>Figura 49.</b> Configurações.</figcaption>
         </figure>
       </div>
 
@@ -1359,6 +1429,10 @@
           <td>Exclusivos do computador. Exportar dados funciona pelo celular.</td>
         </tr>
         <tr>
+          <td>DidiBot</td>
+          <td>Disponível no aplicativo para computador.</td>
+        </tr>
+        <tr>
           <td>Notificações por e-mail</td>
           <td>Configuradas e enviadas pelo aplicativo para computador.</td>
         </tr>
@@ -1371,7 +1445,7 @@
 
     <!-- ================================================================ 19 -->
     <section id="shortcuts" style="margin-top: 10mm">
-      <h1><span class="num">19</span>Atalhos de teclado</h1>
+      <h1><span class="num">20</span>Atalhos de teclado</h1>
       <p>Disponíveis no aplicativo para computador.</p>
       <table>
         <tr>
@@ -1417,7 +1491,7 @@
       </table>
 
       <h1 style="break-before: page" id="trouble">
-        <span class="num">20</span>Solução de problemas
+        <span class="num">21</span>Solução de problemas
       </h1>
       <table>
         <tr>
@@ -1470,6 +1544,16 @@
           <td>
             Use <strong>Configurações → Backup → Restaurar</strong> no modo <strong>Mesclar</strong>
             a partir do backup automático mais recente.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            DidiBot: “Esta conta Google não pode criar projetos” ou “Aceite os Termos do Google
+            Cloud”
+          </td>
+          <td>
+            Aceite uma vez os termos em console.cloud.google.com e tente de novo. Em contas de
+            empresa, use uma chave própria criada em aistudio.google.com/apikey.
           </td>
         </tr>
         <tr>

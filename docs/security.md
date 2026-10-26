@@ -82,6 +82,16 @@ Por decisão do dono do projeto, o instalador pode trazer uma conta Gmail padrã
 - **Uso:** só em builds empacotados; desenvolvimento e testes E2E nunca enviam. Uma conta salva pelo usuário em Configurações tem prioridade.
 - **Limite real:** a chave precisa viajar no próprio app (mascarada), então isto é **ofuscação forte, não segredo**. Quem tiver o instalador e fizer engenharia reversa do `app.asar` recupera a senha de app, que dá acesso aos e-mails da conta. Por isso: não distribua o instalador fora de quem deve ter esse acesso; prefira uma conta Gmail dedicada ao DidiFlow; e, se o instalador vazar, revogue a senha em myaccount.google.com/apppasswords e gere um build novo.
 
+### DidiBot (Gemini)
+
+O assistente opcional (`electron/ipc/gemini.ts` e `electron/ipc/google-connect.ts`) roda no processo principal:
+
+- **Chave:** guardada em `%APPDATA%/didiflow/ai-secrets.json`, criptografada com `safeStorage`, num secure store separado. O renderer grava ou remove a chave, mas nunca lê o valor; `ai:status` informa só se há chave e qual conta Google a criou.
+- **Entrar com Google:** OAuth 2.0 para apps instalados (navegador do sistema, PKCE S256, `state`, retorno em `127.0.0.1` com porta aleatória). Escopos `openid`, `email` e `cloud-platform`, com `access_type=online`: não há refresh token, e o token de acesso é usado só para criar ou reaproveitar o projeto rotulado `didiflow=didibot`, ativar a Generative Language API e criar uma API key restrita a ela; depois é descartado. O client OAuth é do tipo "App para computador" (projeto `didiflow`); o "secret" de apps instalados não é confidencial (RFC 8252) e entra no build pelo `.env`, fora do git.
+- **Chamadas ao Gemini:** saem do processo principal com `x-goog-api-key`; a CSP do renderer não muda. O IPC valida tudo: até 20 mensagens, 4.000 caracteres por mensagem, 20.000 de contexto, papéis `user`/`model` e modelo com nome seguro. Respostas viram Markdown sanitizado.
+- **Dados enviados:** só com "Incluir minhas tarefas no contexto" ligado, e apenas títulos, status, prioridade, prazos, progresso, projeto, épico e horas de hoje. A tela avisa que o plano gratuito do Gemini pode usar o conteúdo.
+- **Subtarefas sugeridas:** só são criadas depois da confirmação do usuário.
+
 ## Dados e banco
 
 - Migrations são revisadas e aplicadas manualmente em produção; nenhum SQL de schema roda automaticamente.

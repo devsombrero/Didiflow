@@ -6,6 +6,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ### Adicionado
 
+- **DidiBot**, assistente opcional com a API Gemini gratuita do Google (app desktop): conversa sobre tarefas, prazos e horas com atalhos (resumo do dia, prioridades, plano da semana, tarefas em risco) e sugestão de subtarefas confirmadas pelo usuário. "Entrar com Google" cria automaticamente, na conta do usuário, um projeto, ativa a API Gemini e gera uma chave restrita, guardada criptografada; também é possível colar uma chave própria. O modelo padrão segue o Gemini Flash mais recente, com troca automática quando um modelo é descontinuado ou fica sobrecarregado.
+
+### Adicionado
+
 - Categorias e tags padrão para todas as contas (sem tarefas): 10 categorias (Desenvolvimento, Análise, Design, Reunião, Suporte, Documentação, Testes e QA, Infraestrutura, Planejamento, Pesquisa) e 16 tags (urgente, bug, melhoria, nova-funcionalidade, frontend, backend, mobile, banco-de-dados, segurança, desempenho, cliente, interno, bloqueio-externo, aguardando-retorno, documentação, dívida-técnica), com cores. Novas contas recebem no cadastro; contas existentes receberam as que faltavam, sem duplicar nem alterar as suas.
 
 ## [0.7.0] - 2026-10-26

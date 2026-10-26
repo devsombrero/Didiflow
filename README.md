@@ -40,16 +40,17 @@ notificações — inclusive por e-mail, em formato de relatório. É o mesmo ap
 
 ## Destaques
 
-|                                   |                                                                                                                                                  |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| ✅ **Tarefas completas**          | Solicitante, links do Jira e do Slack, datas, estimativa, projeto, categoria, contexto, tags, descrição em Markdown, anexos e links de recursos. |
-| 📊 **Status sempre coerente**     | 0% ao iniciar, 100% ao concluir; mover o progresso ajusta o status. Regras garantidas no banco, com histórico e auditoria.                       |
-| ⚡ **Épicos e subtarefas**        | Até três níveis (épico › tarefa › subtarefa); progresso e horas do item pai calculados automaticamente.                                          |
-| 🗂️ **Lista, quadro e calendário** | Filtros combinados, Kanban com arrastar e soltar e calendário por dia, semana ou mês.                                                            |
-| ⏱️ **Tempo e foco**               | Cronômetro, apontamentos manuais, horas por dia contra a meta e sessões de foco de 25/50/90 minutos.                                             |
-| 📈 **KPIs e metas**               | Dashboard, 10 indicadores com fórmula e histórico, metas SMART com acompanhamento automático.                                                    |
-| 🔔 **Notificações**               | Lembretes, resumo de prazos e avisos personalizados recorrentes — no app, no Windows, no Android (mesmo fechado) e por **e-mail via Gmail**.     |
-| 💾 **Seus dados, seguros**        | RLS por usuário, sessão criptografada pelo sistema, backups locais automáticos e exportação CSV/JSON.                                            |
+|                                   |                                                                                                                                                           |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✅ **Tarefas completas**          | Solicitante, links do Jira e do Slack, datas, estimativa, projeto, categoria, contexto, tags, descrição em Markdown, anexos e links de recursos.          |
+| 📊 **Status sempre coerente**     | 0% ao iniciar, 100% ao concluir; mover o progresso ajusta o status. Regras garantidas no banco, com histórico e auditoria.                                |
+| ⚡ **Épicos e subtarefas**        | Até três níveis (épico › tarefa › subtarefa); progresso e horas do item pai calculados automaticamente.                                                   |
+| 🗂️ **Lista, quadro e calendário** | Filtros combinados, Kanban com arrastar e soltar e calendário por dia, semana ou mês.                                                                     |
+| ⏱️ **Tempo e foco**               | Cronômetro, apontamentos manuais, horas por dia contra a meta e sessões de foco de 25/50/90 minutos.                                                      |
+| 📈 **KPIs e metas**               | Dashboard, 10 indicadores com fórmula e histórico, metas SMART com acompanhamento automático.                                                             |
+| 🤖 **DidiBot (IA)**               | Assistente opcional com a API Gemini gratuita: resume o dia, sugere prioridades e quebra tarefas em subtarefas. "Entrar com Google" cria a chave sozinho. |
+| 🔔 **Notificações**               | Lembretes, resumo de prazos e avisos personalizados recorrentes — no app, no Windows, no Android (mesmo fechado) e por **e-mail via Gmail**.              |
+| 💾 **Seus dados, seguros**        | RLS por usuário, sessão criptografada pelo sistema, backups locais automáticos e exportação CSV/JSON.                                                     |
 
 ## Telas
 
@@ -75,6 +76,10 @@ notificações — inclusive por e-mail, em formato de relatório. É o mesmo ap
   <tr>
     <td><img src="docs/manual/img/desktop-19-notifications.png" alt="Notificações personalizadas" /><br /><sub><b>Notificações</b> — avisos recorrentes com próxima ocorrência</sub></td>
     <td><img src="docs/manual/img/desktop-26-email.png" alt="Configuração de e-mail" /><br /><sub><b>E-mail (Gmail)</b> — notificações também na sua caixa de entrada</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/manual/img/desktop-27-didibot.png" alt="DidiBot" /><br /><sub><b>DidiBot</b> — assistente com Gemini que usa as suas tarefas reais</sub></td>
+    <td><img src="docs/manual/img/desktop-28-didibot-settings.png" alt="DidiBot nas Configurações" /><br /><sub><b>Entrar com Google</b> — a chave do Gemini é criada automaticamente</sub></td>
   </tr>
   <tr>
     <td><img src="docs/manual/img/desktop-14-focus.png" alt="Modo foco" /><br /><sub><b>Modo foco</b> — sessões cronometradas lançadas como tempo</sub></td>
@@ -180,7 +185,27 @@ flowchart TD
 As horas registradas e as estimativas também sobem na hierarquia: o card **Tempo** do item pai soma
 as subtarefas e mostra o ritmo necessário até a entrega.
 
-### 5. Como uma notificação chega até você
+### 5. Conectar o DidiBot com a conta Google
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Você
+    participant A as DidiFlow (processo principal)
+    participant G as Google
+    U->>A: Entrar com Google
+    A->>G: login no navegador (OAuth, PKCE, retorno em 127.0.0.1)
+    G-->>A: autorização (acesso temporário ao Google Cloud)
+    A->>G: projeto "DidiFlow DidiBot" + API Gemini ativada
+    A->>G: cria API key restrita ao Gemini
+    G-->>A: chave
+    A->>A: guarda a chave criptografada e descarta o acesso
+    U->>A: pergunta ao DidiBot
+    A->>G: Gemini (resumo das tarefas, se permitido)
+    G-->>U: resposta
+```
+
+### 6. Como uma notificação chega até você
 
 ```mermaid
 sequenceDiagram
