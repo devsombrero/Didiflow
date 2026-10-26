@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { SoundService } from '../../core/feedback/sound.service';
 import type { SoundName } from '../../core/feedback/sounds';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
+import { MobileNotifications } from '../../core/platform/mobile-platform';
 import { ToastService } from '../../shared/toast/toast.service';
 
 export type NotificationKind = 'reminder' | 'digest' | 'custom' | 'focus' | 'system';
@@ -121,6 +122,7 @@ export class AppNotifier {
   private readonly toast = inject(ToastService);
   private readonly sounds = inject(SoundService);
   private readonly router = inject(Router);
+  private readonly mobile = inject(MobileNotifications);
 
   async notify(request: NotifyRequest): Promise<AppNotification> {
     const route = request.route ?? null;
@@ -130,6 +132,12 @@ export class AppNotifier {
     if (sound !== 'none') this.sounds.play(sound);
 
     const focused = document.visibilityState === 'visible' && document.hasFocus();
+    if (!focused && this.mobile.available) {
+      // Android, app in the background: system notification.
+      if (await this.mobile.show({ title: request.title, body, route: route ?? undefined })) {
+        return item;
+      }
+    }
     if (focused || !this.bridge.isDesktop) {
       this.toast.notify({
         kind: 'notification',

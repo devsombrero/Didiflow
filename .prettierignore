@@ -10,3 +10,6 @@ prompt.md
 src/app/core/supabase/database.types.ts
 test-results
 playwright-report
+
+# Android project (Gradle/Capacitor generated files)
+android/
