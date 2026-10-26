@@ -65,7 +65,7 @@ A **descrição** e as **observações** da tarefa aceitam Markdown: títulos, *
 
 - Não iniciado = 0%; Em andamento = 0–99% (iniciar mantém 0%); Concluído = 100%.
 - Levar o progresso a 100% conclui a tarefa; concluir sempre marca 100%.
-- **Épicos e subtarefas:** no formulário, escolha o **Tipo** (Tarefa ou Épico) e a quem a tarefa **pertence**. São até três níveis: épico › tarefa › subtarefa. No detalhe, o painel **Subtarefas** (ou **Tarefas do épico**) permite adicionar e concluir itens. O progresso do item pai é calculado automaticamente (ponderado pela estimativa quando todos os itens têm estimativa). Itens cancelados ficam de fora.
+- **Épicos e subtarefas:** no formulário, escolha o **Tipo** (Tarefa ou Épico) e a quem a tarefa **pertence**. São até três níveis: épico › tarefa › subtarefa. No detalhe, o painel **Subtarefas** (ou **Tarefas do épico**) permite adicionar e concluir itens; cada item aceita uma descrição em Markdown, informada ao criar (**Com descrição**) ou depois, ao expandir o item (**Adicionar/Editar descrição**). O progresso do item pai é calculado automaticamente (ponderado pela estimativa quando todos os itens têm estimativa). Itens cancelados ficam de fora.
 - **Horas automáticas:** o card **Tempo** do detalhe mostra:
   - horas registradas (somando as subtarefas) e horas de hoje;
   - estimativa (a própria ou a soma dos itens) e quanto dela já foi usado;
