@@ -53,6 +53,7 @@ const api: DidiflowApi = {
     models: () => ipcRenderer.invoke(IPC_CHANNELS.aiModels),
     chat: (request) => ipcRenderer.invoke(IPC_CHANNELS.aiChat, request),
     suggestSubtasks: (request) => ipcRenderer.invoke(IPC_CHANNELS.aiSuggestSubtasks, request),
+    connectGoogle: () => ipcRenderer.invoke(IPC_CHANNELS.aiConnectGoogle),
   },
   onNavigate: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, route: unknown) => {

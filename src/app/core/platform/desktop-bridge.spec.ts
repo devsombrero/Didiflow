@@ -45,6 +45,7 @@ describe('DesktopBridge', () => {
         models: vi.fn(),
         chat: vi.fn(),
         suggestSubtasks: vi.fn(),
+        connectGoogle: vi.fn(),
       },
     };
 

@@ -1,4 +1,4 @@
-import type { AiError } from '../../../../electron/ipc/contract';
+import type { AiConnectResult, AiError } from '../../../../electron/ipc/contract';
 
 export const AI_STUDIO_KEYS_URL = 'https://aistudio.google.com/apikey';
 export const DEFAULT_AI_MODEL = 'gemini-2.5-flash';
@@ -34,6 +34,33 @@ export const QUICK_PROMPTS: readonly { label: string; icon: string; prompt: stri
 
 export const PRIVACY_NOTICE =
   'O DidiBot usa a API Gemini no plano gratuito do Google, que pode usar o conteúdo enviado para melhorar seus produtos. Não envie dados sensíveis.';
+
+type ConnectError = Extract<AiConnectResult, { status: 'error' }>['error'];
+
+/** Shown while the Google sign-in and key creation run. */
+export const CONNECTING_MESSAGE =
+  'Conclua o login com a sua conta Google no navegador. Em seguida o DidiFlow cria a chave do Gemini automaticamente.';
+
+export function connectErrorMessage(error: ConnectError): string {
+  switch (error) {
+    case 'not-configured':
+      return 'Este aplicativo não tem o login com Google configurado. Use uma chave própria.';
+    case 'cancelled':
+      return 'Login com Google cancelado.';
+    case 'denied':
+      return 'Sem a permissão do Google Cloud não é possível criar a chave. Tente de novo e aceite todas as permissões.';
+    case 'timeout':
+      return 'O login no navegador não foi concluído a tempo. Tente de novo.';
+    case 'tos':
+      return 'Aceite uma vez os Termos de Serviço do Google Cloud em console.cloud.google.com e tente de novo.';
+    case 'permission':
+      return 'Esta conta Google não pode criar projetos (contas de empresa costumam bloquear). Use uma chave própria.';
+    case 'network':
+      return 'Sem conexão com o Google. Verifique a internet.';
+    default:
+      return 'Não foi possível criar a chave automaticamente. Tente de novo ou use uma chave própria.';
+  }
+}
 
 export function aiErrorMessage(error: AiError): string {
   switch (error) {

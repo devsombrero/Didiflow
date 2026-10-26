@@ -33,6 +33,7 @@ export const IPC_CHANNELS = {
   aiModels: 'ai:models',
   aiChat: 'ai:chat',
   aiSuggestSubtasks: 'ai:suggest-subtasks',
+  aiConnectGoogle: 'ai:connect-google',
   /** Main → renderer: navigate to an in-app route (notification click). */
   navigate: 'app:navigate',
 } as const;
@@ -232,7 +233,27 @@ export interface AiStatus {
   hasKey: boolean;
   canStoreKey: boolean;
   model: string;
+  /** Google account that created the key automatically, if any. */
+  account: string | null;
+  /** Whether this build can create the key through Google sign-in. */
+  googleSignIn: boolean;
 }
+
+export type AiConnectResult =
+  | { status: 'ok'; account: string; projectId: string }
+  | {
+      status: 'error';
+      error:
+        | 'not-configured'
+        | 'cancelled'
+        | 'denied'
+        | 'timeout'
+        | 'tos'
+        | 'permission'
+        | 'network'
+        | 'unknown';
+      detail?: string;
+    };
 
 export interface AiSettingsUpdate {
   model: string;
@@ -270,6 +291,8 @@ export interface AiApi {
   models(): Promise<AiResult<{ models: AiModel[] }>>;
   chat(request: AiChatRequest): Promise<AiResult<{ text: string }>>;
   suggestSubtasks(request: AiSubtaskRequest): Promise<AiResult<{ items: string[] }>>;
+  /** Google sign-in in the browser, then creates and stores a Gemini key automatically. */
+  connectGoogle(): Promise<AiConnectResult>;
 }
 
 /** API exposed to the renderer as `window.didiflow`. */

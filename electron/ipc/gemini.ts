@@ -3,6 +3,7 @@ import path from 'node:path';
 import type {
   AiChatMessage,
   AiChatRequest,
+  AiConnectResult,
   AiError,
   AiModel,
   AiResult,
@@ -10,6 +11,7 @@ import type {
   AiStatus,
   AiSubtaskRequest,
 } from './contract';
+import type { GoogleConnector } from './google-connect';
 import type { SecureStore } from './secure-store';
 import { IpcValidationError } from './validation';
 
@@ -41,6 +43,8 @@ const SYSTEM_PROMPT = [
 
 export interface AiSettings {
   model: string;
+  /** Google account that created the key through "Conectar conta Google". */
+  account?: string;
 }
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
@@ -182,20 +186,40 @@ export class GeminiAssistant {
     private readonly secrets: SecureStore,
     private readonly canStoreKey: () => boolean,
     private readonly fetchImpl: FetchLike = (url, init) => fetch(url, init),
+    private readonly google: GoogleConnector | null = null,
   ) {}
+
+  /** Google sign-in that creates the Gemini key automatically (see google-connect.ts). */
+  async connectGoogle(): Promise<AiConnectResult> {
+    if (!this.google?.configured) return { status: 'error', error: 'not-configured' };
+    const result = await this.google.connect();
+    if (result.status === 'error') return result;
+    await this.secrets.set(API_KEY_KEY, result.apiKey);
+    const settings = { ...(await this.load()), account: result.account };
+    this.settings = Promise.resolve(settings);
+    await this.persist(settings);
+    return { status: 'ok', account: result.account, projectId: result.projectId };
+  }
 
   async status(): Promise<AiStatus> {
     return {
       hasKey: (await this.secrets.get(API_KEY_KEY)) !== null,
       canStoreKey: this.canStoreKey(),
       model: (await this.load()).model,
+      account: (await this.load()).account ?? null,
+      googleSignIn: this.google?.configured ?? false,
     };
   }
 
   async save(update: AiSettingsUpdate): Promise<AiStatus> {
     if (update.apiKey === null) await this.secrets.remove(API_KEY_KEY);
     else if (update.apiKey !== undefined) await this.secrets.set(API_KEY_KEY, update.apiKey);
-    const settings = { model: update.model };
+    // A removed key also forgets which Google account created it.
+    const previous = await this.load();
+    const settings: AiSettings =
+      update.apiKey === null || update.apiKey !== undefined
+        ? { model: update.model }
+        : { model: update.model, account: previous.account };
     this.settings = Promise.resolve(settings);
     await this.persist(settings);
     return this.status();
@@ -334,9 +358,10 @@ export class GeminiAssistant {
   private load(): Promise<AiSettings> {
     this.settings ??= readFile(this.settingsFile, 'utf8')
       .then((raw) => {
-        const model = (JSON.parse(raw) as Partial<AiSettings>).model;
+        const { model, account } = JSON.parse(raw) as Partial<AiSettings>;
         return {
           model: typeof model === 'string' && MODEL_PATTERN.test(model) ? model : DEFAULT_MODEL,
+          ...(typeof account === 'string' && account.length <= 254 ? { account } : {}),
         };
       })
       .catch(() => ({ model: DEFAULT_MODEL }));

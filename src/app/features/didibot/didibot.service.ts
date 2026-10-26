@@ -33,6 +33,7 @@ export class DidiBotService {
   readonly status = signal<AiStatus | null>(null);
   readonly entries = signal<ChatEntry[]>([]);
   readonly busy = signal(false);
+  readonly connecting = signal(false);
   readonly includeContext = signal(readPreference());
   readonly connected = computed(() => this.status()?.hasKey === true);
   private nextId = 1;
@@ -42,6 +43,20 @@ export class DidiBotService {
     const status = await this.bridge.ai.status();
     this.status.set(status);
     return status;
+  }
+
+  /** Google sign-in in the browser; the main process creates and stores the Gemini key. */
+  async connectGoogle() {
+    const ai = this.bridge.ai;
+    if (!ai) return { status: 'error' as const, error: 'not-configured' as const };
+    this.connecting.set(true);
+    try {
+      const result = await ai.connectGoogle();
+      await this.refreshStatus();
+      return result;
+    } finally {
+      this.connecting.set(false);
+    }
   }
 
   setIncludeContext(value: boolean): void {

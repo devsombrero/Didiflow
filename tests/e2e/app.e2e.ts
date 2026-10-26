@@ -492,6 +492,7 @@ test('didibot: optional Google account, key never readable, no calls without a k
         window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
       ).didiflow.ai;
       const chat = await ai.chat({ messages: [{ role: 'user', text: 'Oi' }] });
+      const google = await ai.connectGoogle();
       const badKey = await ai.save({ model: 'gemini-2.5-flash', apiKey: 'senha' }).then(
         () => false,
         () => true,
@@ -501,9 +502,11 @@ test('didibot: optional Google account, key never readable, no calls without a k
         apiKey: 'AIzaSyD-e2e_fake_key_1234567890abcdefgh',
       });
       const removed = await ai.save({ model: 'gemini-2.5-flash', apiKey: null });
-      return { chat, badKey, saved: JSON.stringify(saved), removed };
+      return { chat, google, badKey, saved: JSON.stringify(saved), removed };
     });
     expect(api.chat).toEqual({ status: 'error', error: 'not-configured' });
+    // Development builds have no OAuth client: Google sign-in is off, the manual key remains.
+    expect(api.google).toEqual({ status: 'error', error: 'not-configured' });
     expect(api.badKey).toBe(true);
     expect(api.saved).toContain('"hasKey":true');
     expect(api.saved).not.toContain('e2e_fake_key');

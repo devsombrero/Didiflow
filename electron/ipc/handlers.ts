@@ -236,6 +236,7 @@ export function registerIpcHandlers({
   handle(IPC_CHANNELS.aiTest, () => ai.test());
   handle(IPC_CHANNELS.aiModels, () => ai.models());
   handle(IPC_CHANNELS.aiChat, (request) => ai.chat(assertChatRequest(request)));
+  handle(IPC_CHANNELS.aiConnectGoogle, () => ai.connectGoogle());
   handle(IPC_CHANNELS.aiSuggestSubtasks, (request) =>
     ai.suggestSubtasks(assertSubtaskRequest(request)),
   );

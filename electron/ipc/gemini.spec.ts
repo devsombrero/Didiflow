@@ -13,6 +13,7 @@ import {
   MAX_MESSAGES,
   parseSubtasks,
 } from './gemini';
+import type { GoogleConnector } from './google-connect';
 import { type Cipher, SecureStore } from './secure-store';
 
 const cipher: Cipher = {
@@ -123,7 +124,13 @@ describe('GeminiAssistant', () => {
 
   it('needs a key', async () => {
     const ai = create();
-    expect(await ai.status()).toEqual({ hasKey: false, canStoreKey: true, model: DEFAULT_MODEL });
+    expect(await ai.status()).toEqual({
+      hasKey: false,
+      canStoreKey: true,
+      model: DEFAULT_MODEL,
+      account: null,
+      googleSignIn: false,
+    });
     expect(await ai.chat({ messages: [{ role: 'user', text: 'Oi' }] })).toEqual({
       status: 'error',
       error: 'not-configured',
@@ -134,7 +141,13 @@ describe('GeminiAssistant', () => {
   it('stores the key encrypted and never returns it', async () => {
     const ai = create();
     const status = await ai.save({ model: 'gemini-2.5-flash-lite', apiKey: KEY });
-    expect(status).toEqual({ hasKey: true, canStoreKey: true, model: 'gemini-2.5-flash-lite' });
+    expect(status).toEqual({
+      hasKey: true,
+      canStoreKey: true,
+      model: 'gemini-2.5-flash-lite',
+      account: null,
+      googleSignIn: false,
+    });
     expect(JSON.stringify(status)).not.toContain(KEY);
     expect(await readFile(path.join(dir, 'ai-secrets.json'), 'utf8')).not.toContain(KEY);
     expect(await readFile(path.join(dir, 'ai-settings.json'), 'utf8')).not.toContain(KEY);
@@ -217,5 +230,41 @@ describe('GeminiAssistant', () => {
       status: 'ok',
       models: [{ id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' }],
     });
+  });
+
+  it('stores the key created through Google sign-in and remembers the account', async () => {
+    const connector = {
+      configured: true,
+      connect: async () => ({
+        status: 'ok' as const,
+        apiKey: KEY,
+        account: 'ana@gmail.com',
+        projectId: 'didiflow-abc',
+      }),
+    } as unknown as GoogleConnector;
+    const ai = new GeminiAssistant(
+      path.join(dir, 'ai-settings.json'),
+      new SecureStore(path.join(dir, 'ai-secrets.json'), cipher),
+      () => true,
+      undefined,
+      connector,
+    );
+    expect(await ai.connectGoogle()).toEqual({
+      status: 'ok',
+      account: 'ana@gmail.com',
+      projectId: 'didiflow-abc',
+    });
+    const status = await ai.status();
+    expect(status).toMatchObject({ hasKey: true, account: 'ana@gmail.com', googleSignIn: true });
+    expect(JSON.stringify(status)).not.toContain(KEY);
+
+    await ai.save({ model: status.model });
+    expect((await ai.status()).account).toBe('ana@gmail.com');
+    await ai.save({ model: status.model, apiKey: null });
+    expect(await ai.status()).toMatchObject({ hasKey: false, account: null });
+  });
+
+  it('cannot sign in with Google without an OAuth client', async () => {
+    expect(await create().connectGoogle()).toEqual({ status: 'error', error: 'not-configured' });
   });
 });

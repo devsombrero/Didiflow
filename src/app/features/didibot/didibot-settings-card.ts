@@ -10,9 +10,12 @@ import type { AiModel, AiStatus } from '../../../../electron/ipc/contract';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
 import { ToastService } from '../../shared/toast/toast.service';
+import { DidiBotService } from './didibot.service';
 import {
   AI_STUDIO_KEYS_URL,
   aiErrorMessage,
+  CONNECTING_MESSAGE,
+  connectErrorMessage,
   DEFAULT_AI_MODEL,
   FALLBACK_MODELS,
   PRIVACY_NOTICE,
@@ -39,15 +42,50 @@ export function apiKeyValidator(control: AbstractControl<string>): ValidationErr
           <p class="muted">O DidiBot é configurado no aplicativo para computador.</p>
         } @else if (status(); as current) {
           <form class="form" [formGroup]="form" (ngSubmit)="save()" novalidate>
-            <p class="field-hint intro">
-              Assistente opcional com a API Gemini gratuita do Google. Para ativar, conecte uma
-              conta Google: o botão abaixo abre o Google AI Studio, onde você cria uma chave
-              gratuita e cola aqui. A chave fica criptografada neste computador.
-            </p>
+            @if (current.googleSignIn) {
+              <p class="field-hint intro">
+                Assistente opcional com a API Gemini gratuita do Google. Entre com a sua conta
+                Google e o DidiFlow cria a chave do Gemini automaticamente, em um projeto “DidiFlow
+                DidiBot” da sua conta. A chave fica criptografada neste computador; o acesso do
+                Google usado para criá-la é descartado em seguida.
+              </p>
+            } @else {
+              <p class="field-hint intro">
+                Assistente opcional com a API Gemini gratuita do Google. Para ativar, conecte uma
+                conta Google: o botão abaixo abre o Google AI Studio, onde você cria uma chave
+                gratuita e cola aqui. A chave fica criptografada neste computador.
+              </p>
+            }
             <p class="state" [attr.data-on]="current.hasKey" id="didibot-state">
               <mat-icon>{{ current.hasKey ? 'check_circle' : 'link_off' }}</mat-icon>
-              {{ current.hasKey ? 'Conta Google conectada' : 'Nenhuma conta Google conectada' }}
+              {{
+                current.hasKey
+                  ? current.account
+                    ? 'Conectado com a conta Google ' + current.account
+                    : 'Chave própria conectada'
+                  : 'Nenhuma conta Google conectada'
+              }}
             </p>
+            @if (current.googleSignIn) {
+              <div class="google">
+                <button
+                  matButton="filled"
+                  type="button"
+                  id="didibot-google"
+                  [disabled]="busy() || bot.connecting()"
+                  (click)="signIn()"
+                >
+                  <mat-icon>login</mat-icon>
+                  {{ current.hasKey ? 'Reconectar com Google' : 'Entrar com Google' }}
+                </button>
+                @if (bot.connecting()) {
+                  <span class="connecting"
+                    ><mat-spinner diameter="18" /> {{ connectingMessage }}</span
+                  >
+                }
+              </div>
+              <h3 class="manual">Ou use uma chave própria</h3>
+            }
 
             <div class="grid">
               <mat-form-field>
@@ -110,7 +148,8 @@ export function apiKeyValidator(control: AbstractControl<string>): ValidationErr
                 <mat-icon>bolt</mat-icon> Testar conexão
               </button>
               <button matButton type="button" (click)="connect()">
-                <mat-icon>open_in_new</mat-icon> Conectar conta Google
+                <mat-icon>open_in_new</mat-icon>
+                {{ current.googleSignIn ? 'Criar chave no AI Studio' : 'Conectar conta Google' }}
               </button>
               @if (current.hasKey) {
                 <button matButton type="button" [disabled]="busy()" (click)="disconnect()">
@@ -147,6 +186,24 @@ export function apiKeyValidator(control: AbstractControl<string>): ValidationErr
     .state[data-on='true'] {
       color: var(--color-success);
     }
+    .google {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+    .connecting {
+      display: inline-flex;
+      gap: var(--space-2);
+      align-items: center;
+      color: var(--mat-sys-primary);
+      font: var(--mat-sys-body-medium);
+    }
+    .manual {
+      margin: var(--space-4) 0 var(--space-2);
+      font: var(--mat-sys-title-small);
+    }
     .grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -172,6 +229,8 @@ export class DidiBotSettingsCard implements OnInit {
 
   protected readonly available = this.bridge.ai !== null;
   protected readonly privacy = PRIVACY_NOTICE;
+  protected readonly connectingMessage = CONNECTING_MESSAGE;
+  protected readonly bot = inject(DidiBotService);
   protected readonly status = signal<AiStatus | null>(null);
   protected readonly models = signal<AiModel[]>(FALLBACK_MODELS);
   protected readonly busy = signal(false);
@@ -221,6 +280,21 @@ export class DidiBotSettingsCard implements OnInit {
         this.toast.success('Conta Google conectada. O DidiBot está pronto.');
       else this.toast.error(aiErrorMessage(result.error));
     }, 'Não foi possível salvar o DidiBot.');
+  }
+
+  /** Google sign-in: the main process creates the Gemini key and stores it. */
+  protected async signIn(): Promise<void> {
+    await this.run(async () => {
+      const result = await this.bot.connectGoogle();
+      if (result.status !== 'ok') {
+        this.toast.error(connectErrorMessage(result.error));
+        return;
+      }
+      const status = await this.bridge.ai!.status();
+      this.apply(status);
+      await this.loadModels();
+      this.toast.success(`Conta Google ${result.account} conectada. O DidiBot está pronto.`);
+    }, 'Não foi possível conectar a conta Google.');
   }
 
   protected async test(): Promise<void> {

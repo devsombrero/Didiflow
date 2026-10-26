@@ -11,7 +11,13 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MarkdownView } from '../../shared/markdown/markdown-view';
 import { MATERIAL_FORMS, MATERIAL_UI } from '../../shared/material';
-import { PRIVACY_NOTICE, QUICK_PROMPTS } from './ai-messages';
+import { ToastService } from '../../shared/toast/toast.service';
+import {
+  CONNECTING_MESSAGE,
+  connectErrorMessage,
+  PRIVACY_NOTICE,
+  QUICK_PROMPTS,
+} from './ai-messages';
 import { DidiBotService } from './didibot.service';
 
 /** DidiBot chat: questions about the user's work, answered by Gemini. */
@@ -55,9 +61,27 @@ import { DidiBotService } from './didibot.service';
                 prioridades e quebra tarefas em subtarefas. Ele usa a API Gemini gratuita do Google
                 e é <strong>opcional</strong>: conecte uma conta Google para ativar.
               </p>
-              <a matButton="filled" routerLink="/settings" fragment="didibot">
-                <mat-icon>link</mat-icon> Conectar conta Google
-              </a>
+              @if (bot.status()?.googleSignIn) {
+                <div class="connect-actions">
+                  <button
+                    matButton="filled"
+                    type="button"
+                    id="didibot-google"
+                    [disabled]="bot.connecting()"
+                    (click)="connect()"
+                  >
+                    <mat-icon>login</mat-icon> Entrar com Google
+                  </button>
+                  <a matButton routerLink="/settings" fragment="didibot">Usar uma chave própria</a>
+                </div>
+                @if (bot.connecting()) {
+                  <p class="connecting"><mat-spinner diameter="18" /> {{ connectingMessage }}</p>
+                }
+              } @else {
+                <a matButton="filled" routerLink="/settings" fragment="didibot">
+                  <mat-icon>link</mat-icon> Conectar conta Google
+                </a>
+              }
             </div>
           </div>
           <p class="notice">{{ privacy }}</p>
@@ -162,6 +186,17 @@ import { DidiBotService } from './didibot.service';
       background: var(--gradient-brand);
       color: var(--mat-sys-on-primary);
       box-shadow: var(--shadow-lift);
+    }
+    .connect-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+    .connecting {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      color: var(--mat-sys-primary);
     }
     .notice {
       font: var(--mat-sys-body-small);
@@ -281,6 +316,8 @@ export class DidiBotPage implements OnInit {
   protected readonly bot = inject(DidiBotService);
   protected readonly quickPrompts = QUICK_PROMPTS;
   protected readonly privacy = PRIVACY_NOTICE;
+  protected readonly connectingMessage = CONNECTING_MESSAGE;
+  private readonly toast = inject(ToastService);
   protected readonly question = signal('');
   protected readonly loaded = signal(false);
   private readonly messages = viewChild<ElementRef<HTMLElement>>('messages');
@@ -299,6 +336,15 @@ export class DidiBotPage implements OnInit {
       await this.bot.refreshStatus();
     } finally {
       this.loaded.set(true);
+    }
+  }
+
+  protected async connect(): Promise<void> {
+    const result = await this.bot.connectGoogle();
+    if (result.status === 'ok') {
+      this.toast.success(`Conta Google ${result.account} conectada. O DidiBot está pronto.`);
+    } else {
+      this.toast.error(connectErrorMessage(result.error));
     }
   }
 

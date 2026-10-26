@@ -145,6 +145,22 @@ describe('DidiBotService', () => {
     expect(bot.entries()).toEqual([]);
   });
 
+  it('signs in with Google and refreshes the status', async () => {
+    const bot = setup(vi.fn());
+    const ai = TestBed.inject(DesktopBridge).ai as unknown as Record<
+      string,
+      ReturnType<typeof vi.fn>
+    >;
+    ai['connectGoogle'] = vi
+      .fn()
+      .mockResolvedValue({ status: 'ok', account: 'ana@gmail.com', projectId: 'p' });
+    const result = await bot.connectGoogle();
+    expect(result).toMatchObject({ status: 'ok', account: 'ana@gmail.com' });
+    expect(ai['status']).toHaveBeenCalled();
+    expect(bot.connecting()).toBe(false);
+    expect(bot.connected()).toBe(true);
+  });
+
   it('remembers the context choice', () => {
     const bot = setup(vi.fn());
     bot.setIncludeContext(true);
