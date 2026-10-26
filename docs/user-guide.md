@@ -1,6 +1,6 @@
 # Guia de uso
 
-Manual ilustrado em PDF, com capturas do desktop e do Android: [manual/DidiFlow-Manual-0.5.0.pdf](manual/DidiFlow-Manual-0.5.0.pdf). Para regerar a partir de `manual/manual.html`, rode `npm run manual`.
+Manual ilustrado em PDF, com capturas do desktop e do Android: [manual/DidiFlow-Manual-0.6.0.pdf](manual/DidiFlow-Manual-0.6.0.pdf). Para regerar a partir de `manual/manual.html`, rode `npm run manual`.
 
 ## Instalação
 
