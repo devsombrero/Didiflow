@@ -9,7 +9,10 @@ import { RouterOutlet } from '@angular/router';
   template: `
     <main class="auth">
       <div class="auth__panel">
-        <p class="auth__brand"><mat-icon>task_alt</mat-icon> DidiFlow</p>
+        <p class="auth__brand">
+          <img src="brand/didiflow-icon.svg" alt="" width="52" height="52" />
+          <span>Didi<span class="brand-flow">Flow</span></span>
+        </p>
         <mat-card appearance="outlined" class="auth__card">
           <mat-card-content>
             <router-outlet />
@@ -58,15 +61,10 @@ import { RouterOutlet } from '@angular/router';
       letter-spacing: -0.03em;
       color: var(--mat-sys-on-surface);
     }
-    .auth__brand mat-icon {
-      display: grid;
-      place-items: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: var(--gradient-brand);
-      color: var(--mat-sys-on-primary);
-      font-size: 28px;
+    .auth__brand img {
+      width: 52px;
+      height: 52px;
+      border-radius: 15px;
       box-shadow: var(--shadow-lift);
     }
     .auth__card {

@@ -917,3 +917,8 @@ a.tile:hover,
     background: var(--gradient-brand);
   }
 }
+
+// Wordmark: "Didi" in the title color, "Flow" in the brand accent.
+.brand-flow {
+  color: light-dark(#0284c7, #38bdf8);
+}
