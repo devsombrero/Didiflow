@@ -2,10 +2,10 @@
 // The preload must be a single CommonJS file: sandboxed preloads cannot
 // require local modules.
 import { createCipheriv, randomBytes } from 'node:crypto';
-import { existsSync } from 'node:fs';
 import { build } from 'esbuild';
+import { loadEnv } from '../scripts/load-env.mjs';
 
-if (existsSync('.env')) process.loadEnvFile('.env');
+loadEnv();
 
 // The CSP restricts connect-src to the Supabase project the app is built for.
 let supabaseOrigin = '';

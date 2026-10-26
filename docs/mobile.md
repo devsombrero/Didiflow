@@ -37,10 +37,11 @@ Como o objetivo é ter o app no celular com as mesmas funções, o Capacitor ent
 ## Gerar o APK
 
 ```bash
-npm run android:build
+npm run android:build         # Supabase cloud (.env.production): funciona em qualquer rede
+npm run android:build:local   # Supabase local deste PC, pela rede Wi-Fi
 ```
 
-O APK de depuração sai em `release/android/DidiFlow-<versão>-debug.apk`.
+O APK de depuração sai em `release/android/DidiFlow-<versão>-debug.apk`. O APK do cloud serve tanto para o celular quanto para o emulador.
 
 O script `scripts/build-android.mjs`:
 
@@ -58,11 +59,11 @@ Ferramentas: JDK 21 e Android SDK (plataforma 36). O script usa `JAVA_HOME_21`/`
 
 Para ver o app no PC sem celular:
 
-1. Gere o APK do emulador (ele acessa o Supabase local por `10.0.2.2`, que é o PC visto de dentro do emulador):
+1. Gere o APK: com o cloud, use `npm run android:build`. Para o Supabase local, o emulador acessa o PC por `10.0.2.2`:
    ```bash
-   DIDIFLOW_MOBILE_SUPABASE_URL=http://10.0.2.2:54321 npm run android:build
+   DIDIFLOW_MOBILE_SUPABASE_URL=http://10.0.2.2:54321 npm run android:build:local
    ```
-   Renomeie o resultado para `release/android/DidiFlow-<versão>-emulator-debug.apk`.
+   e renomeie o resultado para `release/android/DidiFlow-<versão>-emulator-debug.apk`. Sem esse arquivo, o comando abaixo instala o `DidiFlow-<versão>-debug.apk`.
 2. Rode `npm run android:emulator`. O comando liga o dispositivo virtual **DidiFlow_Pixel** (Android 15, x86_64, aceleração WHPX), instala o APK e abre o app.
 
 O emulador e a imagem do Android ficam em `%LOCALAPPDATA%didiflow-toolsandroid-sdk`, e o dispositivo virtual em `%USERPROFILE%.androidavdDidiFlow_Pixel.avd`. O `adb` está em `platform-tools` dentro do SDK.

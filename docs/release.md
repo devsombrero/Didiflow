@@ -2,13 +2,19 @@
 
 ## Gerar o instalador (Windows)
 
+O Supabase de produção é o projeto cloud `yrhaacklsqslbpjtddiq` (`https://yrhaacklsqslbpjtddiq.supabase.co`, região us-east-1). Os builds de release leem `.env.production` (ignorado pelo git) antes do `.env` local:
+
 ```bash
-# .env (ou variáveis de ambiente) apontando para o projeto Supabase de produção:
-# DIDIFLOW_SUPABASE_URL=https://<projeto>.supabase.co
-# DIDIFLOW_SUPABASE_ANON_KEY=<anon ou publishable key>
+# .env.production
+# DIDIFLOW_SUPABASE_URL=https://yrhaacklsqslbpjtddiq.supabase.co
+# DIDIFLOW_SUPABASE_ANON_KEY=<publishable key>   # npx supabase projects api-keys --project-ref yrhaacklsqslbpjtddiq
+# DIDIFLOW_GMAIL_ADDRESS / DIDIFLOW_GMAIL_APP_PASSWORD (opcional, ver security.md)
 npm ci
-npm run dist
+npm run dist            # instalador apontando para o cloud
+npm run android:build   # APK apontando para o cloud
 ```
+
+`npm run dist:local` e `npm run android:build:local` geram builds contra o Supabase local do `.env`. Variáveis já definidas no ambiente (secrets do CI) têm prioridade sobre os arquivos (`scripts/load-env.mjs`). O app recebe só a URL e a chave **publishable**: a senha do banco e a chave secreta nunca entram em build nenhum.
 
 Saída em `release/`: `DidiFlow-Setup-<versão>.exe` (NSIS, x64, instalação por usuário com escolha de pasta) e o `.blockmap`.
 
@@ -71,4 +77,19 @@ Ainda não estão habilitadas (`publish: null`). O caminho previsto:
 
 ## Migrations em produção
 
-Nunca automáticas a partir do app: `npx supabase link --project-ref <ref>`, revisar `npx supabase db diff` e aplicar com `npx supabase db push`, depois de um backup (veja `backup-restore.md`).
+Nunca automáticas a partir do app. A conexão direta (`db.<ref>.supabase.co`) é só IPv6; de redes IPv4 use o pooler de sessão:
+
+```bash
+# revise antes com --dry-run; faça backup antes (veja backup-restore.md)
+npx supabase db push --db-url "postgresql://postgres.yrhaacklsqslbpjtddiq:<senha url-encoded>@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+```
+
+Nunca grave a senha do banco em arquivos do projeto. As 20 migrations iniciais foram aplicadas no projeto cloud em 2026-10-26.
+
+## Autenticação no projeto cloud
+
+O app confirma cadastro e redefine senha com **código de 6 dígitos**, então o projeto cloud precisa dos templates de `supabase/templates`, da política de senha e, para não cair no limite do e-mail padrão do Supabase, de SMTP próprio (Gmail). Aplique com um token pessoal (supabase.com/dashboard/account/tokens):
+
+```bash
+SUPABASE_ACCESS_TOKEN=sbp_... node scripts/configure-cloud-auth.mjs
+```
