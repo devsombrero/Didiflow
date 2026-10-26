@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
   plugins: {
     LocalNotifications: {
       smallIcon: 'ic_stat_didiflow',
-      iconColor: '#0b57d0',
+      iconColor: '#0284c7',
     },
   },
 };
