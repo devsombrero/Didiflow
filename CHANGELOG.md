@@ -4,6 +4,8 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.7.0] - 2026-10-26
+
 ### Alterado
 
 - Builds de release (`npm run dist`, `npm run android:build`) apontam por padrão para o Supabase cloud de produção, lendo `.env.production` (URL e chave publishable). Os builds contra o Supabase local passam a ser `npm run dist:local` e `npm run android:build:local`.
