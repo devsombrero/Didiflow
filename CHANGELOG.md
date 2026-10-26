@@ -4,6 +4,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Alterado
+
+- Responsividade para telas de até 768 px: lista de tarefas em cartões, Kanban com uma coluna por tela (deslizar), calendário semanal em lista e mensal com marcadores, grades em uma coluna e formulários em tela cheia.
+
 ## [0.4.0] - 2026-10-25
 
 ### Adicionado

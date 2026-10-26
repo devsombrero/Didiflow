@@ -14,6 +14,12 @@ Como o objetivo é ter o app no celular com as mesmas funções, o Capacitor ent
 ## O que muda no Android
 
 - **Layout:** abaixo de 840 px de largura, o menu lateral vira gaveta (botão ☰) e aparece uma barra superior com o sino de notificações. Os filtros ficam dois por linha.
+- **Telas de até 768 px:**
+  - lista de tarefas em cartões (título, status, prioridade, progresso, entrega e solicitante);
+  - Kanban com uma coluna por tela, deslizando para os lados;
+  - calendário semanal como lista de dias e mensal com marcadores coloridos (tocar no dia abre o dia);
+  - grades de cartões em uma coluna e formulários (tarefa, metas, tempo, notificações) em tela cheia.
+- **Builds separados:** o build do Android usa `dist/didiflow-mobile`, e o do desktop continua em `dist/didiflow`.
 - **Sessão:** guardada nas Preferences do app (armazenamento privado do Android). No desktop continua no cofre criptografado do sistema.
 - **Notificações:**
   - lembretes e notificações personalizadas da próxima semana são agendados no Android e aparecem **mesmo com o app fechado**;

@@ -89,3 +89,19 @@
     white-space: nowrap;
   }
 }
+
+@media (max-width: 768px) {
+  .layout,
+  .inline-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .entries li {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+
+    > :first-child {
+      grid-column: 1 / -1;
+      color: var(--color-text-muted);
+    }
+  }
+}

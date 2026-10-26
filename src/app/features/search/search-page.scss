@@ -1,4 +1,5 @@
 .search-field {
+  width: 100%;
   max-width: 900px;
 }
 
@@ -46,4 +47,10 @@
 
 .deadline {
   color: var(--color-warning);
+}
+
+@media (max-width: 768px) {
+  mat-form-field {
+    width: 100%;
+  }
 }

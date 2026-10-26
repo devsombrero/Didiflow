@@ -69,3 +69,13 @@ h3 {
 .sound-row__select {
   width: 200px;
 }
+
+@media (max-width: 768px) {
+  .integrations li {
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    > :last-child {
+      grid-column: 1 / -1;
+    }
+  }
+}
