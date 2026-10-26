@@ -1,5 +1,11 @@
 <mat-sidenav-container class="shell">
-  <mat-sidenav mode="side" opened class="sidebar" [disableClose]="true">
+  <mat-sidenav
+    #sidenav
+    class="sidebar"
+    [mode]="handset() ? 'over' : 'side'"
+    [opened]="!handset()"
+    [disableClose]="!handset()"
+  >
     <div class="sidebar__inner">
       <div class="sidebar__brand">
         <mat-icon class="sidebar__logo">task_alt</mat-icon>
@@ -79,6 +85,15 @@
   </mat-sidenav>
 
   <mat-sidenav-content class="content">
+    @if (handset()) {
+      <header class="topbar">
+        <button matIconButton type="button" aria-label="Abrir menu" (click)="sidenav.open()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="topbar__title">DidiFlow</span>
+        <app-notification-bell />
+      </header>
+    }
     <main class="content__inner page-transition">
       <router-outlet />
     </main>

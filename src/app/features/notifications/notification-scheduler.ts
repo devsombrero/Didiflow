@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
+import { customKey, MobileNotifications, reminderKey } from '../../core/platform/mobile-platform';
 import { ProfileService } from '../../core/profile/profile.service';
 import { UserClock } from '../../core/profile/user-clock';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
@@ -30,13 +31,14 @@ export class NotificationScheduler {
   private readonly preferences = inject(ProfileService).preferences;
   private readonly clock = inject(UserClock);
   private readonly notifier = inject(AppNotifier);
+  private readonly mobile = inject(MobileNotifications);
   private readonly custom = inject(CustomNotificationsService);
   private rules: { version: number; loadedAt: number; items: CustomNotification[] } | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
   private running = false;
 
   start(): void {
-    if (this.timer || !this.bridge.isDesktop) return;
+    if (this.timer || !(this.bridge.isDesktop || this.mobile.available)) return;
     void this.tick();
     this.timer = setInterval(() => void this.tick(), INTERVAL_MS);
   }
@@ -74,6 +76,14 @@ export class NotificationScheduler {
     if (error) throw error;
 
     for (const reminder of data) {
+      if (this.mobile.deliveredByOs(reminderKey(reminder.id))) {
+        // Already shown by Android while the app was closed.
+        await this.supabase
+          .from('task_reminders')
+          .update({ sent_at: new Date().toISOString() })
+          .eq('id', reminder.id);
+        continue;
+      }
       await this.notifier.notify({
         kind: 'reminder',
         title: `Lembrete: ${reminder.tasks?.title ?? 'tarefa'}`.slice(0, 120),
@@ -133,7 +143,7 @@ export class NotificationScheduler {
       await this.custom.markFired(rule, due.advanceTo);
       rule.last_fired_at = due.advanceTo.toISOString();
       if (rule.schedule === 'once') rule.active = false;
-      if (due.fire) {
+      if (due.fire && !this.mobile.deliveredByOs(customKey(rule.id, due.fire))) {
         await this.notifier.notify({
           kind: 'custom',
           title: rule.title,

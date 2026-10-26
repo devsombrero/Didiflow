@@ -2,6 +2,7 @@ import { inject, InjectionToken } from '@angular/core';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { APP_ENVIRONMENT } from '../config/app-environment';
 import { DesktopBridge } from '../platform/desktop-bridge';
+import { isNativeMobile, mobileSessionStore } from '../platform/mobile-platform';
 import { createAuthStorage } from './auth-storage';
 import type { Database } from './database.types';
 
@@ -14,7 +15,11 @@ export const SUPABASE_CLIENT = new InjectionToken<DidiflowSupabaseClient>('SUPAB
     const bridge = inject(DesktopBridge);
     return createClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
       auth: {
-        storage: createAuthStorage(bridge.secureStore, window.localStorage),
+        // Desktop: OS-encrypted store; Android: app-private Preferences.
+        storage: createAuthStorage(
+          bridge.secureStore ?? (isNativeMobile() ? mobileSessionStore() : null),
+          window.localStorage,
+        ),
         persistSession: true,
         autoRefreshToken: true,
         // Auth uses OTP codes; there are no redirect URLs to parse.
