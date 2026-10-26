@@ -26,8 +26,11 @@
     "test:integration": "node --test \"tests/integration/**/*.test.mjs\"",
     "test:e2e": "npm run build && npm run electron:build && playwright test",
     "icon": "node scripts/generate-icon.mjs",
-    "dist": "npm run build && npm run electron:build && electron-builder --win --publish never",
-    "android:build": "node scripts/build-android.mjs",
+    "dist": "cross-env DIDIFLOW_ENV_FILE=.env.production npm run dist:win",
+    "dist:local": "npm run dist:win",
+    "dist:win": "npm run build && npm run electron:build && electron-builder --win --publish never",
+    "android:build": "cross-env DIDIFLOW_ENV_FILE=.env.production node scripts/build-android.mjs",
+    "android:build:local": "node scripts/build-android.mjs",
     "android:emulator": "node scripts/android-emulator.mjs",
     "manual": "electron scripts/build-manual.cjs",
     "icons": "node scripts/generate-icons.mjs"

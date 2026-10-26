@@ -2,9 +2,13 @@
 //
 //   npm run android:build
 //
+// npm run android:build uses .env.production (the cloud Supabase);
+// npm run android:build:local uses the local Supabase from .env.
+//
 // Supabase URL used by the phone:
 //   - DIDIFLOW_MOBILE_SUPABASE_URL, when set (e.g. https://<project>.supabase.co,
 //     or http://10.0.2.2:54321 for the Android emulator);
+//   - DIDIFLOW_SUPABASE_URL itself when it is not a local address (cloud);
 //   - otherwise http://<this PC's LAN address>:<local Supabase port>, so a phone
 //     on the same Wi-Fi reaches the local Supabase (allow the port in the
 //     Windows firewall).
@@ -21,8 +25,9 @@ import {
 } from 'node:fs';
 import { networkInterfaces } from 'node:os';
 import path from 'node:path';
+import { loadEnv } from './load-env.mjs';
 
-if (existsSync('.env')) process.loadEnvFile('.env');
+loadEnv();
 
 const desktopUrl = process.env.DIDIFLOW_SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
