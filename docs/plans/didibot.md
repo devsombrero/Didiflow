@@ -88,7 +88,20 @@ conta sem permissão para criar projetos (comum em contas de empresa) e rede.
 - E2E: página e configurações sem chave (sem chamar o Google), superfície da API do preload.
 - Teste real com a chave do usuário (chat e sugestões) antes de atualizar manual e docs.
 
+## v2 (0.9.0): base de prompts e ações
+
+- **Base de prompts:** 24 prompts em seis categorias (`didibot-prompts.ts`, documentados em
+  `docs/didibot-prompts.md`), abertos pela "Biblioteca de prompts"; "Salvar prompt" guarda prompts
+  do usuário no aparelho.
+- **Ações:** function calling do Gemini com `create_project`, `create_task` e `update_task`. O
+  contexto lista projetos, categorias e tags existentes. O processo principal valida as chamadas; o
+  chat mostra a lista para o usuário marcar e "Aplicar"; o renderer grava só o confirmado
+  (`didibot-actions.ts`), reaproveitando projetos e tarefas pelo nome e reportando cada resultado.
+- **Modelos:** além dos aliases, tenta os Flash mais novos da chave quando há sobrecarga.
+- Teste real em 2026-10-26: projeto "Site institucional" com 5 tarefas (prioridade, prazo,
+  estimativa, categoria e tags) e atualização de status/progresso aplicados a partir do chat.
+
 ## Fora da v1
 
 - Android (precisa de outro armazenamento seguro para a chave e chamadas sem o processo principal).
-- Criação de tarefas pelo chat (function calling) e respostas em streaming.
+- Respostas em streaming e exclusão de itens pelo chat.
