@@ -84,7 +84,7 @@ describe('DidiBot settings', () => {
   it('accepts an empty field or an AI Studio key', () => {
     const check = (value: string) => apiKeyValidator(new FormControl(value, { nonNullable: true }));
     expect(check('')).toBeNull();
-    expect(check('AIzaSyD-test_key_1234567890abcdefghijk')).toBeNull();
+    expect(check('test-fake-gemini-key-not-a-secret-0001')).toBeNull();
     expect(check('minha senha')).toEqual({ apiKey: true });
   });
 

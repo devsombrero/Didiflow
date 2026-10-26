@@ -61,7 +61,7 @@ function google(options: { existingProject?: string; createError?: object } = {}
       });
     }
     if (url.endsWith('/keys/k1/keyString'))
-      return json({ keyString: 'AIzaSyGenerated_key_0123456789abcdef' });
+      return json({ keyString: 'test-generated-gemini-key-not-a-secret' });
     return json({ error: { message: `unexpected ${url}` } }, 404);
   };
   return { calls, fetchImpl };
@@ -88,7 +88,7 @@ describe('GoogleConnector', () => {
 
     expect(result).toEqual({
       status: 'ok',
-      apiKey: 'AIzaSyGenerated_key_0123456789abcdef',
+      apiKey: 'test-generated-gemini-key-not-a-secret',
       account: 'ana@gmail.com',
       projectId: expect.stringMatching(/^didiflow-[a-z0-9]+$/),
     });
