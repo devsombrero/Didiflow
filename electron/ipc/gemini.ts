@@ -21,7 +21,14 @@ import { IpcValidationError } from './validation';
  * goes back to the renderer.
  */
 export const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-export const DEFAULT_MODEL = 'gemini-2.5-flash';
+/** Aliases that follow Google's newest Flash models (old versions get retired). */
+export const DEFAULT_MODEL = 'gemini-flash-latest';
+/** Tried in order when the chosen model is retired (404) or overloaded (503). */
+export const FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+/** Text models only: no speech, image, robotics or tool-specific variants. */
+const CHAT_MODEL = /^gemini-[a-z0-9.-]*(flash|pro)/;
+const NON_CHAT_MODEL =
+  /(tts|image|robotics|computer-use|customtools|transcribe|audio|live|embedding|nano-banana)/;
 export const API_KEY_KEY = 'gemini-api-key';
 export const AI_STUDIO_KEYS_URL = 'https://aistudio.google.com/apikey';
 
@@ -241,7 +248,8 @@ export class GeminiAssistant {
     const models = (list ?? [])
       .filter(
         (model) =>
-          model.name?.startsWith('models/gemini') &&
+          CHAT_MODEL.test(model.name?.slice('models/'.length) ?? '') &&
+          !NON_CHAT_MODEL.test(model.name ?? '') &&
           model.supportedGenerationMethods?.includes('generateContent'),
       )
       .map((model) => ({
@@ -258,7 +266,7 @@ export class GeminiAssistant {
       generationConfig: { maxOutputTokens: 256 },
     });
     if (result.status === 'error') return result;
-    return { status: 'ok', model: (await this.load()).model };
+    return { status: 'ok', model: result.model };
   }
 
   async chat(request: AiChatRequest): Promise<AiResult<{ text: string }>> {
@@ -310,10 +318,38 @@ export class GeminiAssistant {
     return items.length ? { status: 'ok', items } : { status: 'error', error: 'unknown' };
   }
 
-  private async generate(payload: object): Promise<AiResult<{ text: string }>> {
+  /** Chosen model first, then the Flash aliases when it is retired or overloaded. */
+  private async generate(payload: object): Promise<AiResult<{ text: string; model: string }>> {
     const key = await this.secrets.get(API_KEY_KEY);
     if (!key) return { status: 'error', error: 'not-configured' };
-    const { model } = await this.load();
+    const { model: chosen } = await this.load();
+    const candidates = [...new Set([chosen, ...FALLBACK_MODELS])];
+    let last: AiResult<{ text: string; model: string }> = { status: 'error', error: 'unknown' };
+    let retired = false;
+    for (const model of candidates) {
+      last = await this.generateWith(model, key, payload);
+      if (last.status === 'ok') {
+        // The chosen model was retired by Google: keep the one that answered.
+        if (retired && model !== chosen) await this.rememberModel(model);
+        break;
+      }
+      if (model === chosen && last.error === 'model') retired = true;
+      if (last.error !== 'model' && last.error !== 'unavailable') break;
+    }
+    return last;
+  }
+
+  private async rememberModel(model: string): Promise<void> {
+    const settings = { ...(await this.load()), model };
+    this.settings = Promise.resolve(settings);
+    await this.persist(settings);
+  }
+
+  private async generateWith(
+    model: string,
+    key: string,
+    payload: object,
+  ): Promise<AiResult<{ text: string; model: string }>> {
     const response = await this.request(
       `${GEMINI_BASE_URL}/models/${encodeURIComponent(model)}:generateContent`,
       key,
@@ -327,7 +363,7 @@ export class GeminiAssistant {
       const reason = body.candidates?.[0]?.finishReason;
       return { status: 'error', error: reason === 'SAFETY' ? 'blocked' : 'unknown' };
     }
-    return { status: 'ok', text: output };
+    return { status: 'ok', text: output, model };
   }
 
   private async request(
@@ -342,8 +378,10 @@ export class GeminiAssistant {
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-    } catch {
-      return { status: 'error', error: 'network' };
+    } catch (error) {
+      // A timeout usually means an overloaded model: let the caller try another one.
+      const name = (error as { name?: string } | null)?.name;
+      return { status: 'error', error: name === 'TimeoutError' ? 'unavailable' : 'network' };
     }
     let body: unknown = null;
     try {

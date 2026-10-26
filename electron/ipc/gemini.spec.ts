@@ -194,6 +194,47 @@ describe('GeminiAssistant', () => {
     expect(await ai.test()).toEqual({ status: 'error', error: 'network' });
   });
 
+  it('falls back to the Flash aliases when the model is retired or overloaded', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    const answers = [
+      reply({ error: { code: 404, message: 'no longer available to new users' } }, 404),
+      reply({ error: { code: 503, status: 'UNAVAILABLE' } }, 503),
+      reply({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] }),
+    ];
+    next = () => answers.shift()!;
+    expect(await ai.test()).toEqual({ status: 'ok', model: 'gemini-flash-lite-latest' });
+    // The retired model is replaced by the one that answered.
+    expect((await ai.status()).model).toBe('gemini-flash-lite-latest');
+    expect(calls.map((call) => call.url.split('/models/')[1])).toEqual([
+      'gemini-2.5-flash:generateContent',
+      'gemini-flash-latest:generateContent',
+      'gemini-flash-lite-latest:generateContent',
+    ]);
+  });
+
+  it('treats a timeout as an overloaded model and keeps the choice', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-3.8-flash', apiKey: KEY });
+    const answers: (() => Response)[] = [
+      () => {
+        throw Object.assign(new Error('timeout'), { name: 'TimeoutError' });
+      },
+      () => reply({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] }),
+    ];
+    next = () => answers.shift()!();
+    expect(await ai.test()).toEqual({ status: 'ok', model: 'gemini-flash-latest' });
+    expect((await ai.status()).model).toBe('gemini-3.8-flash');
+  });
+
+  it('does not retry other models on quota or key errors', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    next = () => reply({ error: { status: 'RESOURCE_EXHAUSTED' } }, 429);
+    expect((await ai.test()).status).toBe('error');
+    expect(calls).toHaveLength(1);
+  });
+
   it('asks for structured subtasks', async () => {
     const ai = create();
     await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
@@ -224,6 +265,8 @@ describe('GeminiAssistant', () => {
             supportedGenerationMethods: ['generateContent'],
           },
           { name: 'models/text-embedding-004', supportedGenerationMethods: ['embedContent'] },
+          { name: 'models/gemini-3.8-flash-tts', supportedGenerationMethods: ['generateContent'] },
+          { name: 'models/gemini-3-pro-image', supportedGenerationMethods: ['generateContent'] },
         ],
       });
     expect(await ai.models()).toEqual({

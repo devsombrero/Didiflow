@@ -1,12 +1,12 @@
 import type { AiConnectResult, AiError } from '../../../../electron/ipc/contract';
 
 export const AI_STUDIO_KEYS_URL = 'https://aistudio.google.com/apikey';
-export const DEFAULT_AI_MODEL = 'gemini-2.5-flash';
+export const DEFAULT_AI_MODEL = 'gemini-flash-latest';
 
 /** Shown until the key lists the models it can use. */
 export const FALLBACK_MODELS = [
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite' },
+  { id: 'gemini-flash-latest', name: 'Gemini Flash (mais recente)' },
+  { id: 'gemini-flash-lite-latest', name: 'Gemini Flash-Lite (mais recente)' },
 ];
 
 export const QUICK_PROMPTS: readonly { label: string; icon: string; prompt: string }[] = [
