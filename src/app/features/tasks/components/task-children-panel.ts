@@ -23,7 +23,10 @@ import { ToastService } from '../../../shared/toast/toast.service';
 import { describeError } from '../../../shared/utils/errors';
 import type { Task } from '../task.model';
 import { TasksService } from '../tasks.service';
+import { MatTabsModule } from '@angular/material/tabs';
+import { TaskAttachmentsPanel } from '../../attachments/task-attachments-panel';
 import { ProgressBar, StatusBadge } from './task-badges';
+import { TaskLinksPanel } from './task-links-panel';
 
 /**
  * Tasks of an epic / subtasks of a task: list with status and progress,
@@ -41,6 +44,9 @@ import { ProgressBar, StatusBadge } from './task-badges';
     ProgressBar,
     MarkdownEditor,
     MarkdownView,
+    MatTabsModule,
+    TaskAttachmentsPanel,
+    TaskLinksPanel,
   ],
   template: `
     @if (children().length) {
@@ -96,33 +102,64 @@ import { ProgressBar, StatusBadge } from './task-badges';
           </div>
           @if (open) {
             <div class="child__details" animate.enter="enter-fade-up">
-              @if (editingId() === child.id) {
-                <app-markdown-editor
-                  [control]="editForm.controls.description"
-                  label="Descrição da subtarefa"
-                  inputId="child-description-edit"
-                  [rows]="5"
-                />
-                <div class="details__actions">
-                  <button matButton type="button" (click)="editingId.set(null)">Cancelar</button>
-                  <button
-                    matButton="filled"
-                    type="button"
-                    [disabled]="busy() || editForm.invalid"
-                    (click)="saveDescription(child)"
-                  >
-                    Salvar descrição
-                  </button>
-                </div>
-              } @else {
-                <app-markdown-view [text]="child.description ?? ''" />
-                <div class="details__actions">
-                  <button matButton type="button" (click)="startEdit(child)">
-                    <mat-icon>edit_note</mat-icon>
-                    {{ child.description ? 'Editar descrição' : 'Adicionar descrição' }}
-                  </button>
-                </div>
-              }
+              <mat-tab-group
+                class="child-tabs attach-tabs"
+                animationDuration="150ms"
+                mat-stretch-tabs="false"
+              >
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">notes</mat-icon> Descrição
+                  </ng-template>
+                  <div class="tab-body">
+                    @if (editingId() === child.id) {
+                      <app-markdown-editor
+                        [control]="editForm.controls.description"
+                        label="Descrição da subtarefa"
+                        inputId="child-description-edit"
+                        [rows]="5"
+                      />
+                      <div class="details__actions">
+                        <button matButton type="button" (click)="editingId.set(null)">
+                          Cancelar
+                        </button>
+                        <button
+                          matButton="filled"
+                          type="button"
+                          [disabled]="busy() || editForm.invalid"
+                          (click)="saveDescription(child)"
+                        >
+                          Salvar descrição
+                        </button>
+                      </div>
+                    } @else {
+                      <app-markdown-view [text]="child.description ?? ''" />
+                      <div class="details__actions">
+                        <button matButton type="button" (click)="startEdit(child)">
+                          <mat-icon>edit_note</mat-icon>
+                          {{ child.description ? 'Editar descrição' : 'Adicionar descrição' }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </mat-tab>
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">attach_file</mat-icon> Arquivos
+                  </ng-template>
+                  <div class="tab-body">
+                    <app-task-attachments-panel [taskId]="child.id" />
+                  </div>
+                </mat-tab>
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">link</mat-icon> Recursos
+                  </ng-template>
+                  <div class="tab-body">
+                    <app-task-links-panel [taskId]="child.id" />
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
             </div>
           }
         </li>
@@ -229,6 +266,15 @@ import { ProgressBar, StatusBadge } from './task-badges';
       padding: var(--space-3) var(--space-4);
       border-radius: 12px;
       background: var(--mat-sys-surface-container);
+    }
+    .tab-icon {
+      margin-right: var(--space-2);
+    }
+    .tab-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding-top: var(--space-3);
     }
     .details__actions {
       display: flex;
