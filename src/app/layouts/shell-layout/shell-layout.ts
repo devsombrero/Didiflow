@@ -94,6 +94,7 @@ export class ShellLayout implements OnInit {
     { path: '/time', label: 'Tempo', icon: 'schedule', exact: false },
     { path: '/organization', label: 'Organização', icon: 'folder_open', exact: false },
     { path: '/notifications', label: 'Notificações', icon: 'campaign', exact: false },
+    { path: '/didibot', label: 'DidiBot', icon: 'smart_toy', exact: false },
     { path: '/settings', label: 'Configurações', icon: 'settings', exact: false },
   ];
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');

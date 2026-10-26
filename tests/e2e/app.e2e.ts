@@ -24,6 +24,7 @@ test('security: renderer is isolated from Node and only exposes the preload API'
       require: 'undefined',
       process: 'undefined',
       api: [
+        'ai',
         'attachments',
         'backups',
         'email',
@@ -466,6 +467,55 @@ test('resources: attach external links in the Recursos tab', async () => {
     await panel.getByRole('button', { name: 'Remover Protótipo' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Remover' }).click();
     await expect(panel).toContainText('Nenhum recurso');
+  } finally {
+    await close();
+    removeDir(userDataDir);
+  }
+});
+
+test('didibot: optional Google account, key never readable, no calls without a key', async () => {
+  const { app, page, close, userDataDir } = await launchApp();
+  try {
+    await app.evaluate(({ shell }) => {
+      const opened: string[] = [];
+      (globalThis as unknown as { opened: string[] }).opened = opened;
+      shell.openExternal = (async (url: string) => {
+        opened.push(url);
+      }) as typeof shell.openExternal;
+    });
+    await login(page, email);
+    await page.getByRole('link', { name: 'DidiBot' }).click();
+    await expect(page.locator('#didibot-connect')).toContainText('Conectar conta Google');
+
+    const api = await page.evaluate(async () => {
+      const ai = (
+        window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
+      ).didiflow.ai;
+      const chat = await ai.chat({ messages: [{ role: 'user', text: 'Oi' }] });
+      const badKey = await ai.save({ model: 'gemini-2.5-flash', apiKey: 'senha' }).then(
+        () => false,
+        () => true,
+      );
+      const saved = await ai.save({
+        model: 'gemini-2.5-flash',
+        apiKey: 'AIzaSyD-e2e_fake_key_1234567890abcdefgh',
+      });
+      const removed = await ai.save({ model: 'gemini-2.5-flash', apiKey: null });
+      return { chat, badKey, saved: JSON.stringify(saved), removed };
+    });
+    expect(api.chat).toEqual({ status: 'error', error: 'not-configured' });
+    expect(api.badKey).toBe(true);
+    expect(api.saved).toContain('"hasKey":true');
+    expect(api.saved).not.toContain('e2e_fake_key');
+    expect(api.removed.hasKey).toBe(false);
+
+    await page.getByRole('link', { name: 'Conectar conta Google' }).click();
+    const card = page.locator('app-didibot-settings-card');
+    await expect(card).toContainText('Nenhuma conta Google conectada');
+    await card.getByRole('button', { name: 'Conectar conta Google' }).click();
+    await expect
+      .poll(() => app.evaluate(() => (globalThis as unknown as { opened: string[] }).opened))
+      .toEqual(['https://aistudio.google.com/apikey']);
   } finally {
     await close();
     removeDir(userDataDir);

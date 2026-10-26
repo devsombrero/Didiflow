@@ -46,6 +46,14 @@ const api: DidiflowApi = {
     test: (to) => ipcRenderer.invoke(IPC_CHANNELS.emailTest, to),
     send: (message) => ipcRenderer.invoke(IPC_CHANNELS.emailSend, message),
   },
+  ai: {
+    status: () => ipcRenderer.invoke(IPC_CHANNELS.aiStatus),
+    save: (update) => ipcRenderer.invoke(IPC_CHANNELS.aiSave, update),
+    test: () => ipcRenderer.invoke(IPC_CHANNELS.aiTest),
+    models: () => ipcRenderer.invoke(IPC_CHANNELS.aiModels),
+    chat: (request) => ipcRenderer.invoke(IPC_CHANNELS.aiChat, request),
+    suggestSubtasks: (request) => ipcRenderer.invoke(IPC_CHANNELS.aiSuggestSubtasks, request),
+  },
   onNavigate: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, route: unknown) => {
       if (typeof route === 'string') listener(route);

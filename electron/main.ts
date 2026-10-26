@@ -8,6 +8,7 @@ import nodemailer from 'nodemailer';
 import { BackupStore } from './ipc/backups';
 import { openBuiltInAccount } from './ipc/builtin-email';
 import { EmailNotifier, GMAIL_SMTP } from './ipc/email';
+import { GeminiAssistant } from './ipc/gemini';
 import { registerIpcHandlers } from './ipc/handlers';
 import { SecureStore } from './ipc/secure-store';
 import { assertExternalUrl, isTrustedOrigin } from './ipc/validation';
@@ -176,6 +177,12 @@ if (!app.requestSingleInstanceLock()) {
         cipher.isAvailable,
         // Only packaged builds use the embedded account: development and tests never send.
         app.isPackaged ? openBuiltInAccount() : null,
+      ),
+      // DidiBot: the Gemini key has its own store, unreadable from the renderer.
+      ai: new GeminiAssistant(
+        path.join(userData, 'ai-settings.json'),
+        new SecureStore(path.join(userData, 'ai-secrets.json'), cipher),
+        cipher.isAvailable,
       ),
     });
     createMainWindow();

@@ -1,5 +1,6 @@
 import { inject, Injectable, InjectionToken } from '@angular/core';
 import type {
+  AiApi,
   AttachmentApi,
   BackupApi,
   DesktopNotification,
@@ -40,6 +41,9 @@ export class DesktopBridge {
 
   /** Notification e-mails through Gmail (main process); null outside Electron. */
   readonly email: EmailApi | null = this.api?.email ?? null;
+
+  /** DidiBot (Gemini through the main process); null outside Electron. */
+  readonly ai: AiApi | null = this.api?.ai ?? null;
 
   async openExternal(url: string): Promise<void> {
     if (this.api) {

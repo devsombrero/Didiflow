@@ -1,0 +1,221 @@
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  assertAiSettingsUpdate,
+  assertChatRequest,
+  assertSubtaskRequest,
+  classifyHttpError,
+  DEFAULT_MODEL,
+  GEMINI_BASE_URL,
+  GeminiAssistant,
+  MAX_MESSAGES,
+  parseSubtasks,
+} from './gemini';
+import { type Cipher, SecureStore } from './secure-store';
+
+const cipher: Cipher = {
+  isAvailable: () => true,
+  encrypt: (plain) => Buffer.from(`enc:${[...plain].reverse().join('')}`),
+  decrypt: (data) => [...data.toString().slice(4)].reverse().join(''),
+};
+const KEY = 'AIzaSyD-test_key_1234567890abcdefghijk';
+
+function reply(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+describe('Gemini validation', () => {
+  it('validates settings, keeping, replacing or removing the key', () => {
+    expect(assertAiSettingsUpdate({ model: 'gemini-2.5-flash' })).toEqual({
+      model: 'gemini-2.5-flash',
+      apiKey: undefined,
+    });
+    expect(assertAiSettingsUpdate({ model: 'gemini-2.5-flash', apiKey: ` ${KEY} ` }).apiKey).toBe(
+      KEY,
+    );
+    expect(assertAiSettingsUpdate({ model: 'gemini-2.5-flash', apiKey: null }).apiKey).toBeNull();
+    expect(() => assertAiSettingsUpdate({ model: 'gemini-2.5-flash', apiKey: 'short' })).toThrow();
+    expect(() => assertAiSettingsUpdate({ model: '../models/x' })).toThrow();
+  });
+
+  it('validates chat requests', () => {
+    const ok = assertChatRequest({ messages: [{ role: 'user', text: 'Oi' }], context: 'ctx' });
+    expect(ok).toEqual({ messages: [{ role: 'user', text: 'Oi' }], context: 'ctx' });
+    expect(() => assertChatRequest({ messages: [] })).toThrow();
+    expect(() => assertChatRequest({ messages: [{ role: 'system', text: 'x' }] })).toThrow();
+    expect(() => assertChatRequest({ messages: [{ role: 'model', text: 'x' }] })).toThrow();
+    expect(() =>
+      assertChatRequest({ messages: [{ role: 'user', text: 'x'.repeat(4001) }] }),
+    ).toThrow();
+    expect(() =>
+      assertChatRequest({
+        messages: Array.from({ length: MAX_MESSAGES + 1 }, () => ({ role: 'user', text: 'x' })),
+      }),
+    ).toThrow();
+    expect(() =>
+      assertChatRequest({ messages: [{ role: 'user', text: 'x' }], context: 'c'.repeat(20_001) }),
+    ).toThrow();
+  });
+
+  it('validates subtask requests', () => {
+    expect(assertSubtaskRequest({ title: 'Gateway' })).toEqual({
+      title: 'Gateway',
+      description: '',
+      context: '',
+    });
+    expect(() => assertSubtaskRequest({ title: '  ' })).toThrow();
+  });
+
+  it('classifies HTTP errors', () => {
+    expect(classifyHttpError(400, { error: { details: [{ reason: 'API_KEY_INVALID' }] } })).toBe(
+      'auth',
+    );
+    expect(classifyHttpError(403, {})).toBe('auth');
+    expect(classifyHttpError(429, {})).toBe('quota');
+    expect(classifyHttpError(404, {})).toBe('model');
+    expect(classifyHttpError(503, {})).toBe('unavailable');
+    expect(classifyHttpError(400, { error: { message: 'bad request' } })).toBe('unknown');
+  });
+
+  it('parses subtask answers defensively', () => {
+    expect(parseSubtasks('["Definir escopo", " definir escopo ", "Testar"]')).toEqual([
+      'Definir escopo',
+      'Testar',
+    ]);
+    expect(parseSubtasks('```json\n["A"]\n```')).toEqual(['A']);
+    expect(parseSubtasks('not json')).toEqual([]);
+    expect(
+      parseSubtasks(JSON.stringify(Array.from({ length: 15 }, (_, i) => `T${i}`))),
+    ).toHaveLength(10);
+  });
+});
+
+describe('GeminiAssistant', () => {
+  let dir: string;
+  let calls: { url: string; init: RequestInit }[];
+  let next: () => Response | Promise<Response>;
+
+  const create = () =>
+    new GeminiAssistant(
+      path.join(dir, 'ai-settings.json'),
+      new SecureStore(path.join(dir, 'ai-secrets.json'), cipher),
+      () => true,
+      async (url, init) => {
+        calls.push({ url, init });
+        return next();
+      },
+    );
+
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'didiflow-ai-'));
+    calls = [];
+    next = () => reply({ candidates: [{ content: { parts: [{ text: 'Olá!' }] } }] });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('needs a key', async () => {
+    const ai = create();
+    expect(await ai.status()).toEqual({ hasKey: false, canStoreKey: true, model: DEFAULT_MODEL });
+    expect(await ai.chat({ messages: [{ role: 'user', text: 'Oi' }] })).toEqual({
+      status: 'error',
+      error: 'not-configured',
+    });
+    expect(calls).toEqual([]);
+  });
+
+  it('stores the key encrypted and never returns it', async () => {
+    const ai = create();
+    const status = await ai.save({ model: 'gemini-2.5-flash-lite', apiKey: KEY });
+    expect(status).toEqual({ hasKey: true, canStoreKey: true, model: 'gemini-2.5-flash-lite' });
+    expect(JSON.stringify(status)).not.toContain(KEY);
+    expect(await readFile(path.join(dir, 'ai-secrets.json'), 'utf8')).not.toContain(KEY);
+    expect(await readFile(path.join(dir, 'ai-settings.json'), 'utf8')).not.toContain(KEY);
+    expect((await create().status()).model).toBe('gemini-2.5-flash-lite');
+
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: null });
+    expect((await ai.status()).hasKey).toBe(false);
+  });
+
+  it('sends the chat with system prompt, context and history', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    const result = await ai.chat({
+      messages: [
+        { role: 'user', text: 'O que priorizar?' },
+        { role: 'model', text: 'Veja as atrasadas.' },
+        { role: 'user', text: 'E hoje?' },
+      ],
+      context: 'Hoje: 2026-10-26\n- Gateway (urgente)',
+    });
+    expect(result).toEqual({ status: 'ok', text: 'Olá!' });
+    const { url, init } = calls[0];
+    expect(url).toBe(`${GEMINI_BASE_URL}/models/gemini-2.5-flash:generateContent`);
+    expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe(KEY);
+    const body = JSON.parse(init.body as string);
+    expect(body.systemInstruction.parts[0].text).toContain('DidiBot');
+    expect(body.systemInstruction.parts[0].text).toContain('- Gateway (urgente)');
+    expect(body.contents.map((c: { role: string }) => c.role)).toEqual(['user', 'model', 'user']);
+  });
+
+  it('maps API failures', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    next = () => reply({ error: { status: 'RESOURCE_EXHAUSTED' } }, 429);
+    expect(await ai.chat({ messages: [{ role: 'user', text: 'x' }] })).toEqual({
+      status: 'error',
+      error: 'quota',
+    });
+    next = () => reply({ promptFeedback: { blockReason: 'SAFETY' } });
+    expect((await ai.chat({ messages: [{ role: 'user', text: 'x' }] })).status).toBe('error');
+    next = () => {
+      throw new TypeError('fetch failed');
+    };
+    expect(await ai.test()).toEqual({ status: 'error', error: 'network' });
+  });
+
+  it('asks for structured subtasks', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    next = () =>
+      reply({
+        candidates: [{ content: { parts: [{ text: '["Mapear fluxo","Implementar Pix"]' }] } }],
+      });
+    expect(await ai.suggestSubtasks({ title: 'Gateway de pagamento', description: 'Pix' })).toEqual(
+      {
+        status: 'ok',
+        items: ['Mapear fluxo', 'Implementar Pix'],
+      },
+    );
+    const body = JSON.parse(calls[0].init.body as string);
+    expect(body.generationConfig.responseMimeType).toBe('application/json');
+    expect(body.contents[0].parts[0].text).toContain('Tarefa: Gateway de pagamento');
+  });
+
+  it('lists Gemini models that generate content', async () => {
+    const ai = create();
+    await ai.save({ model: 'gemini-2.5-flash', apiKey: KEY });
+    next = () =>
+      reply({
+        models: [
+          {
+            name: 'models/gemini-2.5-flash',
+            displayName: 'Gemini 2.5 Flash',
+            supportedGenerationMethods: ['generateContent'],
+          },
+          { name: 'models/text-embedding-004', supportedGenerationMethods: ['embedContent'] },
+        ],
+      });
+    expect(await ai.models()).toEqual({
+      status: 'ok',
+      models: [{ id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' }],
+    });
+  });
+});

@@ -27,6 +27,12 @@ export const IPC_CHANNELS = {
   emailSave: 'email:save',
   emailTest: 'email:test',
   emailSend: 'email:send',
+  aiStatus: 'ai:status',
+  aiSave: 'ai:save',
+  aiTest: 'ai:test',
+  aiModels: 'ai:models',
+  aiChat: 'ai:chat',
+  aiSuggestSubtasks: 'ai:suggest-subtasks',
   /** Main → renderer: navigate to an in-app route (notification click). */
   navigate: 'app:navigate',
 } as const;
@@ -214,6 +220,58 @@ export interface EmailApi {
   send(message: EmailMessage): Promise<EmailSendResult>;
 }
 
+export type AiError =
+  'not-configured' | 'auth' | 'quota' | 'model' | 'blocked' | 'network' | 'unavailable' | 'unknown';
+
+/** Success payload or a categorized error. */
+export type AiResult<T extends object> =
+  ({ status: 'ok' } & T) | { status: 'error'; error: AiError };
+
+export interface AiStatus {
+  /** Whether a Gemini key is stored (its value never leaves the main process). */
+  hasKey: boolean;
+  canStoreKey: boolean;
+  model: string;
+}
+
+export interface AiSettingsUpdate {
+  model: string;
+  /** New key; undefined keeps the stored one, null removes it. */
+  apiKey?: string | null;
+}
+
+export interface AiModel {
+  id: string;
+  name: string;
+}
+
+export interface AiChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
+
+export interface AiChatRequest {
+  messages: AiChatMessage[];
+  /** Summary of the user's DidiFlow data, when the user allows it. */
+  context?: string;
+}
+
+export interface AiSubtaskRequest {
+  title: string;
+  description?: string;
+  context?: string;
+}
+
+/** DidiBot: Gemini API (free tier) through the main process. */
+export interface AiApi {
+  status(): Promise<AiStatus>;
+  save(update: AiSettingsUpdate): Promise<AiStatus>;
+  test(): Promise<AiResult<{ model: string }>>;
+  models(): Promise<AiResult<{ models: AiModel[] }>>;
+  chat(request: AiChatRequest): Promise<AiResult<{ text: string }>>;
+  suggestSubtasks(request: AiSubtaskRequest): Promise<AiResult<{ items: string[] }>>;
+}
+
 /** API exposed to the renderer as `window.didiflow`. */
 export interface DidiflowApi {
   readonly platform: string;
@@ -231,4 +289,5 @@ export interface DidiflowApi {
   readonly backups: BackupApi;
   readonly attachments: AttachmentApi;
   readonly email: EmailApi;
+  readonly ai: AiApi;
 }
