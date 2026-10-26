@@ -6,6 +6,7 @@ import { SoundService } from '../../core/feedback/sound.service';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { ToastService } from '../../shared/toast/toast.service';
 import { relativeTime } from './notification-bell';
+import { EmailReportBuilder } from './email-report';
 import { AppNotifier, NotificationCenter } from './notification-center';
 
 describe('notifications', () => {
@@ -13,9 +14,10 @@ describe('notifications', () => {
 
   function setup(
     options: {
+      report?: object;
       desktop?: boolean;
       focused?: boolean;
-      email?: { send: ReturnType<typeof vi.fn> };
+      email?: { send: ReturnType<typeof vi.fn>; status?: ReturnType<typeof vi.fn> };
     } = {},
   ) {
     localStorage.clear();
@@ -28,6 +30,7 @@ describe('notifications', () => {
       email: options.email ?? null,
     };
     const router = { navigateByUrl: vi.fn() };
+    const reports = { build: vi.fn().mockResolvedValue(options.report) };
     vi.spyOn(document, 'hasFocus').mockReturnValue(options.focused ?? true);
     TestBed.configureTestingModule({
       providers: [
@@ -36,6 +39,7 @@ describe('notifications', () => {
         { provide: SoundService, useValue: sounds },
         { provide: DesktopBridge, useValue: bridge },
         { provide: Router, useValue: router },
+        { provide: EmailReportBuilder, useValue: reports },
       ],
     });
     TestBed.tick();
@@ -46,6 +50,7 @@ describe('notifications', () => {
       sounds,
       bridge,
       router,
+      reports,
     };
   }
 
@@ -124,6 +129,29 @@ describe('notifications', () => {
       to: undefined,
     });
     expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('attaches a task report when e-mail is on for the kind', async () => {
+    const report = { tasks: [{ title: 'Gateway' }] };
+    const email = {
+      send: vi.fn().mockResolvedValue({ status: 'sent' }),
+      status: vi.fn().mockResolvedValue({ settings: { enabled: true, kinds: ['reminder'] } }),
+    };
+    const { notifier, reports } = setup({ email, report });
+    await notifier.notify({
+      kind: 'reminder',
+      title: 'Lembrete',
+      email: { taskIds: ['t1'], intro: 'Revisar' },
+    });
+    await vi.waitFor(() => expect(email.send).toHaveBeenCalled());
+    expect(reports.build).toHaveBeenCalledWith(['t1'], 'Revisar');
+    expect(email.send.mock.calls[0][0].report).toBe(report);
+
+    // Kind not selected: no report is loaded.
+    email.status.mockResolvedValue({ settings: { enabled: true, kinds: ['digest'] } });
+    await notifier.notify({ kind: 'reminder', title: 'Outro', email: { taskIds: ['t2'] } });
+    await vi.waitFor(() => expect(email.send).toHaveBeenCalledTimes(2));
+    expect(reports.build).toHaveBeenCalledTimes(1);
   });
 
   it('reports an e-mail failure only once per session', async () => {

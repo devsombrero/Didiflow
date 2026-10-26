@@ -151,10 +151,47 @@ export interface EmailStatus {
   builtInAccount: string | null;
 }
 
+export type EmailTaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+/** One task in a notification e-mail; labels arrive already formatted (pt-BR, user's date format). */
+export interface EmailTaskCard {
+  title: string;
+  kind: 'epic' | 'task' | 'subtask';
+  status: string;
+  priority: EmailTaskPriority;
+  /** 0–100. */
+  progress: number;
+  due?: string;
+  /** "Vence amanhã", "Atrasada há 2 dias"... */
+  deadline?: string;
+  overdue?: boolean;
+  project?: string;
+  category?: string;
+  /** Ancestor titles, from the epic down to the direct parent. */
+  hierarchy?: string[];
+  tags?: string[];
+  requester?: string;
+  hours?: string;
+  children?: string;
+  /** Plain-text excerpt of the description. */
+  excerpt?: string;
+  jiraUrl?: string;
+}
+
+/** Rich content of a task notification e-mail. */
+export interface EmailReport {
+  intro?: string;
+  tone?: 'info' | 'warning' | 'danger';
+  tasks: EmailTaskCard[];
+  /** Matching tasks left out of the e-mail. */
+  more?: number;
+}
+
 export interface EmailMessage {
   kind: EmailKind;
   title: string;
   body?: string;
+  report?: EmailReport;
   /** Signed-in account e-mail, used when no recipient is configured. */
   to?: string;
 }

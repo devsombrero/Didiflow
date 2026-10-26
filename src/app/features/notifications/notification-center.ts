@@ -6,7 +6,8 @@ import type { SoundName } from '../../core/feedback/sounds';
 import { DesktopBridge } from '../../core/platform/desktop-bridge';
 import { MobileNotifications } from '../../core/platform/mobile-platform';
 import { ToastService } from '../../shared/toast/toast.service';
-import type { EmailKind } from '../../../../electron/ipc/contract';
+import type { EmailKind, EmailReport, EmailSendResult } from '../../../../electron/ipc/contract';
+import { EmailReportBuilder } from './email-report';
 import { emailResultMessage } from './email-messages';
 
 export type NotificationKind = 'reminder' | 'digest' | 'custom' | 'focus' | 'system';
@@ -28,6 +29,8 @@ export interface NotifyRequest {
   route?: string | null;
   /** Effect played on delivery; 'none' = silent. */
   sound?: SoundName | 'none';
+  /** Tasks detailed in the e-mail version (report with epic, deadline, hours...). */
+  email?: { taskIds: string[]; intro?: string };
 }
 
 export const NOTIFICATION_ICONS: Record<NotificationKind, string> = {
@@ -126,6 +129,7 @@ export class AppNotifier {
   private readonly router = inject(Router);
   private readonly mobile = inject(MobileNotifications);
   private readonly auth = inject(AuthService);
+  private readonly reports = inject(EmailReportBuilder);
   /** E-mail failures are reported once per session, not on every notification. */
   private emailFailureShown = false;
 
@@ -133,7 +137,9 @@ export class AppNotifier {
     const route = request.route ?? null;
     const body = request.body ?? '';
     const item = this.center.add({ kind: request.kind, title: request.title, body, route });
-    if (request.kind !== 'system') void this.forwardByEmail(request.kind, request.title, body);
+    if (request.kind !== 'system') {
+      void this.forwardByEmail(request.kind, request.title, body, request.email);
+    }
     const sound = request.sound ?? 'notify';
     if (sound !== 'none') this.sounds.play(sound);
 
@@ -171,21 +177,53 @@ export class AppNotifier {
   }
 
   /** Also sends the notification by e-mail when enabled for its kind (desktop only). */
-  private async forwardByEmail(kind: EmailKind, title: string, body: string): Promise<void> {
-    if (!this.bridge.email) return;
+  private async forwardByEmail(
+    kind: EmailKind,
+    title: string,
+    body: string,
+    details?: NotifyRequest['email'],
+  ): Promise<void> {
+    const email = this.bridge.email;
+    if (!email) return;
     try {
-      const result = await this.bridge.email.send({
+      const message = {
         kind,
         title: title.slice(0, 120),
         body: body.slice(0, 2000),
         to: this.auth.user()?.email || undefined,
-      });
+      };
+      const report = details?.taskIds.length ? await this.report(kind, details) : undefined;
+      let result: EmailSendResult;
+      try {
+        result = await email.send({ ...message, report });
+      } catch (error) {
+        if (!report) throw error;
+        // A report the main process refuses must not cost the e-mail itself.
+        console.error('E-mail report rejected', error);
+        result = await email.send(message);
+      }
       if (result.status === 'error' && !this.emailFailureShown) {
         this.emailFailureShown = true;
         this.toast.error(`E-mail não enviado: ${emailResultMessage(result)}`);
       }
-    } catch {
+    } catch (error) {
       // Rejected by the main process validation: the in-app notification is enough.
+      console.error('E-mail not sent', error);
+    }
+  }
+
+  /** Task report for the e-mail, loaded only when e-mail is on for this kind. */
+  private async report(
+    kind: EmailKind,
+    details: NonNullable<NotifyRequest['email']>,
+  ): Promise<EmailReport | undefined> {
+    try {
+      const { settings } = await this.bridge.email!.status();
+      if (!settings.enabled || !settings.kinds.includes(kind)) return undefined;
+      return await this.reports.build(details.taskIds, details.intro);
+    } catch (error) {
+      console.error('E-mail report failed', error);
+      return undefined;
     }
   }
 }

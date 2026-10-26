@@ -8,6 +8,8 @@ export type DigestKind = 'overdue' | 'due-soon';
 
 export interface DigestNotification extends DesktopNotification {
   kind: DigestKind;
+  /** Tasks in this summary (detailed in the e-mail version). */
+  taskIds: string[];
 }
 
 type DigestPreferences = Pick<
@@ -41,6 +43,7 @@ export function buildDigest(
       title: overdue.length === 1 ? '1 tarefa atrasada' : `${overdue.length} tarefas atrasadas`,
       body: titles(overdue),
       route: overdue.length === 1 ? `/tasks/${overdue[0].id}` : '/tasks',
+      taskIds: overdue.map((task) => task.id),
     });
   }
   if (prefs.notify_due_soon && dueSoon.length) {
@@ -53,6 +56,7 @@ export function buildDigest(
           : `${dueSoon.length} tarefas vencem em até ${days} dia(s)`,
       body: titles(dueSoon),
       route: dueSoon.length === 1 ? `/tasks/${dueSoon[0].id}` : '/calendar',
+      taskIds: dueSoon.map((task) => task.id),
     });
   }
   return result;

@@ -36,12 +36,14 @@ describe('buildDigest', () => {
         title: '2 tarefas atrasadas',
         body: 'Tarefa a, Tarefa b',
         route: '/tasks',
+        taskIds: ['a', 'b'],
       },
       {
         kind: 'due-soon',
         title: '2 tarefas vencem em até 2 dia(s)',
         body: 'Tarefa c, Tarefa d',
         route: '/calendar',
+        taskIds: ['c', 'd'],
       },
     ]);
   });
