@@ -1,6 +1,8 @@
 # Plano: DidiBot (assistente com Gemini)
 
-Status: em implementação (v0.8.0). Escopo da primeira versão: aplicativo desktop.
+Status: implementado na v0.8.0 e testado ao vivo em 2026-10-26 (login Google, criação da chave, conversa e sugestões). Escopo da primeira versão: aplicativo desktop.
+
+Projeto do Google Cloud: `didiflow`, com Cloud Resource Manager, Service Usage e API Keys ativadas, tela de consentimento externa em modo de teste e o client "DidiFlow Desktop".
 
 ## Objetivo
 
