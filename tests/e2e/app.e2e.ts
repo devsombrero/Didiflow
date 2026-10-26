@@ -369,6 +369,13 @@ test('epics: subtasks roll up progress; starting a task keeps 0%', async () => {
     await panel.getByRole('button', { name: 'Expandir Revisão final' }).click();
     await expect(panel.locator('.child__details strong')).toHaveText('Checklist');
     await expect(panel.locator('.child__details .md-check')).toHaveCount(1);
+    const details = panel.locator('.child__details');
+    await details.getByRole('tab', { name: /Arquivos/ }).click();
+    await expect(details.getByRole('button', { name: 'Anexar arquivos' })).toBeVisible();
+    await details.getByRole('tab', { name: /Recursos/ }).click();
+    await details.locator('#link-url').fill('docs.google.com/document/d/checklist');
+    await details.getByRole('button', { name: 'Adicionar link' }).click();
+    await expect(details.locator('.link')).toContainText('docs.google.com/document/d/checklist');
     await panel.locator('.child__title', { hasText: 'Revisão final' }).click();
     await expect(page.locator('.breadcrumb')).toContainText('Lançamento do site');
     await expect(page.locator('app-status-badge').first()).toContainText('Não iniciado');
