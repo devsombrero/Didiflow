@@ -4,6 +4,8 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+## [0.8.0] - 2026-10-26
+
 ### Adicionado
 
 - **DidiBot**, assistente opcional com a API Gemini gratuita do Google (app desktop): conversa sobre tarefas, prazos e horas com atalhos (resumo do dia, prioridades, plano da semana, tarefas em risco) e sugestão de subtarefas confirmadas pelo usuário. "Entrar com Google" cria automaticamente, na conta do usuário, um projeto, ativa a API Gemini e gera uma chave restrita, guardada criptografada; também é possível colar uma chave própria. O modelo padrão segue o Gemini Flash mais recente, com troca automática quando um modelo é descontinuado ou fica sobrecarregado.
