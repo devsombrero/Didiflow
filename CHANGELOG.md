@@ -4,6 +4,10 @@ Todas as mudanças relevantes do DidiFlow. O formato segue [Keep a Changelog](ht
 
 ## [Não lançado]
 
+### Adicionado
+
+- Identidade visual: símbolo DidiFlow (D aberto com check em fluxo), logotipo, ícones do app para Windows, macOS, Linux e Android (adaptativo e monocromático), notificação, abertura, favicon e tela de carregamento. Ícones gerados por `npm run icons` (ver docs/brand.md).
+
 ### Alterado
 
 - Nova identidade visual: paleta azul DidiFlow (claro e escuro), fonte Inter empacotada, cartões arredondados com sombra suave, botões principais com gradiente, blocos do dashboard com ícones em destaque e tela de login com fundo em gradiente.

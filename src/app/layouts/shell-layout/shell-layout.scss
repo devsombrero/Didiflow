@@ -39,21 +39,14 @@
 
 .sidebar__title {
   flex: 1;
-  background: var(--gradient-brand);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--mat-sys-on-surface);
 }
 
 .sidebar__logo {
-  display: grid;
-  place-items: center;
+  flex: none;
   width: 34px;
   height: 34px;
-  border-radius: 11px;
-  background: var(--gradient-brand);
-  color: var(--mat-sys-on-primary);
-  font-size: 22px;
+  border-radius: 10px;
   box-shadow: var(--shadow-lift);
 }
 
@@ -141,15 +134,11 @@
   font: var(--mat-sys-title-large);
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: var(--gradient-brand);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--mat-sys-on-surface);
 }
 
 .topbar__logo {
   width: 30px;
   height: 30px;
-  border-radius: 10px;
-  font-size: 20px;
+  border-radius: 9px;
 }

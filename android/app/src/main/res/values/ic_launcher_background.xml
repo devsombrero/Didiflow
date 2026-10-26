@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#0B57D0</color>
+    <!-- Brand blue (#0284C7): splash background and legacy icon tint. -->
+    <color name="ic_launcher_background">#0284C7</color>
 </resources>

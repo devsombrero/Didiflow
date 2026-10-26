@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432" width="432" height="432">
+  <!-- Android adaptive icon foreground (108dp canvas = 432px at xxxhdpi). The
+       mark stays inside the 66dp safe zone (central 264px). -->
+  <g transform="translate(57.6 62.4) scale(0.6)"><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="42"><path d="M206 132 H262 C350 132 408 190 408 256 C408 322 350 380 262 380 H206" stroke="#ffffff"/><path d="M120 262 L196 334 L320 206" stroke="#e0f2fe"/></g></g>
+</svg>

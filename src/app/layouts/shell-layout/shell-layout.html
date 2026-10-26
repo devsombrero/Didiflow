@@ -8,8 +8,8 @@
   >
     <div class="sidebar__inner">
       <div class="sidebar__brand">
-        <span class="sidebar__logo"><mat-icon inline>task_alt</mat-icon></span>
-        <span class="sidebar__title">DidiFlow</span>
+        <img class="sidebar__logo" src="brand/didiflow-icon.svg" alt="" width="34" height="34" />
+        <span class="sidebar__title">Didi<span class="brand-flow">Flow</span></span>
         <app-notification-bell />
       </div>
 
@@ -90,8 +90,14 @@
         <button matIconButton type="button" aria-label="Abrir menu" (click)="sidenav.open()">
           <mat-icon>menu</mat-icon>
         </button>
-        <span class="sidebar__logo topbar__logo"><mat-icon inline>task_alt</mat-icon></span>
-        <span class="topbar__title">DidiFlow</span>
+        <img
+          class="sidebar__logo topbar__logo"
+          src="brand/didiflow-icon.svg"
+          alt=""
+          width="30"
+          height="30"
+        />
+        <span class="topbar__title">Didi<span class="brand-flow">Flow</span></span>
         <app-notification-bell />
       </header>
     }

@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/brand/didiflow-logo-light.svg" alt="DidiFlow" width="420" /></p>
+
 # DidiFlow
 
 Aplicação desktop para gestão pessoal de demandas: tarefas, prazos, progresso, tempo e indicadores individuais de produtividade.

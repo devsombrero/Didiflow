@@ -83,6 +83,13 @@ function hardenWebContents(): void {
   });
 }
 
+/** App icon for the window (Windows/Linux taskbar); bundled as an extra resource. */
+function windowIcon(): string {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'icon.png')
+    : path.join(app.getAppPath(), 'build', 'icon.png');
+}
+
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -91,6 +98,7 @@ function createMainWindow(): void {
     minHeight: 600,
     show: false,
     title: 'DidiFlow',
+    icon: windowIcon(),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
