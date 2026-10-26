@@ -513,6 +513,34 @@ test('didibot: optional Google account, key never readable, no calls without a k
     expect(api.saved).not.toContain('e2e_fake_key');
     expect(api.removed.hasKey).toBe(false);
 
+    // With a key (fake, never used here) the chat shows the prompt library.
+    await page.evaluate(() =>
+      (
+        window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
+      ).didiflow.ai.save({
+        model: 'gemini-flash-latest',
+        apiKey: 'AIzaSyD-e2e_fake_key_1234567890abcdefgh',
+      }),
+    );
+    await page.getByRole('link', { name: 'Hoje' }).click();
+    await page.getByRole('link', { name: 'DidiBot' }).click();
+    await page.getByRole('button', { name: 'Biblioteca de prompts' }).click();
+    const library = page.getByRole('dialog');
+    await library.getByRole('tab', { name: /Criar no DidiFlow/ }).click();
+    await library.getByRole('button', { name: /Criar projeto com tarefas/ }).click();
+    await expect(page.locator('#didibot-input')).toHaveValue(
+      /Crie um projeto chamado \[nome do projeto\]/,
+    );
+    await expect(page.locator('#didibot-actions')).toBeVisible();
+    await page.evaluate(() =>
+      (
+        window as unknown as { didiflow: import('../../electron/ipc/contract').DidiflowApi }
+      ).didiflow.ai.save({ model: 'gemini-flash-latest', apiKey: null }),
+    );
+    await page.getByRole('link', { name: 'Hoje' }).click();
+    await page.getByRole('link', { name: 'DidiBot' }).click();
+    await expect(page.locator('#didibot-connect')).toBeVisible();
+
     if (api.googleSignIn) {
       // Google sign-in: the system browser gets an OAuth URL with PKCE and a loopback redirect.
       await page.getByRole('button', { name: 'Entrar com Google' }).click();

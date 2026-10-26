@@ -33,6 +33,25 @@ export interface ContextInput {
   secondsToday: number;
   dailyTargetHours: number | null;
   completedLast30Days: number;
+  /** Names DidiBot should reuse when it proposes projects and tasks. */
+  organization?: OrganizationNames;
+}
+
+export interface OrganizationNames {
+  projects: readonly string[];
+  categories: readonly string[];
+  tags: readonly string[];
+}
+
+/** Existing projects, categories and tags, one line each. */
+export function organizationLines(names: OrganizationNames): string[] {
+  const line = (label: string, items: readonly string[]) =>
+    `${label}: ${items.length ? items.slice(0, 60).join('; ') : 'nenhum'}`;
+  return [
+    line('Projetos existentes', names.projects),
+    line('Categorias existentes', names.categories),
+    line('Tags existentes', names.tags),
+  ];
 }
 
 const PRIORITY_RANK: Record<Task['priority'], number> = { urgent: 0, high: 1, medium: 2, low: 3 };
@@ -91,6 +110,7 @@ export function buildContext(input: ContextInput): string {
     input.todayPriorities.length
       ? `Prioridades de hoje definidas pelo usuário: ${input.todayPriorities.join('; ')}`
       : 'Prioridades de hoje: nenhuma definida',
+    ...(input.organization ? organizationLines(input.organization) : []),
     '',
     'Tarefas abertas (mais próximas do prazo primeiro):',
     ...(lines.length ? lines : ['- nenhuma']),

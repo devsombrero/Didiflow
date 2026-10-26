@@ -275,7 +275,41 @@ export interface AiChatRequest {
   messages: AiChatMessage[];
   /** Summary of the user's DidiFlow data, when the user allows it. */
   context?: string;
+  /** Lets DidiBot propose projects and tasks (applied only after confirmation). */
+  allowActions?: boolean;
 }
+
+export type AiTaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type AiTaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'done' | 'cancelled';
+
+/** Change proposed by DidiBot; the renderer applies it only after the user confirms. */
+export type AiAction =
+  | { type: 'create_project'; name: string; description?: string; color?: string }
+  | {
+      type: 'create_task';
+      title: string;
+      description?: string;
+      kind?: 'task' | 'epic';
+      priority?: AiTaskPriority;
+      dueDate?: string;
+      startDate?: string;
+      estimatedHours?: number;
+      project?: string;
+      category?: string;
+      tags?: string[];
+      /** Title of the parent epic/task (existing or created in the same answer). */
+      parent?: string;
+      subtasks?: string[];
+    }
+  | {
+      type: 'update_task';
+      /** Title of an existing task. */
+      task: string;
+      status?: AiTaskStatus;
+      progress?: number;
+      dueDate?: string;
+      priority?: AiTaskPriority;
+    };
 
 export interface AiSubtaskRequest {
   title: string;
@@ -289,7 +323,7 @@ export interface AiApi {
   save(update: AiSettingsUpdate): Promise<AiStatus>;
   test(): Promise<AiResult<{ model: string }>>;
   models(): Promise<AiResult<{ models: AiModel[] }>>;
-  chat(request: AiChatRequest): Promise<AiResult<{ text: string }>>;
+  chat(request: AiChatRequest): Promise<AiResult<{ text: string; actions: AiAction[] }>>;
   suggestSubtasks(request: AiSubtaskRequest): Promise<AiResult<{ items: string[] }>>;
   /** Google sign-in in the browser, then creates and stores a Gemini key automatically. */
   connectGoogle(): Promise<AiConnectResult>;
